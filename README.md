@@ -1,5 +1,7 @@
 # arrange
 
+![](https://github.com/hilderonny/arrange/workflows/Node%20CI/badge.svg)
+
 ## Install MongoDB
 
 ### For MacOS
