@@ -4,8 +4,7 @@
   "description": "Library for arrange based projects",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --exit --async-only --slow 500 --timeout 900000 ./test/*.js",
-    "testlocal": "cross-env PORT=8081 DB_URL=127.0.0.1/arrangetest nyc --reporter=html --reporter=text mocha --exit --async-only --slow 500 --timeout 900000 ./test/*.js"
+    "test": "cross-env PORT=8081 DB_URL=127.0.0.1/arrangetest nyc --reporter=html --reporter=text mocha --exit --async-only --slow 500 --timeout 900000 ./test/*.js"
   },
   "repository": {
     "type": "git",

@@ -9,6 +9,7 @@ describe('API removereadableby', function() {
         const user2id = (await test.post('/api/arrange/register', { username: 'username2', password: 'password2' })).body._id;
         await test.server.db('testremovereadableby').remove({});
         await test.server.db('testremovereadableby').insert({ key: 'testdata', _ownerid: user1id, _readableby: [ user2id ] });
+        await test.server.db('testremovereadableby').insert({ key: 'testdatawithoutreadableby', _ownerid: user1id });
     });
 
     it('Responds with 401 when not logged in', async function() {
@@ -107,7 +108,7 @@ describe('API removereadableby', function() {
     });
 
     it('When readableby was not set before, nothing happens', async function() {
-        const entityid = (await test.server.db('testremovereadableby').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
+        const entityid = (await test.server.db('testremovereadableby').findOne({ key: 'testdatawithoutreadableby' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const user2id = (await test.server.db('users').findOne({ username: 'username2' }, { projection: { '_id': 1 } }))._id.toString();
         await test.server.db('testremovereadableby').update(entityid, { $set: { key: 'testdata', _ownerid: user1._id.toString() } });

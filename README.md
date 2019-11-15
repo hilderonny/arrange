@@ -96,6 +96,8 @@ Locally on developer machine:
 npm run testlocal
 ```
 
+With GitHub Actions the actions are defined in `.github/workflows/nodejs.yml`. Originally I jave it from https://github.com/actions/example-services/issues/8#issuecomment-542487178 .
+
 ### Howto create NPM package
 
 ```
