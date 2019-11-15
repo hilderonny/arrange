@@ -1,6 +1,6 @@
 {
   "name": "@hilderonny/arrange",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Library for arrange based projects",
   "main": "index.js",
   "scripts": {
@@ -9,28 +9,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/hilderonny/arrange.git"
+    "url": "git+https://github.com/hilderonny/arrange.git"
   },
   "author": "Ronny Hildebrandt",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/hilderonny/arrange/issues"
+    "url": "https://github.com/hilderonny/arrange/issues"
   },
-  "homepage": "https://gitlab.com/hilderonny/arrange#readme",
+  "homepage": "https://github.com/hilderonny/arrange#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.18.3",
-    "compression": "^1.7.3",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "express": "^4.16.4",
-    "jsonwebtoken": "^8.4.0",
-    "monk": "^6.0.6"
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "monk": "^7.1.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "chai-http": "^4.2.1",
-    "cross-env": "^5.2.0",
+    "chai-http": "^4.3.0",
+    "cross-env": "^5.2.1",
     "mocha": "^5.2.0",
-    "nyc": "^13.2.0"
+    "nyc": "^14.1.1"
   }
 }

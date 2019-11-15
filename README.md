@@ -1,7 +1,20 @@
 # arrange
 
-[![pipeline status](https://gitlab.com/hilderonny/arrange/badges/master/pipeline.svg)](https://gitlab.com/hilderonny/arrange/commits/master)
-[![coverage report](https://gitlab.com/hilderonny/arrange/badges/master/coverage.svg)](https://gitlab.com/hilderonny/arrange/commits/master)
+## Install MongoDB
+
+### For MacOS
+
+Following this instruction: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/
+
+```sh
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew tap mongodb/brew
+brew install mongodb-community@4.2
+brew services start mongodb-community
+```
+
+Keep all settings on default.
+
 
 ## Usage
 
@@ -57,6 +70,7 @@ The API definition and usage examples can be found [here](client/README.md).
 
 |Version|Content|
 |---|---|
+|1.4.0|Moved to GitHub and updates dependencies|
 |1.3.1|Bugfixes in client library|
 |1.3.0|List API now supports result filters. Added client library documentation [here](client/README.md)|
 |1.2.0|Added delete API|
@@ -67,7 +81,17 @@ The API definition and usage examples can be found [here](client/README.md).
 |1.0.2|Added APIs for user login and registration and authentication middleware|
 |1.0.1|Initial NPM package without any functionality|
 
-## Howto create NPM package
+## Development
+
+### Run tests
+
+Locally on developer machine:
+
+```sh
+npm run testlocal
+```
+
+### Howto create NPM package
 
 ```
 npm install npm@latest -g
