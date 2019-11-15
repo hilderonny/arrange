@@ -10,7 +10,7 @@ describe('Server instanziation', function() {
         const oldLog = console.log.bind(console);
         let mongoErrorFound = false;
         console.log = function() {
-            if (arguments && arguments[0] && arguments[0].toString().indexOf('MongoError') >= 0) {
+            if (arguments && arguments[0] && arguments[0].toString().indexOf('MongoTimeoutError') >= 0) {
                 mongoErrorFound = true;
                 console.log = oldLog;
             } else {
@@ -20,7 +20,7 @@ describe('Server instanziation', function() {
         const server = new arrange.Server(port, 'unknownhost/unknowndatabase', 'testtokensecret');
         server.db('users').find();
         await new Promise(function(resolve) {
-            let count = 200;
+            let count = 350; // Default timeout is 30 seconds
             const interval = setInterval(function() {
                 if (!mongoErrorFound && count > 0) {
                     count--;

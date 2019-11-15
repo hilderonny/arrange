@@ -516,7 +516,7 @@ class Server {
                     const targetuser = await self.db('users').findOne(targetuserid, { projection: { '_id': 1 } });
                     if (!targetuser) return response.status(404).json({ error: 'User not found' });
                     const entityid = request.params.entityid;
-                    const entity = await self.db(tablename).findOne(entityid, { projection: { '_id': 1, '_readableby': 1, '_writableby': 1 } });
+                    const entity = await self.db(tablename).findOne(entityid, { projection: { '_id': 1, '_ownerid': 1, '_readableby': 1, '_writableby': 1 } });
                     if (!entity) return response.status(404).json({ error: 'Entity not found' });
                     if (entity._ownerid.toString() !== userid) return response.status(403).send();
                     delete entity._id;
