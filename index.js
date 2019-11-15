@@ -121,7 +121,7 @@ class Server {
         if (!token) return response.status(401).json({ error: 'Token is missing' });
         jsonwebtoken.verify(token, self.tokenSecret, function(error, tokenUser) {
             if (error) return response.status(401).json({ error: 'Token cannot be validated' });
-            self.db('users').findOne(tokenUser._id, '_id username').then(function(user) {
+            self.db('users').findOne(tokenUser._id, { projection: { '_id': 1, 'username': 1 }}).then(function(user) {
                 if (!user) return response.status(401).json({ error: 'User not found' });
                 request.user = user;
                 user._id = user._id.toString(); // Convert ObjectID to string for compatibility
@@ -143,7 +143,7 @@ class Server {
                 const userid = request.user._id;
                 self.validateparamid(entityidparam)(request, response, async function() {
                     const id = request.params[entityidparam];
-                    const entity = await self.database.get(tablename).findOne(id, '_ownerid _publiclyreadable _readableby');
+                    const entity = await self.database.get(tablename).findOne(id, { projection: { '_ownerid': 1, '_publiclyreadable': 1, '_readableby': 1 } });
                     if (!entity) return response.status(404).json({error: 'Entity not found' });
                     if (entity._ownerid !== userid && !entity._publiclyreadable && (!entity._readableby || entity._readableby.indexOf(userid) < 0)) {
                         return response.status(403).json({ error: 'Reading not allowed' });
@@ -169,7 +169,7 @@ class Server {
                     const id = request.body._id;
                     if (!id) return next(); // Bei fehlender _id kann immer geschrieben werden. Das ist dann halt ein Anlegen eines Datensatzes.
                     const userid = request.user._id.toString();
-                    const entity = await self.database.get(tablename).findOne(id, '_ownerid _publiclywritable _writableby');
+                    const entity = await self.database.get(tablename).findOne(id, { projection: { '_ownerid': 1, '_publiclywritable': 1, '_writableby': 1 } });
                     if (!entity) return response.status(404).json({error: 'Entity not found' });
                     if (entity._ownerid !== userid && !entity._publiclywritable && (!entity._writableby || entity._writableby.indexOf(userid) < 0)) {
                         return response.status(403).json({ error: 'Writing not allowed' });
@@ -197,7 +197,7 @@ class Server {
             if (tablename === 'users') return response.status(403).json({ error: 'Access to users table forbidden' });
             self.validateparamid('id')(request, response, async function() {
                 const collection = self.db(tablename);
-                const entity = await collection.findOne(request.params.id, '_id _ownerid');
+                const entity = await collection.findOne(request.params.id, { projection: { '_ownerid': 1 } });
                 if (!entity) return response.status(404).json({error: 'Entity not found' });
                 if (entity._ownerid !== request.user._id) return response.status(403).json({error: 'Only the owner can delete the entity' });
                 await collection.remove(request.params.id);
@@ -220,10 +220,10 @@ class Server {
                     { _id: request.params.id }
                 ]
             } : request.params.id;
-            const resultfilter = request.body;
+            var options = self.parsefieldfilter(request.body);
             const collection = self.db(tablename);
             try {
-                const entity = await collection.findOne(query, resultfilter);
+                const entity = await collection.findOne(query, options);
                 if (!entity) return response.status(404).json({error: 'Entity not found' });
                 response.status(200).json(entity);
             } catch(ex) {
@@ -261,7 +261,8 @@ class Server {
                         request.body.query ? request.body.query : { }
                     ]
                 };
-                const result = await collection.find(queryfilter, request.body.result);
+                var options = self.parsefieldfilter(request.body.result);
+                const result = await collection.find(queryfilter, options);
                 response.status(200).json(result);
             } catch(ex) {
                 // Filter is errornous
@@ -282,7 +283,7 @@ class Server {
     listusers(request, response) {
         const self = this;
         self.auth(request, response, async function() {
-            const users = await self.db('users').find({}, '_id username');
+            const users = await self.db('users').find({}, { projection: { '_id': 1, 'username': 1 } });
             response.json(users);
         });
     }
@@ -294,7 +295,7 @@ class Server {
     async login(request, response) {
         if (!request.body.username) return response.status(400).json({ error: 'Username required' });
         if (!request.body.password) return response.status(400).json({ error: 'Password required' });
-        const user = await this.db('users').findOne({ username: request.body.username }, '_id username password');
+        const user = await this.db('users').findOne({ username: request.body.username }, { projection: { '_id': 1, 'username': 1, 'password': 1 } });
         if (user && bcryptjs.compareSync(request.body.password, user.password)) {
             delete user.password; // Das Passwort wird nicht zurück gegeben, nur _id und token.
             user.token = jsonwebtoken.sign({
@@ -317,7 +318,7 @@ class Server {
         if (!request.body.username) return response.status(400).json({ error: 'Username required' });
         if (!request.body.password) return response.status(400).json({ error: 'Password required' });
         const collection = this.db('users');
-        const existingUser = await collection.findOne({ username: request.body.username }, '_id');
+        const existingUser = await collection.findOne({ username: request.body.username }, { projection: { '_id': 1 } });
         if (existingUser) return response.status(400).json({ error: 'Username already taken' });
         const createdUser = await collection.insert({ username: request.body.username, password: bcryptjs.hashSync(request.body.password) });
         delete createdUser.password;
@@ -512,10 +513,10 @@ class Server {
                     if (tablename === 'users') return response.status(400).send();
                     const userid = request.user._id.toString();
                     const targetuserid = request.params.userid;
-                    const targetuser = await self.db('users').findOne(targetuserid, '_id');
+                    const targetuser = await self.db('users').findOne(targetuserid, { projection: { '_id': 1 } });
                     if (!targetuser) return response.status(404).json({ error: 'User not found' });
                     const entityid = request.params.entityid;
-                    const entity = await self.db(tablename).findOne(entityid, '_ownerid _readableby _writableby');
+                    const entity = await self.db(tablename).findOne(entityid, { projection: { '_id': 1, '_readableby': 1, '_writableby': 1 } });
                     if (!entity) return response.status(404).json({ error: 'Entity not found' });
                     if (entity._ownerid.toString() !== userid) return response.status(403).send();
                     delete entity._id;
@@ -557,6 +558,26 @@ class Server {
             if (param.length !== 24) return response.status(400).json({error: 'Parameter ' + parametername + ' is no valid id' });
             next();
         }
+    }
+
+    /**
+     * Analysiert das gegebene Objekt, ob es entweder ein Array von Feldnamen oder ein Objekt mit
+     * Felddefinitionen ist, die an MongoDB als Filter gegeben werden können.
+     * Gibt ein options-Objekt für die MongoDB-Abfragen zurück.
+     */
+    parsefieldfilter(obj) {
+        if (!obj) return undefined; // No filter at all
+        var options = { projection: {} };
+        if (Array.isArray(obj)) {
+            obj.forEach(function(fieldname) {
+                options.projection[fieldname] = 1;
+            });
+        } else {
+            Object.keys(obj).forEach(function(fieldname) {
+                options.projection[fieldname] = obj[fieldname];
+            });
+        }
+        return options;
     }
 
 }

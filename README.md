@@ -15,6 +15,11 @@ brew services start mongodb-community
 
 Keep all settings on default.
 
+### For Windows
+
+Use the MSI installer. When problems starting the service occur, it can be caused by falsy default settings.
+Have a look into https://stackoverflow.com/a/4663101/12127220 or simply create  `logs` and `data/db` directories in the installation path.
+
 
 ## Usage
 

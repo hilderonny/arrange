@@ -21,7 +21,7 @@ describe('Middleware canread', function() {
     });
 
     it('Responds with error 401 when user is not logged in', async function() {
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response = await test.get('/api/testcanread1/testcanread/' + entityid);
         assert.strictEqual(response.status, 401);
     });
@@ -30,7 +30,7 @@ describe('Middleware canread', function() {
         test.server.app.get('/api/testcanread2/:tablename/:id', test.server.canread.bind(test.server)('invalidtableparametername', 'id'), function(request, response) {
             response.status(200).send();
         });
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         let user = (await test.post('/api/arrange/login', { username: 'username3', password: 'password3' })).body;
         const response = await test.get('/api/testcanread2/testcanread/' + entityid, user.token);
         assert.strictEqual(response.status, 400);
@@ -41,7 +41,7 @@ describe('Middleware canread', function() {
         test.server.app.get('/api/testcanread3/:tablename/:id', test.server.canread.bind(test.server)('tablename', 'invalididparametername'), function(request, response) {
             response.status(200).send();
         });
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         let user = (await test.post('/api/arrange/login', { username: 'username3', password: 'password3' })).body;
         const response = await test.get('/api/testcanread3/testcanread/' + entityid, user.token);
         assert.strictEqual(response.status, 400);
@@ -63,9 +63,9 @@ describe('Middleware canread', function() {
     });
 
     it('Responds with error 403 when user cannot read the entity', async function() {
-        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, '_id'))._id.toString();
+        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, { projection: { '_id': 1 } }))._id.toString();
         let user = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response1 = await test.get('/api/testcanread1/testcanread/' + entityid, user.token);
         assert.strictEqual(response1.status, 403);
         assert.strictEqual(response1.body.error, 'Reading not allowed');
@@ -78,13 +78,13 @@ describe('Middleware canread', function() {
 
     it('Proceeds when the user is owner', async function() {
         let user3 = (await test.post('/api/arrange/login', { username: 'username3', password: 'password3' })).body;
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response = await test.get('/api/testcanread1/testcanread/' + entityid, user3.token);
         assert.strictEqual(response.status, 200);
     });
 
     it('Proceeds when the object is publicly readable', async function() {
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         await test.server.db('testcanread').update(entityid, { $set : { _publiclyreadable: true }});
         let user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.get('/api/testcanread1/testcanread/' + entityid, user1.token);
@@ -92,7 +92,7 @@ describe('Middleware canread', function() {
     });
 
     it('Proceeds when the user is in readable array', async function() {
-        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanread').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         let user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         await test.server.db('testcanread').update(entityid, { $set : { _readableby: [ user1._id.toString() ] }});
         const response = await test.get('/api/testcanread1/testcanread/' + entityid, user1.token);

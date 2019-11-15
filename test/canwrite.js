@@ -50,9 +50,9 @@ describe('Middleware canwrite', function() {
     });
 
     it('Responds with error 403 when user cannot write to the entity', async function() {
-        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, '_id'))._id.toString();
+        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, { projection: { '_id': 1 } }))._id.toString();
         let user = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
-        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response1 = await test.post('/api/testcanwrite1/testcanwrite', { _id: entityid, key: 'newkey' }, user.token);
         assert.strictEqual(response1.status, 403);
         assert.strictEqual(response1.body.error, 'Writing not allowed');
@@ -65,7 +65,7 @@ describe('Middleware canwrite', function() {
 
     it('Proceeds when the user is owner', async function() {
         let user3 = (await test.post('/api/arrange/login', { username: 'username3', password: 'password3' })).body;
-        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response = await test.post('/api/testcanwrite1/testcanwrite', { _id: entityid, key: 'newkey' }, user3.token);
         assert.strictEqual(response.status, 200);
     });
@@ -77,7 +77,7 @@ describe('Middleware canwrite', function() {
     });
 
     it('Proceeds when the object is publicly writable', async function() {
-        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         await test.server.db('testcanwrite').update(entityid, { $set : { _publiclywritable: true }});
         let user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/testcanwrite1/testcanwrite', { _id: entityid, key: 'newkey' }, user1.token);
@@ -85,7 +85,7 @@ describe('Middleware canwrite', function() {
     });
 
     it('Proceeds when the user is in writable array', async function() {
-        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testcanwrite').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         let user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         await test.server.db('testcanwrite').update(entityid, { $set : { _writableby: [ user1._id.toString() ] }});
         const response = await test.post('/api/testcanwrite1/testcanwrite', { _id: entityid, key: 'newkey' }, user1.token);

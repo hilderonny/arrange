@@ -12,7 +12,7 @@ describe('API delete', function() {
     });
 
     it('Responds with error 401 when not logged in', async function() {
-        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const response = await test.del('/api/arrange/delete/testdelete/' + entityid);
         assert.strictEqual(response.status, 401);
     });
@@ -32,7 +32,7 @@ describe('API delete', function() {
     });
 
     it('Responds with 403 when user is not owner and not in _writableby and entity is not _publiclywritable', async function() {
-        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const user2 = (await test.post('/api/arrange/login', { username: 'username2', password: 'password2' })).body;
         const response = await test.del('/api/arrange/delete/testdelete/' + entityid, user2.token);
         assert.strictEqual(response.status, 403);
@@ -40,7 +40,7 @@ describe('API delete', function() {
     });
 
     it('Responds with 403 when user is not owner but in _writableby', async function() {
-        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const user2 = (await test.post('/api/arrange/login', { username: 'username2', password: 'password2' })).body;
         await test.server.db('testdelete').update(entityid, { $set : { _writableby: [ user2._id.toString() ] }});
         const response = await test.del('/api/arrange/delete/testdelete/' + entityid, user2.token);
@@ -49,7 +49,7 @@ describe('API delete', function() {
     });
 
     it('Responds with 403 when user is not owner but entity is _publiclywritable', async function() {
-        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const user2 = (await test.post('/api/arrange/login', { username: 'username2', password: 'password2' })).body;
         await test.server.db('testdelete').update(entityid, { $set : { _publiclywritable: true }});
         const response = await test.del('/api/arrange/delete/testdelete/' + entityid, user2.token);
@@ -65,11 +65,11 @@ describe('API delete', function() {
     });
 
     it('Returns 200 and deletes the entity on success', async function() {
-        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, '_id'))._id.toString();
+        const entityid = (await test.server.db('testdelete').findOne({ key: 'testdata' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.del('/api/arrange/delete/testdelete/' + entityid, user1.token);
         assert.strictEqual(response.status, 200);
-        const entityAfterDelete = await test.server.db('testdelete').findOne(entityid, '_id');
+        const entityAfterDelete = await test.server.db('testdelete').findOne(entityid, { projection: { '_id': 1 } });
         assert.ok(!entityAfterDelete);
     });
 

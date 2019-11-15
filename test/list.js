@@ -14,7 +14,7 @@ describe('API list', function() {
     });
 
     it('Responds with list containing only publicly readable entities when not logged in', async function() {
-        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, '_id'))._id.toString();
+        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, { projection: { '_id': 1 } }))._id.toString();
         const e1id = (await test.server.db('testlist').insert({ attribute1: 'pr1', attribute2: 'value2', _ownerid: user2id, _publiclyreadable: true }))._id.toString();
         const e2id = (await test.server.db('testlist').insert({ attribute1: 'pr2', attribute2: 'value2', _ownerid: user2id, _publiclyreadable: true }))._id.toString();
         const response = await test.post('/api/arrange/list/testlist', { result: { _id: true } });
@@ -35,7 +35,7 @@ describe('API list', function() {
 
     it('Responds only entities where the user has read access (owner, readableby, publiclyreadable)', async function() {
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
-        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, '_id'))._id.toString();
+        const user2id = (await test.server.db('users').findOne({ username: 'username2' }, { projection: { '_id': 1 } }))._id.toString();
         const entity4id = (await test.server.db('testlist').insert({ attribute1: 'value14', attribute2: 'value2', _publiclyreadable: true, _ownerid: user2id }))._id.toString();
         const entity5id = (await test.server.db('testlist').insert({ attribute1: 'value15', attribute2: 'value2', _readableby: [ user1._id.toString()], _ownerid: user2id }))._id.toString();
         const response = await test.post('/api/arrange/list/testlist', { result: { _id: true } }, user1.token);
@@ -47,8 +47,8 @@ describe('API list', function() {
     });
 
     it('Responds all entities when queryfilter is not given', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
-        const entity2id = (await test.server.db('testlist').findOne({ attribute1: 'value12' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
+        const entity2id = (await test.server.db('testlist').findOne({ attribute1: 'value12' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { result: { _id: true } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -59,8 +59,8 @@ describe('API list', function() {
     });
 
     it('Responds all entities when queryfilter is an empty object', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
-        const entity2id = (await test.server.db('testlist').findOne({ attribute1: 'value12' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
+        const entity2id = (await test.server.db('testlist').findOne({ attribute1: 'value12' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: {}, result: { _id: true } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -71,7 +71,7 @@ describe('API list', function() {
     });
 
     it('Responds only objects matching the given queryfilter', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: { attribute1: 'value11' }, result: { _id: true } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -102,7 +102,7 @@ describe('API list', function() {
     });
 
     it('Responds all attributes when resultfilter is not given', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: { _id: entity1id } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -116,7 +116,7 @@ describe('API list', function() {
     });
 
     it('Responds all attributes when resultfilter is an empty object', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: { _id: entity1id }, result: { } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -130,7 +130,7 @@ describe('API list', function() {
     });
 
     it('Responds only attributes matching the given resultfilter', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: { _id: entity1id }, result: { attribute1: true } }, user1.token);
         assert.strictEqual(response.status, 200);
@@ -144,7 +144,7 @@ describe('API list', function() {
     });
 
     it('Responds with valid attributes only when the given resultfilter is invalid', async function() {
-        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, '_id'))._id.toString();
+        const entity1id = (await test.server.db('testlist').findOne({ attribute1: 'value11' }, { projection: { '_id': 1 } }))._id.toString();
         const user1 = (await test.post('/api/arrange/login', { username: 'username1', password: 'password1' })).body;
         const response = await test.post('/api/arrange/list/testlist', { query: { _id: entity1id }, result: { attribute1: true, $schnulli: 'value11' } }, user1.token);
         assert.strictEqual(response.status, 200);

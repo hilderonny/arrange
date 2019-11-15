@@ -50,7 +50,7 @@ describe('API register', function() {
         const password = 'password with \' in it';
         const response = await test.post('/api/arrange/register', { username: 'username1', password: password });
         assert.strictEqual(response.status, 200);
-        const user = await test.server.db('users').findOne({ username: 'username1' }, 'password');
+        const user = await test.server.db('users').findOne({ username: 'username1' }, { projection: { 'password': 1 } });
         assert.ok(bcryptjs.compareSync(password, user.password));
     });
 
@@ -58,7 +58,7 @@ describe('API register', function() {
         const password = 'password with " in it';
         const response = await test.post('/api/arrange/register', { username: 'username1', password: password });
         assert.strictEqual(response.status, 200);
-        const user = await test.server.db('users').findOne({ username: 'username1' }, 'password');
+        const user = await test.server.db('users').findOne({ username: 'username1' }, { projection: { 'password': 1 } });
         assert.ok(bcryptjs.compareSync(password, user.password));
     });
 
