@@ -35,9 +35,60 @@ function readFolderRecursively(folderPath) {
  *  files: [ "filename1", "filename2" ]
  * }
  */
-router.get('/', async (_, response) => {
+router.get('/', (_, response) => {
     const rootFolder = readFolderRecursively(path.join(__dirname, '..', 'files'));
     response.send(rootFolder);
+});
+
+/**
+ * DELETE /api/files/filepath
+ * 
+ * Deletes a file with the given filepath. When the file does not exist or cannot be deleted,
+ * 400 is returned. Otherwise 200.
+ * 
+ * For example DELETE /api/files/myfolder/mysubfolder/myfile.txt deletes the file
+ * ./files/myfolder/mysubfolder/myfile.txt
+ */
+router.delete('/*', (request, response) => {
+    const filepath = path.join(__dirname, '..', 'files', request.params[0]);
+    fs.unlink(filepath, (error) => {
+        if (error) {
+            response.sendStatus(400);
+        } else {
+            response.sendStatus(200);
+        }
+    });
+});
+
+/**
+ * POST /api/files/filepath
+ * 
+ * Uploads one file with multipart formdata to the given filepath. The name of the original file gets ignored.
+ * Missing intermediate directories get created. Existing files get overwritten.
+ * 
+ * When sending a file myfile.txt to POST /api/files/myfolder/mysubfolder/namemesomething.txt the uploaded file will be
+ * renamed to namemesomething.txt and gets stored in the ./files/myfolder/mysubfolder directory.
+ */
+router.post('/*', (request, response) => {
+    const filepath = path.join(__dirname, '..', 'files', request.params[0]);
+    console.log(filepath, request.files);
+    if (!request.files || Object.keys(request.files).length !== 1) {
+        return response.sendStatus(400);
+    } else {
+        const fileInfo = Object.values(request.files)[0];
+        const baseDirectory = path.dirname(filepath);
+        if (!fs.existsSync(baseDirectory)) {
+            fs.mkdirSync(baseDirectory, { recursive: true });
+        }
+        fileInfo.mv(filepath, function(error) {
+            if (error) {
+                console.log(error);
+                response.sendStatus(400);
+            } else {
+                response.sendStatus(200);
+            }
+        });
+    }
 });
 
 module.exports = router;

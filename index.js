@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const fileupload = require('express-fileupload');
 
 const HTTP_PORT = 80;
 const HTTPS_PORT = 443;
@@ -9,6 +10,7 @@ const HTTPS_PORT = 443;
 
 // Initialize application
 const app = express();
+app.use(fileupload()); // Enable file upload
 
 // Expose the files folder as Server webpage root, automatically servers files/index.html als start page
 app.use('/', express.static(__dirname + '/files'));
