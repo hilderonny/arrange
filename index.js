@@ -10,6 +10,11 @@ const HTTPS_PORT = 443;
 // Initialize application
 const app = express();
 
+// Expose the files folder as Server webpage root, automatically servers files/index.html als start page
+app.use('/', express.static(__dirname + '/files'));
+
+// Include APIs
+app.use('/api/files', require('./api/files.js'));
 
 
 
