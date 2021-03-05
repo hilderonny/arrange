@@ -1,0 +1,12 @@
+:host {
+    background-color:aqua;
+    display: block;
+}
+
+* {
+    color: red;
+}
+
+.myclass {
+    font-weight: bold;
+}
