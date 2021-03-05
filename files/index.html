@@ -6,21 +6,19 @@
         <title>Arrange</title>
         <script type="module">
             import { loadComponent } from '/utils/webcomponents.js';
-            loadComponent('schnulli-bulli');
+            loadComponent('not-existing-component');
             loadComponent('hello-world');
-            loadComponent('demo-component');
             loadComponent('only-html');
             loadComponent('only-html-css');
             loadComponent('only-js');
         </script>
     </head>
     <body>
-        <hello-world></hello-world>
-        <demo-component></demo-component>
-        <demo-component></demo-component>
+        <not-existing-component></not-existing-component>
+        <hello-world title="Welcome" alert="First one"></hello-world>
         <only-html></only-html>
         <only-html-css></only-html-css>
         <only-js></only-js>
-        <only-js></only-js>
+        <hello-world alert="Second one"></hello-world>
     </body>
 </html>
