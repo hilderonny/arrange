@@ -4,7 +4,7 @@ export default class extends HTMLElement {
         super();
         setInterval(() => {
             console.log(Date.now());
-        }, 1000);
+        }, 5000);
     }
 
 }

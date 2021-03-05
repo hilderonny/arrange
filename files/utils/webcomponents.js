@@ -45,6 +45,9 @@ class WebComponent extends HTMLElement {
 
     constructor() {
         super();
+        for (const attribute of this.attributes) {
+            this[attribute.name] = attribute.value;
+        }
         this.attachShadow({mode: 'open'});
         this.htmlContent = '';
         this.cssContent = '';

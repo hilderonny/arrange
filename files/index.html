@@ -4,16 +4,36 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
         <title>Arrange</title>
+        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
+        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
         <script type="module">
             import { loadComponent } from '/utils/webcomponents.js';
+            loadComponent('file-tree');
             loadComponent('not-existing-component');
             loadComponent('hello-world');
             loadComponent('only-html');
             loadComponent('only-html-css');
             loadComponent('only-js');
+
+            const editor = ace.edit('editorDiv');
+            editor.setTheme('ace/theme/monokai');
+            const modeList = ace.require('ace/ext/modelist');
+
+            document.querySelector('file-tree').addEventListener('selectfile', async (event) => {
+                const filepath = event.detail;
+                const response = await fetch(filepath);
+                const fileContent = await response.text();
+                const mode = modeList.getModeForPath(filepath).mode;
+                editor.setValue(fileContent);
+                editor.session.setMode(mode);
+                editor.clearSelection();
+            });
+
         </script>
     </head>
     <body>
+        <file-tree></file-tree>
+        <div id="editorDiv" style="height:400px;"></div>
         <not-existing-component></not-existing-component>
         <hello-world title="Welcome" alert="First one"></hello-world>
         <only-html></only-html>
