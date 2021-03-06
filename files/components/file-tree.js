@@ -1,9 +1,8 @@
-import { WebComponent } from '/utils/webcomponents.js';
-
-export default class extends WebComponent {
+customElements.define('file-tree', class extends HTMLElement {
 
     constructor() {
         super();
+        this.attachShadow({mode: 'open'});
         this.updateFromServer();
     }
 
@@ -37,4 +36,4 @@ export default class extends WebComponent {
         this.processFolder(folderStructure, this.shadowRoot, '/');
     }
 
-}
+});
