@@ -1,3 +1,8 @@
+/**
+ * Tree view of folders and files which are returned by the `/api/files` api.
+ * Events:
+ * selectfile - When the user clicked on a file in the tree.
+ */
 customElements.define('file-tree', class extends HTMLElement {
 
     constructor() {
@@ -6,6 +11,9 @@ customElements.define('file-tree', class extends HTMLElement {
         this.updateFromServer();
     }
 
+    /**
+     * Handles the click on a file and dispatches a "selectfile" event with tha path of the selected file as data
+     */
     async handleFileClick(filepath) {
         this.dispatchEvent(new CustomEvent('selectfile', { bubbles: true, detail: filepath }));
     }
@@ -29,6 +37,9 @@ customElements.define('file-tree', class extends HTMLElement {
         }
     }
 
+    /**
+     * Requests the /api/files api and constructs the tree of folders and files
+     */
     async updateFromServer() {
         const response = await fetch('/api/files');
         const folderStructure = await response.json();
