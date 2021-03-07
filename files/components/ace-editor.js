@@ -1,7 +1,10 @@
 /**
+ * File editor like VS Code based on ACE Editor (https://ace.c9.io/)
  * You need to include the ace scripts in the parent HTML file:
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
+ * Methods:
+ * loadFile(filepath) - Load the file located at the path via fetch and shows it in the editor. The language to show is determined by the file extension.
  */
 customElements.define('ace-editor', class extends HTMLElement {
 
