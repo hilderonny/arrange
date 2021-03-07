@@ -4,16 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
         <title>Arrange</title>
-        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
-        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
-        <script type="module" src="components/ace-editor.js"></script>
-        <script type="module" src="components/file-tree.js"></script>
         <script type="module" src="components/hello-world.js"></script>
-        <script type="module">
-            document.querySelector('file-tree').addEventListener('selectfile', (event) => {
-                document.querySelector('ace-editor').loadFile(event.detail);
-            });
-        </script>
         <style>
             @media (prefers-color-scheme: dark) {
                 body {
@@ -24,8 +15,7 @@
         </style>
     </head>
     <body>
-        <file-tree></file-tree>
-        <ace-editor style="display:block;height:400px;"></ace-editor>
+        <p><a href="file-editor/index.html">File editor</a></p>
         <hello-world title="Welcome" alert="First one" h1class="yellow"></hello-world>
         <hello-world alert="Second one" h1class="blue" title="Wumpe"></hello-world>
     </body>

@@ -11,7 +11,7 @@ customElements.define('ace-editor', class extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
-        this.shadowRoot.innerHTML = `<div style="height:400px;"></div>`;
+        this.shadowRoot.innerHTML = `<div style="height:100%"></div>`;
         this.initializeAce();
     }
 
