@@ -4,6 +4,7 @@
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
  * Methods:
+ * getContent() - Retreive the current content of the editor as text string
  * setContent(filename, filecontent) - Shows the content of a file in the editor. The language to show is determined by the filename.
  */
 
@@ -25,6 +26,13 @@ customElements.define('ace-editor', class extends HTMLElement {
         this.editor.renderer.attachToShadowRoot();
         this.editor.setTheme('ace/theme/tomorrow_night_blue');
         this.modeList = ace.require('ace/ext/modelist');
+    }
+
+    /**
+     * Retreive the current content of the editor as text string
+     */
+    getContent() {
+        return this.editor.getValue();
     }
 
     /**

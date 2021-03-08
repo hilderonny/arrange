@@ -6,6 +6,7 @@ File editor like VS Code based on ACE Editor (https://ace.c9.io/)
 
 |Method|Description|
 |---|---|
+|`getContent()`|Retreive the current content of the editor as text string|
 |`setContent(filename, filecontent)`|Shows the content of a file in the editor. The language to show is determined by the filename.|
 
 ## file-tree

@@ -10,12 +10,14 @@
         <script type="module" src="/components/file-tree.js"></script>
         <script type="module">
 
+            let currentfilepath;
+
             // Listen on file selection in file list and load file content into editor
             document.querySelector('file-tree').addEventListener('selectfile', async (event) => {
-                const filepath = event.detail;
-                const response = await fetch(filepath);
+                currentfilepath = event.detail;
+                const response = await fetch(currentfilepath);
                 const filecontent = await response.text();
-                document.querySelector('ace-editor').setContent(filepath, filecontent);
+                document.querySelector('ace-editor').setContent(currentfilepath, filecontent);
             });
 
             // Load tree content
@@ -23,13 +25,35 @@
                 document.querySelector('file-tree').setFolderStructure(folderstructure);
             });
 
+            // Saves the content of the editor into the selected file
+            document.querySelector('#savebutton').addEventListener('click', async () => {
+                if (!currentfilepath) return;
+                const content = document.querySelector('ace-editor').getContent();
+                const blob = new Blob([content], { type : 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', blob);
+                const response = await fetch(`/api/files/${currentfilepath}`, { method: 'POST', body: formData });
+                if (response.status === 200) {
+                    alert('Successfully saved');
+                } else {
+                    alert('Error when saving, please have a look into the console');
+                    console.log(currentfilepath, content, response);
+                }
+            });
+
         </script>
         <style>
             html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
+            .rightcolumn { display: flex; flex: 1; flex-direction: column; }
         </style>
     </head>
     <body>
         <file-tree></file-tree>
-        <ace-editor></ace-editor>
+        <div class="rightcolumn">
+            <div class="buttonrow">
+                <button id="savebutton">Save</button>
+            </div>
+            <ace-editor></ace-editor>
+        </div>
     </body>
 </html>
