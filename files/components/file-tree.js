@@ -2,13 +2,20 @@
  * Tree view of folders and files which are returned by the `/api/files` api.
  * Events:
  * selectfile - When the user clicked on a file in the tree.
+ * Methods:
+ * setFolderStructure(folderstructure) - Sets the content of the tree hierarchy.
  */
+
+ const style = `
+ :host { display: flex; padding: 4px; }
+ `; 
+
 customElements.define('file-tree', class extends HTMLElement {
 
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
-        this.updateFromServer();
+        this.setFolderStructure({}); // Initialize empty but with styles
     }
 
     /**
@@ -38,12 +45,22 @@ customElements.define('file-tree', class extends HTMLElement {
     }
 
     /**
-     * Requests the /api/files api and constructs the tree of folders and files
+     * Set the data to be displayed. Must be in this structure:
+     * {
+     *   folders: {
+     *     "folderName" : {
+     *       folders: ...,
+     *       files: ...
+     *     }
+     *   },
+     *   files: [
+     *     "filename1",
+     *     "filename2"
+     *   ]
+     * }
      */
-    async updateFromServer() {
-        const response = await fetch('/api/files');
-        const folderStructure = await response.json();
-        this.shadowRoot.innerHTML = '';
+    setFolderStructure(folderStructure) {
+        this.shadowRoot.innerHTML = `<style>${style}</style>`;
         this.processFolder(folderStructure, this.shadowRoot, '/');
     }
 

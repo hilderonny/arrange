@@ -6,11 +6,15 @@ File editor like VS Code based on ACE Editor (https://ace.c9.io/)
 
 |Method|Description|
 |---|---|
-|`loadFile(filepath)`|Load the file located at the path via fetch and shows it in the editor. The language to show is determined by the file extension.|
+|`setContent(filename, filecontent)`|Shows the content of a file in the editor. The language to show is determined by the filename.|
 
 ## file-tree
 
 Tree view of folders and files which are returned by the `/api/files` api.
+
+|Method|Description|
+|---|---|
+|`setFolderStructure(folderstructure)`|Sets the content of the tree hierarchy.|
 
 |Event|Description|
 |---|---|

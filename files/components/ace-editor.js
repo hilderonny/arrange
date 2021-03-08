@@ -4,14 +4,19 @@
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
  *  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
  * Methods:
- * loadFile(filepath) - Load the file located at the path via fetch and shows it in the editor. The language to show is determined by the file extension.
+ * setContent(filename, filecontent) - Shows the content of a file in the editor. The language to show is determined by the filename.
  */
+
+ const style = `
+ :host { display: flex; flex: 1; flex-direction: column; }
+ `;
+ 
 customElements.define('ace-editor', class extends HTMLElement {
 
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
-        this.shadowRoot.innerHTML = `<div style="height:100%"></div>`;
+        this.shadowRoot.innerHTML = `<style>${style}</style><div style="height:100%"></div>`;
         this.initializeAce();
     }
 
@@ -22,11 +27,13 @@ customElements.define('ace-editor', class extends HTMLElement {
         this.modeList = ace.require('ace/ext/modelist');
     }
 
-    async loadFile(filepath) {
-        const response = await fetch(filepath);
-        const fileContent = await response.text();
-        const mode = this.modeList.getModeForPath(filepath).mode;
-        this.editor.setValue(fileContent);
+    /**
+     * Shows the content of a file in the editor.
+     * The language to show is determined by the filename.
+     */
+    setContent(filename, filecontent) {
+        const mode = this.modeList.getModeForPath(filename).mode;
+        this.editor.setValue(filecontent);
         this.editor.session.setMode(mode);
         this.editor.clearSelection();
     }

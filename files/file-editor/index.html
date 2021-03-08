@@ -3,20 +3,29 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-        <title>Arrange</title>
+        <title>File editor | Arrange</title>
         <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
         <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
         <script type="module" src="/components/ace-editor.js"></script>
         <script type="module" src="/components/file-tree.js"></script>
         <script type="module">
-            document.querySelector('file-tree').addEventListener('selectfile', (event) => {
-                document.querySelector('ace-editor').loadFile(event.detail);
+
+            // Listen on file selection in file list and load file content into editor
+            document.querySelector('file-tree').addEventListener('selectfile', async (event) => {
+                const filepath = event.detail;
+                const response = await fetch(filepath);
+                const filecontent = await response.text();
+                document.querySelector('ace-editor').setContent(filepath, filecontent);
             });
+
+            // Load tree content
+            fetch('/api/files').then((response) => response.json()).then((folderstructure) => {
+                document.querySelector('file-tree').setFolderStructure(folderstructure);
+            });
+
         </script>
         <style>
             html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
-            file-tree { display: flex; padding: 4px; }
-            ace-editor { display: flex; flex: 1; flex-direction: column; }
         </style>
     </head>
     <body>
