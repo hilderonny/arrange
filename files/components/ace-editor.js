@@ -10,6 +10,7 @@
 
  const style = `
  :host { display: flex; flex: 1; flex-direction: column; }
+ :host(.disabled) { opacity: 20%; }
  `;
  
 customElements.define('ace-editor', class extends HTMLElement {
@@ -21,7 +22,7 @@ customElements.define('ace-editor', class extends HTMLElement {
         this.initializeAce();
     }
 
-    async initializeAce() {
+    initializeAce() {
         this.editor = ace.edit(this.shadowRoot.querySelector('div'));
         this.editor.renderer.attachToShadowRoot();
         this.editor.setTheme('ace/theme/tomorrow_night_blue');
@@ -40,10 +41,24 @@ customElements.define('ace-editor', class extends HTMLElement {
      * The language to show is determined by the filename.
      */
     setContent(filename, filecontent) {
-        const mode = this.modeList.getModeForPath(filename).mode;
         this.editor.setValue(filecontent);
-        this.editor.session.setMode(mode);
         this.editor.clearSelection();
+        if (filename) {
+            const mode = this.modeList.getModeForPath(filename).mode;
+            this.editor.session.setMode(mode);
+        }
+    }
+
+    /**
+     * Enables or disables the editor
+     */
+    setEnabled(enabled) {
+        if (enabled) {
+            this.classList.remove('disabled');
+        } else {
+            this.classList.add('disabled');
+        }
+        this.editor.setReadOnly(!enabled);
     }
 
 });

@@ -29,8 +29,12 @@
             async function loadFile(filepath) {
                 const response = await fetch(filepath);
                 const filecontent = await response.text();
-                document.querySelector('ace-editor').setContent(filepath, filecontent);
+                const aceEditor = document.querySelector('ace-editor');
+                aceEditor.setContent(filepath, filecontent);
                 currentfilepath = filepath;
+                aceEditor.setEnabled(true);
+                document.querySelector('#savebutton').removeAttribute('disabled');
+                document.querySelector('#deletebutton').removeAttribute('disabled');
             }
 
             // Listen on file selection in file list and load file content into editor
@@ -40,6 +44,9 @@
 
             // Load tree content
             reloadTree();
+
+            // Disable editor by default
+            document.querySelector('ace-editor').setEnabled(false);
 
             // Asks for a path and creates a new file at it and shows it
             document.querySelector('#newbutton').addEventListener('click', async () => {
@@ -68,6 +75,27 @@
                 }
             });
 
+            // Deletes the current document
+            document.querySelector('#deletebutton').addEventListener('click', async (event) => {
+                if (!confirm(`Really delete "${currentfilepath}"?`)) return;
+                // Delete file on server
+                const response = await fetch(`/api/files/${currentfilepath}`, { method: 'DELETE' });
+                if (response.status === 200) {
+                    // Refresh file list
+                    reloadTree();
+                    // Empty and disable editor
+                    const aceEditor = document.querySelector('ace-editor');
+                    aceEditor.setContent(null, '');
+                    aceEditor.setEnabled(false);
+                    // Disable delete and save buttons
+                    document.querySelector('#savebutton').setAttribute('disabled', 'disabled');
+                    event.target.setAttribute('disabled', 'disabled');
+                } else {
+                    alert('Error when deleting, please have a look into the console');
+                    console.log(currentfilepath, response);
+                }
+            });
+
         </script>
         <style>
             html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
@@ -79,7 +107,8 @@
         <div class="rightcolumn">
             <div class="buttonrow">
                 <button id="newbutton">New</button>
-                <button id="savebutton">Save</button>
+                <button id="savebutton" disabled>Save</button>
+                <button id="deletebutton" disabled>Delete</button>
             </div>
             <ace-editor></ace-editor>
         </div>
