@@ -43,21 +43,34 @@ router.get('/', (_, response) => {
 /**
  * DELETE /api/files/filepath
  * 
- * Deletes a file with the given filepath. When the file does not exist or cannot be deleted,
+ * Deletes a file or folder with the given filepath.
+ * When the file or folder does not exist or cannot be deleted,
  * 400 is returned. Otherwise 200.
+ * Folders are deleted recursively.
  * 
  * For example DELETE /api/files/myfolder/mysubfolder/myfile.txt deletes the file
  * ./files/myfolder/mysubfolder/myfile.txt
+ * DELETE /api/files/myfolder deletes the folder ./files/myfolder and ist entire content
  */
 router.delete('/*', (request, response) => {
     const filepath = path.join(__dirname, '..', 'files', request.params[0]);
-    fs.unlink(filepath, (error) => {
-        if (error) {
-            response.sendStatus(400);
-        } else {
-            response.sendStatus(200);
-        }
-    });
+    if (fs.statSync(filepath).isDirectory()) {
+        fs.rmdir(filepath, { recursive: true }, (error) => {
+            if (error) {
+                response.sendStatus(400);
+            } else {
+                response.sendStatus(200);
+            }
+        });
+    } else {
+        fs.unlink(filepath, (error) => {
+            if (error) {
+                response.sendStatus(400);
+            } else {
+                response.sendStatus(200);
+            }
+        });
+    }
 });
 
 /**

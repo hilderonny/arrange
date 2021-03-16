@@ -12,6 +12,11 @@
 
             let currentfilepath;
 
+            const fileTree = document.querySelector('file-tree');
+            const aceEditor = document.querySelector('ace-editor');
+            const deleteButton = document.querySelector('#deletebutton');
+            const saveButton = document.querySelector('#savebutton');
+
             // Saves a file at the given path and returns the server response as Promise
             function saveFile(filepath, content) {
                 const blob = new Blob([content], { type : 'text/plain' });
@@ -22,31 +27,39 @@
 
             function reloadTree() {
                 fetch('/api/files').then((response) => response.json()).then((folderstructure) => {
-                    document.querySelector('file-tree').setFolderStructure(folderstructure);
+                    fileTree.setFolderStructure(folderstructure);
                 });
             }
 
             async function loadFile(filepath) {
                 const response = await fetch(filepath);
                 const filecontent = await response.text();
-                const aceEditor = document.querySelector('ace-editor');
                 aceEditor.setContent(filepath, filecontent);
                 currentfilepath = filepath;
                 aceEditor.setEnabled(true);
-                document.querySelector('#savebutton').removeAttribute('disabled');
-                document.querySelector('#deletebutton').removeAttribute('disabled');
+                saveButton.removeAttribute('disabled');
+                deleteButton.removeAttribute('disabled');
             }
 
             // Listen on file selection in file list and load file content into editor
-            document.querySelector('file-tree').addEventListener('selectfile', (event) => {
+            fileTree.addEventListener('selectfile', (event) => {
                 loadFile(event.detail);
+            });
+
+            // Listen on folder selection for folder deletion
+            fileTree.addEventListener('selectfolder', (event) => {
+                saveButton.setAttribute('disabled', 'disabled');
+                deleteButton.removeAttribute('disabled');
+                aceEditor.setContent(null, '');
+                aceEditor.setEnabled(false);
+                currentfilepath = event.detail;
             });
 
             // Load tree content
             reloadTree();
 
             // Disable editor by default
-            document.querySelector('ace-editor').setEnabled(false);
+            aceEditor.setEnabled(false);
 
             // Asks for a path and creates a new file at it and shows it
             document.querySelector('#newbutton').addEventListener('click', async () => {
@@ -63,9 +76,9 @@
             });
 
             // Saves the content of the editor into the selected file
-            document.querySelector('#savebutton').addEventListener('click', async () => {
+            saveButton.addEventListener('click', async () => {
                 if (!currentfilepath) return;
-                const content = document.querySelector('ace-editor').getContent();
+                const content = aceEditor.getContent();
                 const response = await saveFile(currentfilepath, content);
                 if (response.status === 200) {
                     alert('Successfully saved');
@@ -84,12 +97,11 @@
                     // Refresh file list
                     reloadTree();
                     // Empty and disable editor
-                    const aceEditor = document.querySelector('ace-editor');
                     aceEditor.setContent(null, '');
                     aceEditor.setEnabled(false);
                     // Disable delete and save buttons
-                    document.querySelector('#savebutton').setAttribute('disabled', 'disabled');
-                    event.target.setAttribute('disabled', 'disabled');
+                    saveButton.setAttribute('disabled', 'disabled');
+                    deleteButton.setAttribute('disabled', 'disabled');
                 } else {
                     alert('Error when deleting, please have a look into the console');
                     console.log(currentfilepath, response);
@@ -100,6 +112,7 @@
         <style>
             html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
             .rightcolumn { display: flex; flex: 1; flex-direction: column; }
+            file-tree { --selection-background-color: aquamarine; }
         </style>
     </head>
     <body>

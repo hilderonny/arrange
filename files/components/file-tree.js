@@ -8,6 +8,7 @@
 
  const style = `
  :host { display: flex; padding: 4px; }
+ .selected { background-color: var(--selection-background-color); }
  `; 
 
 customElements.define('file-tree', class extends HTMLElement {
@@ -16,13 +17,21 @@ customElements.define('file-tree', class extends HTMLElement {
         super();
         this.attachShadow({mode: 'open'});
         this.setFolderStructure({}); // Initialize empty but with styles
+        this.selectedElement = null;
     }
 
     /**
      * Handles the click on a file and dispatches a "selectfile" event with tha path of the selected file as data
      */
-    async handleFileClick(filepath) {
+     async handleFileClick(filepath) {
         this.dispatchEvent(new CustomEvent('selectfile', { bubbles: true, detail: filepath }));
+    }
+
+    /**
+     * Handles the click on a folder and dispatches a "selectfolder" event with tha path of the selected folder as data
+     */
+     async handleFolderClick(folderpath) {
+        this.dispatchEvent(new CustomEvent('selectfolder', { bubbles: true, detail: folderpath }));
     }
 
     processFolder(folder, parentNode, parentPath) {
@@ -32,16 +41,35 @@ customElements.define('file-tree', class extends HTMLElement {
             const li = document.createElement('li');
             const label = document.createElement('label');
             label.innerText = folderName;
+            label.addEventListener('click', (event) => {
+                this.handleFolderClick(parentPath + folderName);
+                this.selectElement(event.target);
+            });
             li.appendChild(label);
             ul.appendChild(li);
             this.processFolder(folderContent, li, `${parentPath}${folderName}/`);
         }
         if (folder.files) for (const fileName of folder.files) {
             const li = document.createElement('li');
-            li.innerText = fileName;
-            li.addEventListener('click', () => this.handleFileClick(parentPath + fileName));
+            const label = document.createElement('label');
+            label.innerText = fileName;
+            label.addEventListener('click', (event) => {
+                this.handleFileClick(parentPath + fileName);
+                this.selectElement(event.target);
+            });
+            li.appendChild(label);
             ul.appendChild(li);
         }
+    }
+
+    /**
+     * Marks the element as selected by adding a class "selected".
+     * Removes the selected class from the previously selected element if there is any.
+     */
+    selectElement(element) {
+        if (this.selectedElement) this.selectedElement.classList.remove('selected');
+        this.selectedElement = element;
+        this.selectedElement.classList.add('selected');
     }
 
     /**
