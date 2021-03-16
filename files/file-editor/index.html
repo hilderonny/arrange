@@ -12,27 +12,54 @@
 
             let currentfilepath;
 
-            // Listen on file selection in file list and load file content into editor
-            document.querySelector('file-tree').addEventListener('selectfile', async (event) => {
-                currentfilepath = event.detail;
-                const response = await fetch(currentfilepath);
+            // Saves a file at the given path and returns the server response as Promise
+            function saveFile(filepath, content) {
+                const blob = new Blob([content], { type : 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', blob);
+                return fetch(`/api/files/${filepath}`, { method: 'POST', body: formData });
+            }
+
+            function reloadTree() {
+                fetch('/api/files').then((response) => response.json()).then((folderstructure) => {
+                    document.querySelector('file-tree').setFolderStructure(folderstructure);
+                });
+            }
+
+            async function loadFile(filepath) {
+                const response = await fetch(filepath);
                 const filecontent = await response.text();
-                document.querySelector('ace-editor').setContent(currentfilepath, filecontent);
+                document.querySelector('ace-editor').setContent(filepath, filecontent);
+                currentfilepath = filepath;
+            }
+
+            // Listen on file selection in file list and load file content into editor
+            document.querySelector('file-tree').addEventListener('selectfile', (event) => {
+                loadFile(event.detail);
             });
 
             // Load tree content
-            fetch('/api/files').then((response) => response.json()).then((folderstructure) => {
-                document.querySelector('file-tree').setFolderStructure(folderstructure);
+            reloadTree();
+
+            // Asks for a path and creates a new file at it and shows it
+            document.querySelector('#newbutton').addEventListener('click', async () => {
+                const filepath = prompt('Please enter the full file path of the new file', '/newfile.txt');
+                if (!filepath) return;
+                const response = await saveFile(filepath, '');
+                if (response.status === 200) {
+                    reloadTree();
+                    loadFile(filepath);
+                } else {
+                    alert('Error when saving, please have a look into the console');
+                    console.log(filepath, response);
+                }
             });
 
             // Saves the content of the editor into the selected file
             document.querySelector('#savebutton').addEventListener('click', async () => {
                 if (!currentfilepath) return;
                 const content = document.querySelector('ace-editor').getContent();
-                const blob = new Blob([content], { type : 'text/plain' });
-                const formData = new FormData();
-                formData.append('file', blob);
-                const response = await fetch(`/api/files/${currentfilepath}`, { method: 'POST', body: formData });
+                const response = await saveFile(currentfilepath, content);
                 if (response.status === 200) {
                     alert('Successfully saved');
                 } else {
@@ -51,6 +78,7 @@
         <file-tree></file-tree>
         <div class="rightcolumn">
             <div class="buttonrow">
+                <button id="newbutton">New</button>
                 <button id="savebutton">Save</button>
             </div>
             <ace-editor></ace-editor>
