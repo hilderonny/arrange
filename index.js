@@ -7,7 +7,6 @@ const fileupload = require('express-fileupload');
 const HTTP_PORT = 80;
 const HTTPS_PORT = 443;
 
-
 // Initialize application
 const app = express();
 app.use(fileupload()); // Enable file upload
@@ -17,6 +16,7 @@ app.use('/', express.static(__dirname + '/files'));
 
 // Include APIs
 app.use('/api/files', require('./api/files.js'));
+app.use('/api/schema', require('./api/schema.js'));
 
 
 

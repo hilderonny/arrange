@@ -32,6 +32,13 @@ RestartSec=10
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=arrange
+Environment="HTTPPORT=80"
+Environment="HTTPSPORT=443"
+Environment="PGHOST=localhost"
+Environment="PGUSER=arrange"
+Environment="PGDATABASE=arrange"
+Environment="PGPASSWORD=arrange"
+Environment="PGPORT=5432"
 
 [Install]
 WantedBy=multi-user.target
