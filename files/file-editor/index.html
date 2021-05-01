@@ -16,6 +16,14 @@
             const aceEditor = document.querySelector('ace-editor');
             const deleteButton = document.querySelector('#deletebutton');
             const saveButton = document.querySelector('#savebutton');
+            
+            // Handle CTRL+S or CMD+S
+            document.addEventListener("keydown", function(e) {
+                if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
+                    e.preventDefault();
+                    save();
+                }
+            }, false);
 
             // Saves a file at the given path and returns the server response as Promise
             function saveFile(filepath, content) {
@@ -76,7 +84,7 @@
             });
 
             // Saves the content of the editor into the selected file
-            saveButton.addEventListener('click', async () => {
+            async function save() {
                 if (!currentfilepath) return;
                 const content = aceEditor.getContent();
                 const response = await saveFile(currentfilepath, content);
@@ -86,7 +94,8 @@
                     alert('Error when saving, please have a look into the console');
                     console.log(currentfilepath, content, response);
                 }
-            });
+            };
+            saveButton.addEventListener('click', save);
 
             // Deletes the current document
             document.querySelector('#deletebutton').addEventListener('click', async (event) => {
