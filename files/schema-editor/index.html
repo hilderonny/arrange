@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+        
+            async function processQuery() {
+                const query = document.getElementById('queryInput').value;
+                
+                const response = await fetch('/api/schema/query', { method: 'POST', body: query });
+                const queryResult = await response.json();
+
+                document.getElementById('result').innerText = JSON.stringify(queryResult, null, 4);
+            }
+            
+            document.getElementById('queryButton').addEventListener('click', processQuery);
+            
+        </script>
+        <style>
+            html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; flex-direction: column; }
+            textarea, div, pre { display: flex; }
+            pre { flex: 1; background-color: antiquewhite; overflow: auto; } 
+        </style>
+    </head>
+    <body>
+        <textarea id="queryInput" rows="10">SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'</textarea>
+        <div>
+            <button id="queryButton">Query</button>
+        </div>
+        <pre id="result"></pre>
+    </body>
+</html>

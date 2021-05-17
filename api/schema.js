@@ -1,7 +1,8 @@
 /**
  * API for manipulating the database
  */
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const { Client } = require('pg');
 
 // Connect to database
@@ -77,6 +78,16 @@ router.post('/columns/:tablename/:columnname/:datatype', async (request, respons
         response.sendStatus(200);
     } catch {
         response.sendStatus(400);
+    }
+});
+
+router.post('/query', express.text(), async (request, response) => {
+    try {
+        const result = await client.query(request.body);
+        response.send(result);
+    } catch (e) {
+        console.log(e);
+        response.status(400).send(e);
     }
 });
 
