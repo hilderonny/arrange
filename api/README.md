@@ -18,9 +18,4 @@ API for manipulating database tables and columns.
 
 |Endpoint|Method|Description|
 |---|---|---|
-|`/api/schema/tables`|`GET`|List of all tables in the database|
-|`/api/schema/tables/tablename`|`DELETE`|Deletes a table with the given `tablename`.|
-|`/api/schema/tables/tablename`|`POST`|Creates a table with the given `tablename`.|
-|`/api/schema/columns/tablename`|`GET`|List of all columns in the given `tablename` table.|
-|`/api/schema/columns/tablename/columnname`|`DELETE`|Deletes a column with the given `columnname` in the `tablename`.|
-|`/api/schema/columns/tablename/columnname/:datatype`|`POST`|Creates a table with the given `columnname` in the `tablename`|
+|`/api/schema/query`|`POST`|Send query as text and retreive result as JSON|
