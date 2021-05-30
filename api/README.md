@@ -19,3 +19,14 @@ API for manipulating database tables and columns.
 |Endpoint|Method|Description|
 |---|---|---|
 |`/api/schema/query`|`POST`|Send query as text and retreive result as JSON|
+
+## Hashmap
+
+API for storing and retrieving data in memory for sharing between devices.
+
+|Endpoint|Method|Description|
+|---|---|---|
+|`/api/hashmap`|`GET`|Get list of keys|
+|`/api/hashmap/{key}`|`GET`|Get data of key `key`|
+|`/api/hashmap/{key}`|`POST`|Send JSON to store in memory under key `key`|
+|`/api/hashmap/{key}`|`DELETE`|Delete data of key `key`|

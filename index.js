@@ -17,6 +17,7 @@ app.use('/', express.static(__dirname + '/files'));
 // Include APIs
 app.use('/api/files', require('./api/files.js'));
 app.use('/api/schema', require('./api/schema.js'));
+app.use('/api/hashmap', require('./api/hashmap.js'));
 
 
 
