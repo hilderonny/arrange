@@ -2,6 +2,7 @@
  * API for storing and retrieving data in memory for sharing between devices.
  */
 const express = require('express');
+const bodyParser = require('body-parser');
 const router = express.Router();
 
 const hashmap = {};
@@ -23,7 +24,7 @@ router.get('/:key', (request, response) => {
 /**
  * Post JSON data and store it in key
  */
-router.post('/:key', (request, response) => {
+router.post('/:key', bodyParser.text(), (request, response) => {
     const data = request.body;
     hashmap[request.params.key] = data;
     response.send(data);
