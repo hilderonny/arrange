@@ -1,5 +1,25 @@
 # arrange
 
+## Installation
+
+1. Repository klonen
+2. Terminal öffnen, `.\nodejs\npm install` aufrufen
+
+## Starten
+
+```cmd
+.\nodejs\node .\server.mjs`
+```
+
+
+
+
+
+
+
+
+# ALT
+
 ## 2021 Installation on Ubuntu
 
 ```sh
