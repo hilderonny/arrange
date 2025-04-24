@@ -1,0 +1,16 @@
+{
+  "name": "arrange",
+  "version": "0.1.0",
+  "main": "server.mjs",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "public/*"
+    ]
+  }
+}

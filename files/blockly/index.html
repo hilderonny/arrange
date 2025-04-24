@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <title>Blockly | Arrange</title>
+        <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+        <style>
+            html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
+            .middlecolumn { display: flex; flex: 2; flex-direction: column; }
+            .rightcolumn { display: flex; flex: 1; flex-direction: column; }
+        </style>
+    </head>
+    <body>
+        
+        <p>Siehe <a href="https://developers.google.com/blockly/guides/get-started/web">Blockly - Get Started</a></p>
+        
+        <div id="blocklyDiv" class="middlecolumn"></div>
+        
+        <pre id="codePre" class="rightcolumn"></pre>
+        
+        <xml id="toolbox" style="display: none">
+            <block type="_html"></block>
+            <block type="_script"></block>
+        </xml>
+        
+        <script>
+        
+            Blockly.defineBlocksWithJsonArray([
+                {
+                    "type": "_html",
+                    "message0": "HTML title %1 %2 Head %3 Body %4",
+                    "args0": [
+                        {
+                            "type": "field_input",
+                            "name": "TITLE",
+                            "text": ""
+                        },
+                        {
+                            "type": "input_dummy"
+                        },
+                        {
+                            "type": "input_statement",
+                            "name": "HEAD",
+                            "check": [
+                                "_link",
+                                "_script"
+                            ]
+                        },
+                        {
+                          "type": "input_statement",
+                          "name": "BODY"
+                        }
+                    ],
+                    "colour": 120,
+                    "tooltip": "HTML file",
+                    "helpUrl": ""
+                },
+                {
+                    "type": "_script",
+                    "message0": "SCRIPT is module %1 URL %2",
+                    "args0": [
+                        {
+                            "type": "field_checkbox",
+                            "name": "ISMODULE",
+                            "checked": true
+                        },
+                        {
+                            "type": "field_input",
+                            "name": "SRC",
+                            "text": ""
+                        }
+                    ],
+                    "previousStatement": null,
+                    "nextStatement": null,
+                    "colour": 230,
+                    "tooltip": "script in head",
+                    "helpUrl": ""
+                },
+            ]);
+            
+            Blockly.JavaScript['_html'] = function(block) {
+                const text_title = block.getFieldValue('TITLE');
+                const statements_head = Blockly.JavaScript.statementToCode(block, 'HEAD');
+                const statements_body = Blockly.JavaScript.statementToCode(block, 'BODY');
+                let code = '<!DOCTYPE html>\n<html>\n<head>\n';
+                if (text_title) code += '  <title>' + text_title + '</title>\n';
+                code += statements_head;
+                code += '</head>\n<body>\n';
+                code += statements_body;
+                code += '</body>\n</html>';
+                return code;
+            };
+            
+            Blockly.JavaScript['_script'] = function(block) {
+                const checkbox_ismodule = block.getFieldValue('ISMODULE') == 'TRUE';
+                const text_src = block.getFieldValue('SRC');
+                let code = '<script src="' + text_src + '"';
+                if (checkbox_ismodule) code += ' type="module"';
+                code += '><' + '/script>\n';
+                return code;
+            };
+        
+            const workspace = Blockly.inject('blocklyDiv', { 
+                toolbox: document.getElementById('toolbox'),
+                move: {
+                    scrollbars: {
+                        horizontal: true,
+                        vertical: true
+                    },
+                    drag: true,
+                    wheel: false
+                }
+            });
+            workspace.addChangeListener(event => {
+                const code = Blockly.JavaScript.workspaceToCode(workspace);
+                document.getElementById('codePre').innerText = code;
+            });
+        </script>
+        
+    </body>
+</html>

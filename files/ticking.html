@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- Dient zum Testen verschiedener Komponenten -->
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="module">
+
+const button = document.getElementById('btn');
+const tickDiv = document.getElementById('tick');
+const outputDiv = document.getElementById('output');
+
+button.addEventListener('click', () => {
+    setInterval(async () => {
+        const time = Date.now();
+        tickDiv.innerHTML = time;
+        await fetch('/api/hashmap/tick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: time
+        });
+    }, 1000);
+});
+
+// Vom Server abfragen
+setInterval(async () => {
+    const response = await fetch('/api/hashmap/tick');
+    const body = await response.text();
+    outputDiv.innerHTML = 'From Server: ' + body;
+}, 1000);
+
+
+        </script>
+    </head>
+    <body>
+        <p>
+            Mit "Start Ticking" wird ein Timer gestartet, der sekündlich den Zeitwert an die api /api/hashmap/tick schickt.
+            Mit einem anderen Rechner kann man das dann angucken, weil diese Seite auch sekündlich diesen Wert abfragt.
+            Ich will damit prüfen, ob man unter iOS im Hintergrund Web-Abfragen machen kann und ich somit einen Tracker bauen kann
+            (WebView + BackgroundLocation + Node Server).
+        </p>
+        <button onclick="window.location.reload();">Reload</button>
+        <button id="btn">Start Ticking</button>
+        <div id="tick"></div>
+        <div id="output"></div>
+    </body>
+</html>

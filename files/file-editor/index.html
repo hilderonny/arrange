@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <title>File editor | Arrange</title>
+        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js"></script>
+        <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ext-modelist.js"></script>
+        <script type="module" src="/components/ace-editor.js"></script>
+        <script type="module" src="/components/file-tree.js"></script>
+        <script type="module">
+
+            let currentfilepath;
+
+            const fileTree = document.querySelector('file-tree');
+            const aceEditor = document.querySelector('ace-editor');
+            const deleteButton = document.querySelector('#deletebutton');
+            const saveButton = document.querySelector('#savebutton');
+            
+            // Handle CTRL+S or CMD+S
+            document.addEventListener("keydown", function(e) {
+                if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
+                    e.preventDefault();
+                    save();
+                }
+            }, false);
+
+            // Saves a file at the given path and returns the server response as Promise
+            function saveFile(filepath, content) {
+                const blob = new Blob([content], { type : 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', blob);
+                return fetch(`/api/files/${filepath}`, { method: 'POST', body: formData });
+            }
+
+            function reloadTree() {
+                fetch('/api/files').then((response) => response.json()).then((folderstructure) => {
+                    fileTree.setFolderStructure(folderstructure);
+                });
+            }
+
+            async function loadFile(filepath) {
+                const response = await fetch(filepath);
+                const filecontent = await response.text();
+                aceEditor.setContent(filepath, filecontent);
+                currentfilepath = filepath;
+                aceEditor.setEnabled(true);
+                saveButton.removeAttribute('disabled');
+                deleteButton.removeAttribute('disabled');
+            }
+
+            // Listen on file selection in file list and load file content into editor
+            fileTree.addEventListener('selectfile', (event) => {
+                loadFile(event.detail);
+            });
+
+            // Listen on folder selection for folder deletion
+            fileTree.addEventListener('selectfolder', (event) => {
+                saveButton.setAttribute('disabled', 'disabled');
+                deleteButton.removeAttribute('disabled');
+                aceEditor.setContent(null, '');
+                aceEditor.setEnabled(false);
+                currentfilepath = event.detail;
+            });
+
+            // Load tree content
+            reloadTree();
+
+            // Disable editor by default
+            aceEditor.setEnabled(false);
+
+            // Asks for a path and creates a new file at it and shows it
+            document.querySelector('#newbutton').addEventListener('click', async () => {
+                const filepath = prompt('Please enter the full file path of the new file', '/newfile.txt');
+                if (!filepath) return;
+                const response = await saveFile(filepath, '');
+                if (response.status === 200) {
+                    reloadTree();
+                    loadFile(filepath);
+                } else {
+                    alert('Error when saving, please have a look into the console');
+                    console.log(filepath, response);
+                }
+            });
+
+            // Saves the content of the editor into the selected file
+            async function save() {
+                if (!currentfilepath) return;
+                const content = aceEditor.getContent();
+                const response = await saveFile(currentfilepath, content);
+                if (response.status === 200) {
+                    alert('Successfully saved');
+                } else {
+                    alert('Error when saving, please have a look into the console');
+                    console.log(currentfilepath, content, response);
+                }
+            };
+            saveButton.addEventListener('click', save);
+
+            // Deletes the current document
+            document.querySelector('#deletebutton').addEventListener('click', async (event) => {
+                if (!confirm(`Really delete "${currentfilepath}"?`)) return;
+                // Delete file on server
+                const response = await fetch(`/api/files/${currentfilepath}`, { method: 'DELETE' });
+                if (response.status === 200) {
+                    // Refresh file list
+                    reloadTree();
+                    // Empty and disable editor
+                    aceEditor.setContent(null, '');
+                    aceEditor.setEnabled(false);
+                    // Disable delete and save buttons
+                    saveButton.setAttribute('disabled', 'disabled');
+                    deleteButton.setAttribute('disabled', 'disabled');
+                } else {
+                    alert('Error when deleting, please have a look into the console');
+                    console.log(currentfilepath, response);
+                }
+            });
+
+        </script>
+        <style>
+            html, body { width: 100%; height: 100%; overflow: hidden; display: flex; padding: 0; margin: 0; }
+            .rightcolumn { display: flex; flex: 1; flex-direction: column; }
+            file-tree { --selection-background-color: aquamarine; }
+        </style>
+    </head>
+    <body>
+        <file-tree></file-tree>
+        <div class="rightcolumn">
+            <div class="buttonrow">
+                <button id="newbutton">New</button>
+                <button id="savebutton" disabled>Save</button>
+                <button id="deletebutton" disabled>Delete</button>
+            </div>
+            <ace-editor></ace-editor>
+        </div>
+    </body>
+</html>
