@@ -1,0 +1,35 @@
+{
+    "tables": [
+        {
+            "name": "users", "label": "Benutzer", "plurallabel": "Benutzer", "titlefield": "name", "icon": "/css/icons/material/User.svg", "permissionid": "PERMISSION_ADMINISTRATION_USER", "fields": [
+                { "name": "name", "label": "Benutzername", "type": "text", "isrequired": true },
+                { "name": "password", "label": "Passwort", "type": "password", "isrequired": true },
+                { "name": "usergroupid", "label": "Benutzergruppe", "type": "reference", "reference": "usergroups", "isrequired": true }
+            ]
+        },
+        {
+            "name": "usergroups", "label": "Benutzergruppe", "plurallabel": "Benutzergruppen", "titlefield": "name", "icon": "/css/icons/material/Usergroup.svg", "permissionid": "PERMISSION_ADMINISTRATION_USERGROUP", "fields": [
+                { "name": "name", "label": "Bezeichnung", "type": "text" }
+            ], "values": [
+                { "id": "USERGROUP_ADMIN", "name": "Administratoren" }
+            ]
+        },
+        {
+            "name": "permissions", "label": "Berechtigung", "plurallabel": "Berechtigungen", "titlefield": "label", "icon": "/css/icons/material/Permission.svg", "fields": [
+                { "name": "label", "label": "Bezeichnung", "type": "text", "isrequired": true }
+            ], "values": [
+                { "id": "PERMISSION_ADMINISTRATION_USER", "label": "Benutzerverwaltung" },
+                { "id": "PERMISSION_ADMINISTRATION_USERGROUP", "label": "Benutzergruppenverwaltung" }
+            ]
+        },
+        {
+            "name": "permissionassignments", "label": "Berechtigungszuordnung", "plurallabel": "Berechtigungszuordnungen", "fields": [
+                { "name": "usergroupid", "label": "Benutzergruppe", "type": "reference", "reference": "usergroups", "isrequired": true },
+                { "name": "permissionid", "label": "Berechtigung", "type": "reference", "reference": "permissions", "isrequired": true }
+            ], "values": [
+                { "id": "USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER", "usergroupid": "USERGROUP_ADMIN", "permissionid": "PERMISSION_ADMINISTRATION_USER" },
+                { "id": "USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP", "usergroupid": "USERGROUP_ADMIN", "permissionid": "PERMISSION_ADMINISTRATION_USERGROUP" }
+            ]
+        }
+    ]
+}
