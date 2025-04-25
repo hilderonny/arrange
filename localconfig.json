@@ -1,0 +1,7 @@
+{
+    "sqlitefilepath": "./database/database.sqlite",
+    "publiccertificatefile": "./pub.cert",
+    "privatekeyfile": "./priv.key",
+    "httpsport": 443,
+    "modulespath": "./modules"
+}

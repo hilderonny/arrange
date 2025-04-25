@@ -1,5 +1,7 @@
 {
-    "tables": [
+    "name": "Benutzerverwaltung",
+    "apps": [],
+    "datatypes": [
         {
             "name": "users", "label": "Benutzer", "plurallabel": "Benutzer", "titlefield": "name", "icon": "/css/icons/material/User.svg", "permissionid": "PERMISSION_ADMINISTRATION_USER", "fields": [
                 { "name": "name", "label": "Benutzername", "type": "text", "isrequired": true },

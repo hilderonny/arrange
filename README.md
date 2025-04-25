@@ -1,9 +1,24 @@
 # arrange
 
+
 ## Installation
 
 1. Repository klonen
 2. Terminal öffnen, `.\nodejs\npm install` aufrufen
+
+
+## Konfiguration
+
+Die Konfiguration der Instanz erfolgt in der Datei `/localconfig.json`, die ein Objekt mit Einstellungen enthält.
+Alle Pfadangaben sind entweder relativ zu `arrange.mjs` oder absolut anzugeben.
+
+|Schlüssel|Bedeutung|Beispiel|
+|---|---|---|
+|`sqlitefilepath`|Pfad zur SQLite Datenbankdatei|`./database/database.sqlite`|
+|`publiccertificatefile`|Pfad zum öffentlichen SSL Zertifikat|`./pub.cert`|
+|`privatekeyfile`|Pfad zur privaten SSL Schlüsseldatei|`./priv.key`|
+|`httpsport`|Port, an dem Arrange als Webanwendung lauschen soll|`443`|
+|`modulespath`|Verzeichnispfad, in dem die Module zu finden sind|`./modules`|
 
 ## Starten
 

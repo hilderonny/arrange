@@ -1,7 +1,7 @@
 {
   "name": "arrange",
   "version": "0.1.0",
-  "main": "server.mjs",
+  "main": "arrange.mjs",
   "dependencies": {
     "express": "^5.1.0"
   },
