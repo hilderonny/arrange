@@ -6,17 +6,17 @@ import { log, warn } from './loghelper.mjs'
 let database
 
 /**
- * Erstellt eine Datenbanktabelle für einen Datentypen.
+ * Erstellt eine Datenbanktabelle.
  * Wenn die Tabelle bereits existiert, passiert nichts weiter.
  * 
- * @param {string} datatype_name Name des Datentyps, der erstellt werden soll
+ * @param {string} table_name Name der Tabelle, die erstellt werden soll
  */
-function createDatatype(datatype_name) {
+function createTable(table_name) {
 
-    log('[DATABASE] Erstelle Datentyp %s', datatype_name)
+    log('[DATABASE] Erstelle Tabelle %s', table_name)
 
     // Tabelle selbst erstellen, Datentypen werden als Tabellen abgebildet
-    database.exec(`CREATE TABLE IF NOT EXISTS ${datatype_name} (id text PRIMARY KEY) STRICT;`)
+    database.exec(`CREATE TABLE IF NOT EXISTS ${table_name} (id text PRIMARY KEY) STRICT;`)
 
 }
 
@@ -25,20 +25,18 @@ function createDatatype(datatype_name) {
  * Falls ein Feld mit demselben Namen bereits existiert, wird eine Warnung ausgegeben und nichts weiter gemacht.
  * 
  * @param {string} datatype_name Name des Datentyps, für den ein Feld erstellt werden soll.
- * @param {object} field_definition Definition des Feldes
+ * @param {string} field_name Feldname
+ * @param {string} field_type Feldtyp
  */
-function udpateDatabaseField(datatype_name, field_definition) {
+function udpateDatabaseField(datatype_name, field_name, field_type) {
 
-    let fieldType = 'text' // Standardmäßig ist jedes Feld vom Typ Text
-    // TODO: fieldType abhängig von field.type ändern, z.B. boolean
-
-    log('[DATABASE] Erstelle Datenfeld %s.%s (%s)', datatype_name, field_definition.name, fieldType)
+    log('[DATABASE] Erstelle Datenfeld %s.%s (%s)', datatype_name, field_name, field_type)
 
     // Feld erstellen und Fehler ignorieren, wenn das Feld bereits existiert
     try {
-        database.exec(`ALTER TABLE ${datatype_name} ADD COLUMN ${field_definition.name} ${fieldType};`)
+        database.exec(`ALTER TABLE ${datatype_name} ADD COLUMN ${field_name} ${field_type};`)
     } catch {
-        warn('[DATABASE] WARNUNG: Datenfeld %s.%s (%s) wurde nicht erstellt.', datatype_name, field_definition.name, fieldType)
+        warn('[DATABASE] WARNUNG: Datenfeld %s.%s (%s) wurde nicht erstellt.', datatype_name, field_name, field_type)
     }
 
 }
@@ -63,7 +61,13 @@ function updateDatabaseRecord(datatype_name, value) {
     const fieldNames = Object.keys(value)
 
     // Die Werte werden immer gequoted. SQLite kümmert sich darum, aus strings Integer oder Booleans zu machen
-    const fieldValues = Object.values(value).map(v => `'${v.replaceAll("'", "''")}'`)
+    const fieldValues = Object.values(value).map(v => {
+        switch (typeof v) {
+            case 'string': return `'${v.replaceAll("'", "''")}'`
+            case 'boolean': return v ? 1 : 0
+            default: return v
+        }
+    })
 
     // Die Update-Zuordnungen müssen separate kontruiert werden
     const updateAssignments = []
@@ -92,4 +96,4 @@ function loadDatabase(database_filepath) {
 
 }
 
-export { createDatatype, loadDatabase, udpateDatabaseField, updateDatabaseRecord }
+export { createTable, loadDatabase, udpateDatabaseField, updateDatabaseRecord }

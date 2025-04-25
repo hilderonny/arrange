@@ -3,5 +3,6 @@
     "publiccertificatefile": "./pub.cert",
     "privatekeyfile": "./priv.key",
     "httpsport": 443,
-    "modulespath": "./modules"
+    "modulespath": "./modules",
+    "tokensecret": "hubbelebubbele"
 }

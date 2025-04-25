@@ -1,12 +1,12 @@
 import express from 'express'
-import { loadDatabase } from './helpers/databasehelper.mjs'
+import * as databasehelper from './helpers/databasehelper.mjs'
 import { loadModules } from './helpers/modulehelper.mjs'
 import https from 'https'
 import fs from 'fs'
-import { log } from './helpers/loghelper.mjs'
+import * as logHelper from './helpers/loghelper.mjs'
 
 
-log('[ARRANGE] Arrange wird gestartet.')
+logHelper.log('[ARRANGE] Arrange wird gestartet.')
 
 // Konfigurationsdatei laden
 import localConfig  from './localconfig.json' with { type: 'json' }
@@ -15,22 +15,32 @@ import localConfig  from './localconfig.json' with { type: 'json' }
 (async () => {
 
     // Datenbank initialisieren
-    loadDatabase(localConfig.sqlitefilepath)
+    databasehelper.loadDatabase(localConfig.sqlitefilepath)
 
     // Webanwendung initialisieren
     const app = express()
 
+    // Arrange Objekt vorbereiten
+    const arrange = {
+        databaseHelper: databasehelper,
+        app: app,
+        localConfig: localConfig,
+        log: logHelper.log,
+        logError: logHelper.error,
+        logWarning: logHelper.warn
+    }
+
     // Module laden
-    loadModules(localConfig.modulespath, app)
+    await loadModules(localConfig.modulespath, arrange)
 
     // HTTPS Server initialisieren und starten
     const httpsOptions = {
-    key: fs.readFileSync(localConfig.privatekeyfile),
-    cert: fs.readFileSync(localConfig.publiccertificatefile)
+        key: fs.readFileSync(localConfig.privatekeyfile),
+        cert: fs.readFileSync(localConfig.publiccertificatefile)
     }
     const httpsServer = https.createServer(httpsOptions, app)
     httpsServer.listen(localConfig.httpsport, () => {
-        log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', localConfig.httpsport)
+        logHelper.log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', localConfig.httpsport)
     })
 
 })()
