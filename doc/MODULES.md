@@ -13,14 +13,28 @@ Diese Datei wuird von arrange geparst und so das Modul beim Programmstart eingeb
 
 ```
 /Modulverzeichnis
-   +-- moduleconfig.json
-   |
+   ├── api
+   ├── middlewares
+   ├── moduleconfig.json
+   └── public
 ```
 
 
-## Aufbau `moduleconfig.json`
+## Verzeichnis `api`
+
+Wenn hier `.mjs`Dateien liegen, werden diese als APIs (Express-Router) in einer Sub-URL eingebunden.
+Der Sub-URL-Pfad richtet sich dabei nach dem Modulnamen und dem Namen der `.mjs`-Datei.
+Beispielsweise hat das Modul `users` eine Datei `api/usergroups.mjs`. Diese wird in der Sub-URL `/api/users/usergroups` bereitgestellt.
+
+## Verzeichnis `middlewares`
+
+Die hier enthaltenen `.mjs` - Dateien werden als Express-Middlewares eingebunden, die Einfluss auf Requests und Responses nehmen können.
+
+
+## Datei `moduleconfig.json`
 
 |Schlüssel|Bedeutung|
 |---|---|
 |`name`|Sprechender Name des Moduls. Wird in UI zur Anzeige verwendet.|
+|`id`|Eindeutiger Identifizierer des Moduls. Kleinschreibung ohne Sonderzeichen. Wird in Sub-URLs für APIs verwendet|
 |`datatypes`|Liste von Datentypen, die das Modul mitbringt oder verwendet. Wird zur Aktualisierung der [Datenbank](DATABASE.md) verwendet.|

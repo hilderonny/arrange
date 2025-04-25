@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 import { createDatatype, udpateDatabaseField, updateDatabaseRecord } from './databasehelper.mjs'
 import { error, log } from './loghelper.mjs'
 
@@ -62,12 +61,12 @@ function updateDatabase(datatypes) {
  * @param {string} module_path Pfad zum Modul
  * @param {object} app Expressinstanz, wird für Routenerweiterung durch Module benutzt
  */
-function loadModule(module_path, app) {
+async function loadModule(module_path, app) {
 
     log('[MODULES] Suche Modul in %s', module_path)
 
     // Lädt die Konfigurationsdaten des Moduls
-    const moduleConfigFile = path.join(module_path, 'moduleconfig.json')
+    const moduleConfigFile = `${module_path}/moduleconfig.json`
     if (!fs.existsSync(moduleConfigFile)) {
         error('[MODULE] FEHLER: Modulkonfiguration %s nicht gefunden.', moduleConfigFile)
         return
@@ -80,6 +79,23 @@ function loadModule(module_path, app) {
         updateDatabase(moduleConfig.datatypes)
     }
 
+    // Nach APIs suchen und diese einbinden
+    const apiPath = `${module_path}/api`
+    if (fs.existsSync(apiPath)) {
+        for (const apiFile of fs.readdirSync(apiPath)) {
+            if (apiFile.endsWith('.mjs')) {
+
+                const apiFileFullPath = `../${apiPath}/${apiFile}`
+                const apiUrl = `/api/${moduleConfig.id}/${apiFile.substring(0, apiFile.lastIndexOf('.'))}`
+
+                log('[MODULES] Lade API %s an URL %s.', apiFileFullPath, apiUrl)
+
+                const apiRouter = (await import(apiFileFullPath)).router
+                app.use(apiUrl, apiRouter)
+
+            }
+        }
+    }
 }
 
 /**
@@ -89,15 +105,15 @@ function loadModule(module_path, app) {
  * @param {object} app Expressinstanz, wird für Routenerweiterung durch Module benutzt
  * @param {object} database Datenbankinstanz, wird an Module weiter gereicht
  */
-function loadModules(modules_path, app, database) {
+async function loadModules(modules_path, app, database) {
 
     log('[MODULES] Lade Module von %s.', modules_path)
 
     // Alle Unterverzeichnisse in modules_path suchen, als Module interpretieren und laden
     for (const file of fs.readdirSync(modules_path)) {
-        const fullPath = path.join(modules_path, file)
+        const fullPath = `${modules_path}/${file}`
         if (fs.statSync(fullPath).isDirectory()) {
-            loadModule(fullPath, app, database)
+            await loadModule(fullPath, app, database)
         }
     }
 
