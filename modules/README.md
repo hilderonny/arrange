@@ -9,6 +9,22 @@ Die Namen der Unterverzeichnisse sind dabei egal.
 In diesem Verzeichnis muss sich eine Datei `module.mjs` befinden.
 Diese wird als Einstiegspunkt für das Modul betrachtet und sollte folgende Funktionen veröffentlichen (alle optional).
 
+
+## Aufbau Modulverzeichnis
+
+```
+/Modulverzeichnis
+├── api
+├── middlewares
+├── module.mjs
+├── public
+│   └── components
+└── README.md
+```
+
+
+## Datei `module.mjs`
+
 ```js
 async function init(arrange) {
    // Datenbank initialisieren
@@ -45,7 +61,7 @@ export { init, publishMiddlewares, publishRoutes }
 Alle diese Funktionen sind optional. Wenn sie fehlen, ist das kein Fehler, sondern wird einfach ignoriert.
 
 
-## Arrange
+### Parameter `arrange`
 
 ```js
 arrange = {
@@ -58,7 +74,7 @@ arrange = {
 }
 ```
 
-## Request
+### Parameter `request`
 
 ```js
 request = {
@@ -72,32 +88,14 @@ request = {
 ```
 
 
-## Aufbau Modulverzeichnis
-
-```
-/Modulverzeichnis
-├── api
-├── middlewares
-├── module.mjs
-└── public
-    └── webcomponents
-```
-
-
-
-# OBSOLET
-
-
-In diesen Unterverzeichnissen muss sich eine Datei `moduleconfig.json` befinden, welche das Modul selbst beschreibt.
-Diese Datei wuird von arrange geparst und so das Modul beim Programmstart eingebunden.
-
-
 ## Verzeichnis `api`
 
-Wenn hier `.mjs`Dateien liegen, werden diese als APIs (Express-Router) in einer Sub-URL eingebunden.
-Der Sub-URL-Pfad richtet sich dabei nach dem Modulnamen und dem Namen der `.mjs`-Datei.
-Beispielsweise hat das Modul `users` eine Datei `api/usergroups.mjs`. Diese wird in der Sub-URL `/api/users/usergroups` bereitgestellt.
+Hier kann das Modul APIs, die an bestimmten Sub-URLs verfügbar sein sollen, definieren.
+Diese werden dann in `module.mjs` innerhalb von `publishRoutes()` veröffentlicht.
+
 
 ## Verzeichnis `middlewares`
 
-Die hier enthaltenen `.mjs` - Dateien werden als Express-Middlewares eingebunden, die Einfluss auf Requests und Responses nehmen können.
+Die hier enthaltenen `.mjs` - Dateien werden vom Modul als Express-Middlewares eingebunden, die Einfluss auf Requests und Responses nehmen können.
+Die Veröffentlichung erfolgt in `module.mjs` innerhalb von `publishMiddlewares()`
+

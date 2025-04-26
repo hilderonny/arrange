@@ -32,8 +32,8 @@ async function init(arrange) {
  }
  
  async function publishRoutes(arrange) {
-    // HTML-Seiten aus Unterverzeichnis `./public` an URL `/users` veröffentlichen
-    arrange.app.use('/users', express.static(`${import.meta.dirname}/public`))
+    // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/users` veröffentlichen
+    arrange.app.use('/modules/users', express.static(`${import.meta.dirname}/public`))
  }
  
  export { init, publishMiddlewares, publishRoutes }
