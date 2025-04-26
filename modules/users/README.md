@@ -29,3 +29,38 @@ request.user = { // Optional vorhanden. Wenn vorhanden, ist Benutzer angemeldet
     canWrite(permission_name), // Optional vorhandene Funktion. 
                                //Prüft, ob angemeldeter Benutzer bestimmte Schreibberechtigung hat
 }
+```
+
+## Prüfung der Anmeldung
+
+Wenn Module das `user` Objekt benutzen wollen, müssen sie gewährleisten, dass der Benutzer angemeldet ist.
+Das können sie tun, indem sie in den jeweiligen APIs auf das Vorhandensein des Objektes testen und beim Fehlen den Status Code `401 Unauthorized` zurück senden.
+Das Client-Skript muss sich dann darum kümmern, den Benutzer auf die `/login` Seite umzuleiten.
+
+**Beispiel API**
+
+```js
+arrange.app.get('/api/example', (request, response) => {
+    if (!request.user) {
+        response.sendStatus(401)
+        return
+    }
+    // Oder kürzer
+    if (!request.user) return response.sendStatus(401)
+})
+```
+
+**Beispiel Client Script**
+
+```js
+const response = await fetch('/api/example')
+if (response.status === 401) {
+
+    // Umleitung zur Login-Seite
+    location.replace('/login')
+
+    // Oder Anzeige der Login-Webkomponente
+    const loginModule = await import('/users/webcomponents/login.mjs')
+    loginModule.showLoginForm()
+    
+}

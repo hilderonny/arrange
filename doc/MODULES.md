@@ -76,10 +76,11 @@ request = {
 
 ```
 /Modulverzeichnis
-   ├── api
-   ├── middlewares
-   ├── module.mjs
-   └── public
+├── api
+├── middlewares
+├── module.mjs
+└── public
+    └── webcomponents
 ```
 
 
