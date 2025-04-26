@@ -60,7 +60,7 @@ if (response.status === 401) {
     location.replace('/login')
 
     // Oder Anzeige der Login-Webkomponente
-    const loginModule = await import('/users/webcomponents/login.mjs')
+    const loginModule = await import('/users/components/login.mjs')
     loginModule.showLoginForm()
     
 }
