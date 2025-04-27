@@ -35,20 +35,20 @@ async function init(arrange) {
 
 async function publishMiddlewares(arrange) {
    // Global für alle Routen
-   arrange.app.use(async(request, response, next) => {
+   arrange.webServer.use(async(request, response, next) => {
       next()
    })
 }
 
 async function publishRoutes(arrange) {
    // API mit Authentifizierung über den Request
-   arrange.app.get(url, async(request, response) => {
+   arrange.webServer.get(url, async(request, response) => {
       if (request.user?.canWrite?('PERMISSION_ADMINISTRATION_USER')) {
 
       }
    })
    // Statisches HTML an Sub-URL
-   arrange.app.use(suburl, express.static(folderWithStaticFiles))
+   arrange.webServer.use(suburl, express.static(folderWithStaticFiles))
 }
 
 export { init, publishMiddlewares, publishRoutes }
@@ -66,8 +66,9 @@ Alle diese Funktionen sind optional. Wenn sie fehlen, ist das kein Fehler, sonde
 ```js
 arrange = {
    databaseHelper // Verweis auf databasehelper Instanz
-   app // Verweis auf Express Instanz
+   webServer // Verweis auf Express Instanz
    localConfig // Konfiguration aus localconfig.json
+   apps // Liste von Apps, die auf Home-Seite und in Navigation angezeigt werden. Wird von Modul "home" geparst
    log() // Funktion zur Logausgabe
    logError() // Fehler protokollieren
    logWarning() // Warnung protokollieren

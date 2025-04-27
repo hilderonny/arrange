@@ -4,7 +4,7 @@
  * angemeldeten Benutzer enthält.
  * 
  * Verwendung:
- * app.use(identifyuser.createMiddleware(arrange))
+ * webServer.use(identifyuser.createMiddleware(arrange))
  */
 import jsonwebtoken from 'jsonwebtoken'
 

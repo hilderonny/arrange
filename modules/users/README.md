@@ -40,7 +40,7 @@ Das Client-Skript muss sich dann darum kümmern, den Benutzer auf die `/login` S
 **Beispiel API**
 
 ```js
-arrange.app.get('/api/example', (request, response) => {
+arrange.webServer.get('/api/example', (request, response) => {
     if (!request.user) {
         response.sendStatus(401)
         return

@@ -17,14 +17,15 @@ import localConfig  from './localconfig.json' with { type: 'json' }
     // Datenbank initialisieren
     databasehelper.loadDatabase(localConfig.sqlitefilepath)
 
-    // Webanwendung initialisieren
-    const app = express()
+    // Webserver initialisieren
+    const webServer = express()
 
     // Arrange Objekt vorbereiten
     const arrange = {
         databaseHelper: databasehelper,
-        app: app,
+        webServer: webServer,
         localConfig: localConfig,
+        apps: [],
         log: logHelper.log,
         logError: logHelper.error,
         logWarning: logHelper.warn
@@ -38,7 +39,7 @@ import localConfig  from './localconfig.json' with { type: 'json' }
         key: fs.readFileSync(localConfig.privatekeyfile),
         cert: fs.readFileSync(localConfig.publiccertificatefile)
     }
-    const httpsServer = https.createServer(httpsOptions, app)
+    const httpsServer = https.createServer(httpsOptions, webServer)
     httpsServer.listen(localConfig.httpsport, () => {
         logHelper.log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', localConfig.httpsport)
     })

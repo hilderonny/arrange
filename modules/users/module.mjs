@@ -28,12 +28,12 @@ async function init(arrange) {
  
  async function publishMiddlewares(arrange) {
     // Benutzeridentifizierung
-    arrange.app.use(identifyUserMiddleware.createMiddleware(arrange))
+    arrange.webServer.use(identifyUserMiddleware.createMiddleware(arrange))
  }
  
  async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/users` veröffentlichen
-    arrange.app.use('/modules/users', express.static(`${import.meta.dirname}/public`))
+    arrange.webServer.use('/modules/users', express.static(`${import.meta.dirname}/public`))
  }
  
  export { init, publishMiddlewares, publishRoutes }
