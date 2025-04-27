@@ -11,7 +11,7 @@
 
             .apps > div { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; }
             .apps > div:hover { background-color: aliceblue; }
-            .apps > div > img { height: 100px; }
+            .apps > div > img { height: 100px; margin: auto; display: block; }
             .apps > div > p { text-align: center; }
 
         </style>
@@ -28,7 +28,7 @@
                     divElement.innerHTML = `<img src="${app.icon}"/><p>${app.label}</p>`
                     divElement.addEventListener('click', () => {
                         // Selektion in Navigation durchführen
-                        parent.postMessage({ action: 'selectApp', appid: 'home-home' })
+                        parent.postMessage({ action: 'selectApp', appid: app.id })
                         // App-Seite laden
                         location.href = app.url
                     })

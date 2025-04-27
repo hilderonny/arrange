@@ -18,17 +18,20 @@ async function init(arrange) {
     permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER', canread: true, canwrite: true }
     permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USERGROUP', canread: true, canwrite: true }
     permissionAssignmentsTable.save()
- }
- 
- async function publishMiddlewares(arrange) {
+    // Apps registrieren
+    arrange.apps.push({ id: 'users-users', label: 'Benutzer', icon: '/modules/users/images/user.png', url: '/modules/users/users.html' })
+    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html' })
+}
+
+async function publishMiddlewares(arrange) {
     // Benutzeridentifizierung
     arrange.webServer.use(identifyUserMiddleware.createMiddleware(arrange))
- }
- 
- async function publishRoutes(arrange) {
+}
+
+async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/users` veröffentlichen
     arrange.webServer.use('/modules/users', express.static(`${import.meta.dirname}/public`))
- }
- 
- export { init, publishMiddlewares, publishRoutes }
+}
+
+export { init, publishMiddlewares, publishRoutes }
  

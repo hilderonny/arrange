@@ -25,7 +25,7 @@
                         self.frames['content'].location.href = app.url
                     })
                     if (app.default) {
-                        inputElement.setAttribute('checked', 'checked')
+                        inputElement.checked = true
                         self.frames['content'].location.href = app.url
                     }
                     linksElement.appendChild(inputElement)
@@ -43,7 +43,7 @@
                         const inputElementSelector = '#navigation-link-' + event.data.appid
                         const inputElement = linksElement.querySelector(inputElementSelector)
                         if (inputElement) {
-                            inputElement.setAttribute('checked', 'checked')
+                            inputElement.checked = true
                         }
                     }
                 })
