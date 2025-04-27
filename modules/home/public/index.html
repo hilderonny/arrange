@@ -1,23 +1,73 @@
 <!DOCTYPE html>
 <html>
-
     <head>
+        
+        <title>Arrange</title>
+        <link rel="icon" type="image/png" href="/images/grid.png">
+        <link rel="stylesheet" href="styles/base.css">
 
         <script type="module">
 
-            (async() => {
+            (async () => {
 
-                const loginModule = await import('/modules/users/components/login.mjs')
-                loginModule.showLoginForm()
+                const applist = await (await fetch('/api/home/applist')).json()
+
+                const linksElement = document.querySelector('body > div.navigation > div.links')
+
+                for (const app of applist) {
+                    // Resultat eines Eintrags: <input type="radio" id="navigation-link-home-home" checked="checked" name="link" onclick="self.frames['content'].location.href='home.html'"><label for="navigation-link-home-home">Home</label>
+                    const inputElement = document.createElement('input')
+                    const inputElementId = 'navigation-link-' + app.id
+                    inputElement.setAttribute('type', 'radio')
+                    inputElement.setAttribute('id', inputElementId)
+                    inputElement.setAttribute('name', 'link')
+                    inputElement.addEventListener('click', () => {
+                        self.frames['content'].location.href = app.url
+                    })
+                    if (app.default) {
+                        inputElement.setAttribute('checked', 'checked')
+                        self.frames['content'].location.href = app.url
+                    }
+                    linksElement.appendChild(inputElement)
+
+                    const labelElement = document.createElement('label')
+                    labelElement.setAttribute('for', inputElementId)
+                    labelElement.style.backgroundImage =  `url(${app.icon})`
+                    labelElement.innerHTML = app.label
+                    linksElement.appendChild(labelElement)
+                }
+
+                // Auf Selektionsanweisungen aus dem iFrame reagieren
+                window.addEventListener('message', (event) => {
+                    if (event.data.action === 'selectApp') {
+                        const inputElementSelector = '#navigation-link-' + event.data.appid
+                        const inputElement = linksElement.querySelector(inputElementSelector)
+                        if (inputElement) {
+                            inputElement.setAttribute('checked', 'checked')
+                        }
+                    }
+                })
 
             })()
 
         </script>
 
     </head>
-
     <body>
 
-    </body>
+        <div class="navigation">
 
+            <div class="header">
+                <div class="title">Arrange</div>
+                <div class="subtitle">&copy; 2025 Ronny Hildebrandt</div>
+            </div>
+
+            <div class="links">
+            </div>
+
+        </div>
+
+        <iframe name="content"></iframe>
+            
+    </body>
 </html>

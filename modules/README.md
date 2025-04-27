@@ -28,9 +28,17 @@ Diese wird als Einstiegspunkt für das Modul betrachtet und sollte folgende Funk
 ```js
 async function init(arrange) {
    // Datenbank initialisieren
-   arrange.database.createTable(table_name)
-   arrange.database.udpateDatabaseField(table_name, field_name, field_type)
-   arrange.database.updateDatabaseRecord(table_name, record)
+   const table = arrange.database[table_name]
+   table[record_id] = record_content
+   table.save()
+   // App registrieren
+   arrange.apps.push({
+      name: 'users-users', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
+      label: 'Benutzer',
+      icon: '/modules/users/images/users.png',
+      url: '/modules/users/index.html,
+      default: true // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
+   })
 }
 
 async function publishMiddlewares(arrange) {
@@ -93,6 +101,8 @@ request = {
 
 Hier kann das Modul APIs, die an bestimmten Sub-URLs verfügbar sein sollen, definieren.
 Diese werden dann in `module.mjs` innerhalb von `publishRoutes()` veröffentlicht.
+
+Prinzipiell sollten die Sub-URLs dem Schema `/api/MODULNAME/APINAME/FUNKTIONSNAME` folgen.
 
 
 ## Verzeichnis `middlewares`

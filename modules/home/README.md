@@ -15,3 +15,29 @@ app = {
     name // Name der Anwendung, wird in Navigation und auf Home-Screen angezeigt
 }
 ```
+
+## API `applist`
+
+Liefert Liste aller in `arrange.apps` registrierten Apps zurück.
+Wird für den Aufbau der Navigation und des Home-Screens verwendet.
+
+```js
+response = [
+    {
+        name: 'users-users', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
+        label: 'Benutzer',
+        icon: '/modules/users/images/users.png',
+        url: '/modules/users/index.html,
+        default: true // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
+   }
+]
+```
+
+## Navigationsselektion erzwingen
+
+Das geht über eine Nachricht, die die Anweisung zum Selektieren und die App-ID enthält.
+
+```js
+// Modul "home", App "home" selektieren
+parent.postMessage({ action: 'selectApp', appid: 'home-home' })
+```

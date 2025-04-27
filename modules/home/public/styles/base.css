@@ -1,0 +1,15 @@
+* { margin: 0; padding: 0; font-family: sans-serif; font-size: 12pt; color: #1e2f55; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { display: flex; }
+iframe { flex: 1; border: none; }
+
+.navigation { display: flex; flex-direction: column; background-color: #eff1f3; padding: 16px; }
+.navigation .header { margin-bottom: 16px; background: url(/images/grid.png) no-repeat left center; background-size: contain; padding-left: 40px; height: 32px; }
+.navigation .header .title { font-weight: bold; }
+.navigation .header .subtitle { font-weight: bold; font-size: 9pt; color: #69768e; margin-bottom: 6px; }
+.navigation .links { flex: 1; overflow: auto; }
+.navigation .links input { display: none; }
+.navigation .links label { color: #627088; display: block; padding: 9px 11px 9px 30px; text-decoration: none; border-radius: 4px; user-select: none; background: no-repeat 9px center; background-size: 16px; }
+.navigation .links label:hover { background-color: #e5e8ec; cursor: pointer; }
+.navigation .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
+.navigation .footer .version { text-align: center; color: #bbbbbb; font-size: 9pt; margin-top:16px; }
