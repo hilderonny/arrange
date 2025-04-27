@@ -16,6 +16,79 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |---|---|
 |`identifyuser`|Globale Middleware, die aus dem Request einen JSON Webtoken extrahiert (falls vorhanden) und das `request.user` Objekt erzeugt, welches Informationen und Hilfsfunktionen für den angemeldeten Benutzer enthält|
 
+
+## Datenbanktabelle `users`
+
+Speichert alle Benutzer, die Zugriff auf das System haben
+
+```js
+arrange.database['users'] = {
+    'user_id' : { 
+        name: 'ronny', // Benutzername für Anmeldung
+        password: 'jiovrlwuqhvnr4728oz7rtn', // Verschlüsseltes Passwort
+    }
+}
+```
+
+
+## Datenbanktabelle `usergroups`
+
+Speichert Benutzergruppen.
+Benutzer können Benutzergruppen angehören.
+Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
+
+```js
+arrange.database['usergroups'] = {
+    'usergroup_id' : { 
+        name: 'Administratoren' // Anzeigename
+    }
+}
+```
+
+
+## Datenbanktabelle `usergroupassignments`
+
+Speichert Zuordnungen von Benutzern zu Benutzergruppen.
+
+```js
+arrange.database['usergroupassignments'] = {
+    'usergroupassignment_id' : { 
+        userid: 'user_0815', // Id des Benutzers
+        usergroupid: 'usergroup_4711' // Id der Benutzergruppe
+    }
+}
+```
+
+
+## Datenbanktabelle `permissions`
+
+Speichert Berechtigungen
+
+```js
+arrange.database['permissions'] = {
+    'permission_id' : { 
+        label: 'Benutzerverwaltung', // Anzeigename
+    }
+}
+```
+
+
+## Datenbanktabelle `permissionassignments`
+
+Speichert Zuordnungen von Berechtigungen zu Benutzergruppen.
+
+```js
+arrange.database['permissionassignments'] = {
+    'permissionassignment_id' : { 
+        usergroupid: 'usergroup_4711', // Id der Benutzergruppe
+        permissionid: 'permission_42', // Id der Berechtigung
+        canread: true, // Gibt an, ob Benutzergruppe lesen darf
+        canwrite: false // Gibt an, ob Benutzergruppe schreiben darf
+    }
+}
+```
+
+
 ## Objekt `request.user`
 
 Wenn die Middleware `identifyuser` den Benutzer erfolgreich identifiziert und authentifiziert hat, legt diese am `request` der Expressinstanz eine Property `user` an.

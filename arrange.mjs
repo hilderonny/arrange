@@ -1,5 +1,5 @@
 import express from 'express'
-import * as databasehelper from './helpers/databasehelper.mjs'
+import { loadDatabase } from './database/database.mjs'
 import { loadModules } from './helpers/modulehelper.mjs'
 import https from 'https'
 import fs from 'fs'
@@ -14,15 +14,15 @@ import localConfig  from './localconfig.json' with { type: 'json' }
 
 (async () => {
 
-    // Datenbank initialisieren
-    databasehelper.loadDatabase(localConfig.sqlitefilepath)
+    // Datenbank laden
+    const database = loadDatabase(localConfig.databasedirectory, logHelper.log)
 
     // Webserver initialisieren
     const webServer = express()
 
     // Arrange Objekt vorbereiten
     const arrange = {
-        databaseHelper: databasehelper,
+        database: database,
         webServer: webServer,
         localConfig: localConfig,
         apps: [],

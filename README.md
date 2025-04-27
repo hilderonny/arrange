@@ -14,11 +14,11 @@ Alle Pfadangaben sind entweder relativ zu `arrange.mjs` oder absolut anzugeben.
 
 |Schlüssel|Bedeutung|Beispiel|
 |---|---|---|
-|`sqlitefilepath`|Pfad zur SQLite Datenbankdatei|`./database/database.sqlite`|
+|`databasedirectory`|Pfad zum Verzeichnis, in dem alle Datenbandateien liegen.|`./database/`|
 |`publiccertificatefile`|Pfad zum öffentlichen SSL Zertifikat|`./pub.cert`|
 |`privatekeyfile`|Pfad zur privaten SSL Schlüsseldatei|`./priv.key`|
 |`httpsport`|Port, an dem Arrange als Webanwendung lauschen soll|`443`|
-|`modulespath`|Verzeichnispfad, in dem die Module zu finden sind|`./modules`|
+|`modulespath`|Verzeichnispfad, in dem die Module zu finden sind|`./modules/`|
 |`tokensecret`|Schlüssel, der für JSON WebTokens verwendet wird|`irgendwas`|
 
 ## Starten

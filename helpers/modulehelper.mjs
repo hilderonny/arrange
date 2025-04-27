@@ -15,7 +15,7 @@ async function loadModules(modules_path, arrange) {
 
     // Alle Unterverzeichnisse in modules_path suchen und Module laden
     for (const file of fs.readdirSync(modules_path)) {
-        const fullPath = `${modules_path}/${file}`
+        const fullPath = `${modules_path}${file}`
         if (fs.statSync(fullPath).isDirectory()) {
             const moduleFilePath = `${fullPath}/module.mjs`
             if (fs.existsSync(moduleFilePath)) {
