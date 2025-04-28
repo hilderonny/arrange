@@ -23,7 +23,7 @@ async function init(arrange) {
     permissionAssignmentsTable.save()
     // Apps registrieren
     arrange.apps.push({ id: 'users-users', label: 'Benutzer', icon: '/modules/users/images/user.png', url: '/modules/users/users.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
-    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html', permission: 'USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP' })
+    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html', permission: 'PERMISSION_ADMINISTRATION_USERGROUP' })
 }
 
 async function publishMiddlewares(arrange) {
