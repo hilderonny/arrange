@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <style>
+
+            * { margin: 0; padding: 0; font-family: sans-serif; font-size: 12pt; color: #1e2f55; box-sizing: border-box; }
+            html, body { width: 100%; height: 100%; }
+            body { padding: 0; display: flex; flex-direction: row; }
+
+            h1 { font-size: 16pt; margin-bottom: 12px; }
+            h2 { margin: 16px 0; }
+
+            label { color: #627088; }
+            input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
+            input:read-only { background-color: #f1f2f4; }
+            select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
+            button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
+            .destruct { background-color: red; color: white; }
+
+            .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; min-width: 318px; overflow: auto; padding: 16px }
+            .card.hidden { display: none; }
+
+            .links { flex: 1; overflow: auto; }
+            .links input { display: none; }
+            .links label { color: #627088; display: block; padding: 11px 13px 11px 32px; text-decoration: none; border-radius: 4px; user-select: none; background: no-repeat 9px center; background-size: 16px; }
+            .links label:hover { background-color: #e5e8ec; cursor: pointer; }
+            .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
+
+            #link-users + label, #usersCard .links label { background-image: url(./images/user.png); }
+            #link-usergroups + label { background-image: url(./images/group.png); }
+            #link-permissions + label { background-image: url(./images/unlock.png); }
+
+        </style>
+
+        <script type="module">
+
+            const usersCard = document.getElementById('usersCard')
+            const usersLinks = usersCard.querySelector('.links')
+            const userDetailsCard = document.getElementById('userDetailsCard')
+
+            async function selectUser(user_id) {
+
+            }
+            
+            // Klick-Handler für Karte in erster (linker) Spalte
+            document.getElementById('link-users').addEventListener('click', async () => {
+                // Erst mal alles ausblenden
+                userDetailsCard.classList.add('hidden')
+                usersCard.classList.add('hidden')
+                // Benutzerliste laden
+                usersLinks.innerHTML = ''
+                const usersResponse = await fetch('/api/users/listusers')
+                if (usersResponse.status === 200) {
+                    const users = await usersResponse.json()
+                    users.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                    for (const user of users) {
+                        const inputElement = document.createElement('input')
+                        const inputElementId = 'link-user' + user.id
+                        inputElement.setAttribute('type', 'radio')
+                        inputElement.setAttribute('id', inputElementId)
+                        inputElement.setAttribute('name', 'link-user')
+                        inputElement.addEventListener('click', async () => {
+                            await selectUser(user.id)
+                        })
+                        usersLinks.appendChild(inputElement)
+                        const labelElement = document.createElement('label')
+                        labelElement.setAttribute('for', inputElementId)
+                        labelElement.innerHTML = user.name
+                        usersLinks.appendChild(labelElement)
+                    }
+                }
+                // Karte wieder anzeigen
+                usersCard.classList.remove('hidden')
+            })
+            document.getElementById('link-usergroups').addEventListener('click', async () => {
+                usersCard.classList.add('hidden')
+                userDetailsCard.classList.add('hidden')
+            })
+            document.getElementById('link-permissions').addEventListener('click', async () => {
+                usersCard.classList.add('hidden')
+                userDetailsCard.classList.add('hidden')
+            })
+
+        </script>
+
+    </head>
+
+    <body>
+
+        <div class="card" id="featuresCard">
+            <h1>Benutzerverwaltung</h1>
+            <div class="links">
+                <input type="radio" id="link-users" name="link"><label for="link-users">Benutzer</label>
+                <input type="radio" id="link-usergroups" name="link"><label for="link-usergroups">Benutzergruppen</label>
+                <input type="radio" id="link-permissions" name="link"><label for="link-permissions">Berechtigungen</label>
+            </div>
+        </div>
+
+        <div class="card hidden" id="usersCard">
+            <h1>Benutzer</h1>
+            <div class="toolbar">
+                <button>Neu</button>
+            </div>
+            <div class="links">
+                <input type="radio" id="link-user-1" name="link-user"><label for="link-user-1">Benutzer 1</label>
+                <input type="radio" id="link-user-2" name="link-user"><label for="link-user-2">Benutzer 2</label>
+                <input type="radio" id="link-user-3" name="link-user"><label for="link-user-3">Benutzer 3</label>
+            </div>
+        </div>
+
+        <div class="card hidden" id="userDetailsCard">
+            <h1>Benutzer 1</h1>
+            <div class="toolbar">
+                <button>Speichern</button>
+                <button class="destruct">Löschen</button>
+            </div>
+
+            <h2>Details</h2>
+            <label>Id</label>
+            <input readonly />
+            <label>Benutzername</label>
+            <input readonly />
+            <label>Neues Passwort</label>
+            <input type="password" />
+
+            <h2>Gruppenzugehörigkeit</h2>
+            <select>
+                <option>Benutzergruppe 1</option>
+                <option class="destruct">Zugehörigkeit löschen</option>
+            </select>
+            <select>
+                <option disabled selected>Auswählen ...</option>
+                <option>Benutzergruppe 1</option>
+            </select>
+        </div>
+    </body>
+
+</html>

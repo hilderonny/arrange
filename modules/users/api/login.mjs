@@ -14,7 +14,7 @@ function createLoginApi(arrange) {
         // Prüfen, ob es den Benutzer mit dem gegebenen Benutzernamen schon gibt
         const existingUser = usersTable.find(user => user.name === username && user.password === hashedPassword)
         if (!existingUser) {
-            // Benutzer nicht gefunden oder Passwort falsh
+            // Benutzer nicht gefunden oder Passwort falsch
             return response.sendStatus(403)
         }
         // JSON Web Token generieren und in Cookie speichern

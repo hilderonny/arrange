@@ -23,16 +23,20 @@ function loadDatabase(database_directory, log) {
         tableContent.save = () => {
             saveTable(table_name, tableContent)
         }
+        // Entries ohne Funktionen
+        tableContent.entries = () => {
+            return Object.entries(tableContent).filter(kvp => typeof kvp[1] === 'object')
+        }
         // Die size() - Funktion gibt die Anzahl der Einträge ohne Funktionen zurück
         tableContent.size = () => {
-            return Object.values(tableContent).filter(v => typeof v === 'object').length
+            return tableContent.entries().length
         }
         // Die find() - Funktion ist eine Weiterleitung zur Suche über die Werte
         // Liefert ein Array zurück, in dem der 0. Eintrag die Id und der 1. Eintrag der Inhalt ist
-        tableContent.find = (fn) => Object.entries(tableContent).find((kvp) => fn(kvp[1]))
+        tableContent.find = (fn) => tableContent.entries().find((kvp) => fn(kvp[1]))
         // Die filter() - Funktion ist eine Weiterleitung zur Suche über die Werte
         // Liefert ein Array von Arrays zurück, in dem der 0. Eintrag die Id und der 1. Eintrag der Inhalt ist
-        tableContent.filter = (fn) => Object.entries(tableContent).filter((kvp) => fn(kvp[1]))
+        tableContent.filter = (fn) => tableContent.entries().filter((kvp) => fn(kvp[1]))
         return tableContent
     }
 

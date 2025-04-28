@@ -3,6 +3,7 @@ import * as identifyUserMiddleware from './middlewares/identifyuser.mjs'
 import { createRegisterApi } from './api/register.mjs'
 import { createLoginApi } from './api/login.mjs'
 import { createLogoutApi } from './api/logout.mjs'
+import { createListUsersApi } from './api/listusers.mjs'
 
 async function init(arrange) {
     // Tabelle für Benutzergruppen anlegen und befüllen
@@ -14,16 +15,13 @@ async function init(arrange) {
     // Tabelle für Berechtigungen anlegen und befüllen
     const permissionsTable = arrange.database['users/permissions']
     permissionsTable['PERMISSION_ADMINISTRATION_USER'] = { label: 'Benutzerverwaltung' }
-    permissionsTable['PERMISSION_ADMINISTRATION_USERGROUP'] = { label: 'Benutzergruppenverwaltung' }
     permissionsTable.save()
     // Tabelle für Berechtigungszuordnungen anlegen und befüllen
     const permissionAssignmentsTable = arrange.database['users/permissionassignments']
     permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER' }
-    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USERGROUP' }
     permissionAssignmentsTable.save()
     // Apps registrieren
-    arrange.apps.push({ id: 'users-users', label: 'Benutzer', icon: '/modules/users/images/user.png', url: '/modules/users/users.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
-    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html', permission: 'PERMISSION_ADMINISTRATION_USERGROUP' })
+    arrange.apps.push({ id: 'users-users', label: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
 }
 
 async function publishMiddlewares(arrange) {
@@ -40,6 +38,8 @@ async function publishRoutes(arrange) {
     createLoginApi(arrange)
     // API für Benutzerabmeldung
     createLogoutApi(arrange)
+    // API für Benutzerliste
+    createListUsersApi(arrange)
 }
 
 export { init, publishMiddlewares, publishRoutes }
