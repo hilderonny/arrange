@@ -9,6 +9,9 @@
 
             h1 { font-size: 24pt; margin-bottom: 24px; }
 
+            div.toolbar { position: absolute; right: 10px; top: 10px; }
+
+            .apps { align-self: center; }
             .apps > div { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; }
             .apps > div:hover { background-color: aliceblue; }
             .apps > div > img { height: 100px; margin: auto; display: block; }
@@ -19,10 +22,15 @@
 
             (async () => {
 
+                // Toolbar abhängig von Anmeldestatus aufbauen
+                const token = localStorage.getItem('users/token')
+                document.getElementById('loginLink').style.display = token ? 'none' : 'initial'
+                document.getElementById('registerLink').style.display = token ? 'none' : 'initial'
+                document.getElementById('logoutLink').style.display = token ? 'initial' : 'none'
+
+                // Appliste aufbauen
                 const applist = await (await fetch('/api/home/applist')).json()
-
                 const appsElement = document.querySelector('body > div.apps')
-
                 for (const app of applist) {
                     const divElement = document.createElement('div')
                     divElement.innerHTML = `<img src="${app.icon}"/><p>${app.label}</p>`
@@ -45,6 +53,12 @@
         <h1>Home</h1>
 
         <div class="apps"></div>
+
+        <div class="toolbar">
+            <a id="loginLink" href="/modules/users/login.html">Anmelden</a>
+            <a id="registerLink" href="/modules/users/register.html">Registrieren</a>
+            <a id="logoutLink" href="/modules/users/logout.html">Abmelden</a>
+        </div>
             
     </body>
 </html>

@@ -16,7 +16,7 @@ app = {
 }
 ```
 
-## API `applist`
+## API GET `/api/home/applist`
 
 Liefert Liste aller in `arrange.apps` registrierten Apps zurück.
 Wird für den Aufbau der Navigation und des Home-Screens verwendet.

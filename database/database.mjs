@@ -23,6 +23,13 @@ function loadDatabase(database_directory, log) {
         tableContent.save = () => {
             saveTable(table_name, tableContent)
         }
+        // Die size() - Funktion gibt die Anzahl der Einträge ohne Funktionen zurück
+        tableContent.size = () => {
+            return Object.values(tableContent).filter(v => typeof v === 'object').length
+        }
+        // Die find() - Funktion ist eine Weiterleitung zur Suche über die Werte
+        // Liefert ein Array zurück, in dem der 0. Eintrag die Id und der 1. Eintrag der Inhalt ist
+        tableContent.find = (fn) => Object.entries(tableContent).find((kvp) => fn(kvp[1]))
         return tableContent
     }
 
@@ -36,7 +43,7 @@ function loadDatabase(database_directory, log) {
         const fileName = database_directory + table_name + '.json'
         log('[DATABASE] Speichere Datenbankdatei %s.', fileName)
         // Sicherstellen, dass Verzeichnisstruktur existiert
-        fs.mkdirSync(path.dirname(fileName), { recursive: true})
+        fs.mkdirSync(path.dirname(fileName), { recursive: true })
         // Datei speichern
         fs.writeFileSync(fileName, JSON.stringify(table_content))
     }

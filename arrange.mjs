@@ -19,6 +19,7 @@ import localConfig  from './localconfig.json' with { type: 'json' }
 
     // Webserver initialisieren
     const webServer = express()
+    webServer.use(express.json())
 
     // Arrange Objekt vorbereiten
     const arrange = {

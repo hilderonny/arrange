@@ -1,5 +1,7 @@
 import express from 'express'
 import * as identifyUserMiddleware from './middlewares/identifyuser.mjs'
+import { createRegisterApi } from './api/register.mjs'
+import { createLoginApi } from './api/login.mjs'
 
 async function init(arrange) {
     // Tabelle für Benutzergruppen anlegen und befüllen
@@ -31,6 +33,10 @@ async function publishMiddlewares(arrange) {
 async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/users` veröffentlichen
     arrange.webServer.use('/modules/users', express.static(`${import.meta.dirname}/public`))
+    // API für Benutzerregistrierung
+    createRegisterApi(arrange)
+    // API für Benutzeranmeldung
+    createLoginApi(arrange)
 }
 
 export { init, publishMiddlewares, publishRoutes }

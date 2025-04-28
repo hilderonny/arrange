@@ -17,6 +17,49 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |`identifyuser`|Globale Middleware, die aus dem Request einen JSON Webtoken extrahiert (falls vorhanden) und das `request.user` Objekt erzeugt, welches Informationen und Hilfsfunktionen für den angemeldeten Benutzer enthält|
 
 
+## API POST `/api/users/login`
+
+Meldet einen benutzer an.
+
+```js
+const response = await fetch('/api/users/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username, password: password })
+})
+// Benutzer existiert nicht oder falsches Passwort
+response.status === 403
+// Registrierung war erfolgreich
+response.status === 200
+const data = await response.json()
+data = {
+    token // JSON Web Token. Sollte in localStorage['users/token'] gespeichert werden
+}
+```
+
+
+## API POST `/api/users/register`
+
+Registriert einen neuen Benutzer.
+Der erste registrierte Benutzer wird automatisch der `Administratoren`-Benutzergruppe zugeordnet.
+
+```js
+const response = await fetch('/api/users/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username, password: password })
+})
+// Benutzer mit demselben Namen existiert bereits
+response.status === 409
+// Registrierung war erfolgreich
+response.status === 200
+const data = await response.json()
+data = {
+    token // JSON Web Token. Sollte in localStorage['users/token'] gespeichert werden
+}
+```
+
+
 ## Datenbanktabelle `users/users`
 
 Speichert alle Benutzer, die Zugriff auf das System haben

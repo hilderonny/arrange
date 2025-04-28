@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <script>
+
+            // Anmeldetoken löschen
+            localStorage.removeItem('users/token')
+            // Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
+            parent.location.href = '/'
+
+        </script>
+
+    </head>
+
+</html>
