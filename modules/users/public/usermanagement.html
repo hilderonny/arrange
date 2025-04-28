@@ -13,12 +13,13 @@
 
             label { color: #627088; }
             input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
-            input:read-only { background-color: #f1f2f4; }
+            input.id { font-size: 10pt; padding: 9.5px; }
+            input:read-only { background-color: #fafafa; color: #606060; }
             select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
             button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
             .destruct { background-color: red; color: white; }
 
-            .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; min-width: 318px; overflow: auto; padding: 16px }
+            .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
             .card.hidden { display: none; }
 
             .links { flex: 1; overflow: auto; }
@@ -38,16 +39,88 @@
             const usersCard = document.getElementById('usersCard')
             const usersLinks = usersCard.querySelector('.links')
             const userDetailsCard = document.getElementById('userDetailsCard')
+            const usernameHeader = document.getElementById('usernameHeader')
+            const userIdInput = document.getElementById('userIdInput')
+            const usernameInput = document.getElementById('usernameInput')
+            const passwordInput = document.getElementById('passwordInput')
+            const usergroupsOfUserDiv = document.getElementById('usergroupsOfUserDiv')
 
+            // Ein Auswahlfeld für zu einem Benutzer zugehörige Benutzergruppe wird erzeugt
+            function createUsergroupSelect(usergroups, selected_usergroup_id) {
+                const selectElement = document.createElement('select')
+                if (!selected_usergroup_id) {
+                    selectElement.innerHTML = '<option disabled selected value="ADDUSERGROUPASSIGNMENT">Hinzufügen ...</option>'
+                }
+                // Einen Eintrag für jede existierende Benutzergruppe
+                for (const usergroup of usergroups) {
+                    const optionElement = document.createElement('option')
+                    optionElement.value = usergroup.id
+                    optionElement.innerHTML = usergroup.name
+                    if (usergroup.id === selected_usergroup_id) {
+                        optionElement.selected = true
+                    }
+                    selectElement.appendChild(optionElement)
+                }
+                // Letzter Eintrag dient zum Löschen der Zugehörigkeit
+                // Wird aber nur erzeugt, wenn eine Benutzergruppe selektiert ist
+                if (selected_usergroup_id) {
+                    const deleteOption = document.createElement('option')
+                    deleteOption.value = 'DELETEUSERGROUPASSIGNMENT'
+                    deleteOption.classList.add('destruct')
+                    deleteOption.innerHTML = 'Zugehörigkeit löschen'
+                    selectElement.appendChild(deleteOption)
+                }
+                selectElement.addEventListener('change', () => {
+                    // Feld löschen, wenn ausgewählt
+                    if (selectElement.value === 'DELETEUSERGROUPASSIGNMENT') {
+                        selectElement.parentNode.removeChild(selectElement)
+                    }
+                })
+                return selectElement
+            }
+
+            // Ein Benutzer wurde in der Benutzerliste selektiert.
+            // Die Benutzerdetailkarte wird angezeigt.
             async function selectUser(user_id) {
-
+                // Benutzerinfos inklusive Gruppenzuordnung laden
+                const userDetailsResponse = await fetch('/api/users/userdetails/' + user_id)
+                if (userDetailsResponse.status === 200) {
+                    const userDetails = await userDetailsResponse.json()
+                    usernameHeader.innerHTML = userDetails.name
+                    userIdInput.value = userDetails.id
+                    usernameInput.value = userDetails.name
+                    // Benutzergruppen laden
+                    const usergroupsResponse = await fetch('/api/users/listusergroups')
+                    if (usergroupsResponse.status === 200) {
+                        const usergroups = await usergroupsResponse.json()
+                        usergroups.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                        // Select-Felder für alle Zugehörigkeiten erstellen
+                        usergroupsOfUserDiv.innerHTML = ''
+                        for (const usergroupId of userDetails.usergroupids) {
+                            const selectElement = createUsergroupSelect(usergroups, usergroupId)
+                            usergroupsOfUserDiv.appendChild(selectElement)
+                        }
+                        // Zusätzliches Feld erstellen, damit neue Zugehörigkeiten erstellt werden können
+                        const additionalSelectElement = createUsergroupSelect(usergroups)
+                        additionalSelectElement.addEventListener('change', () => {
+                            const newUsergroupId = additionalSelectElement.value
+                            // Neues Selectfeld vor dem letzten einfügen
+                            const newSelectElement = createUsergroupSelect(usergroups, newUsergroupId)
+                            usergroupsOfUserDiv.insertBefore(newSelectElement, additionalSelectElement)
+                            additionalSelectElement.value = 'ADDUSERGROUPASSIGNMENT'
+                            newSelectElement.focus()
+                        })
+                        usergroupsOfUserDiv.appendChild(additionalSelectElement)
+                    }
+                }
+                // Benutzerdetailkarte anzeigen
+                userDetailsCard.classList.remove('hidden')
             }
             
             // Klick-Handler für Karte in erster (linker) Spalte
             document.getElementById('link-users').addEventListener('click', async () => {
-                // Erst mal alles ausblenden
+                // Karten ausblenden
                 userDetailsCard.classList.add('hidden')
-                usersCard.classList.add('hidden')
                 // Benutzerliste laden
                 usersLinks.innerHTML = ''
                 const usersResponse = await fetch('/api/users/listusers')
@@ -70,7 +143,7 @@
                         usersLinks.appendChild(labelElement)
                     }
                 }
-                // Karte wieder anzeigen
+                // Benutzerlistenkarte anzeigen
                 usersCard.classList.remove('hidden')
             })
             document.getElementById('link-usergroups').addEventListener('click', async () => {
@@ -103,14 +176,11 @@
                 <button>Neu</button>
             </div>
             <div class="links">
-                <input type="radio" id="link-user-1" name="link-user"><label for="link-user-1">Benutzer 1</label>
-                <input type="radio" id="link-user-2" name="link-user"><label for="link-user-2">Benutzer 2</label>
-                <input type="radio" id="link-user-3" name="link-user"><label for="link-user-3">Benutzer 3</label>
             </div>
         </div>
 
         <div class="card hidden" id="userDetailsCard">
-            <h1>Benutzer 1</h1>
+            <h1 id="usernameHeader"></h1>
             <div class="toolbar">
                 <button>Speichern</button>
                 <button class="destruct">Löschen</button>
@@ -118,21 +188,23 @@
 
             <h2>Details</h2>
             <label>Id</label>
-            <input readonly />
+            <input class="id" id="userIdInput" readonly />
             <label>Benutzername</label>
-            <input readonly />
+            <input id="usernameInput" readonly />
             <label>Neues Passwort</label>
-            <input type="password" />
+            <input id="passwordInput" type="password" />
 
             <h2>Gruppenzugehörigkeit</h2>
-            <select>
-                <option>Benutzergruppe 1</option>
-                <option class="destruct">Zugehörigkeit löschen</option>
-            </select>
-            <select>
-                <option disabled selected>Auswählen ...</option>
-                <option>Benutzergruppe 1</option>
-            </select>
+            <div id="usergroupsOfUserDiv">
+                <select>
+                    <option>Benutzergruppe 1</option>
+                    <option class="destruct">Zugehörigkeit löschen</option>
+                </select>
+                <select>
+                    <option disabled selected>Auswählen ...</option>
+                    <option>Benutzergruppe 1</option>
+                </select>
+            </div>
         </div>
     </body>
 

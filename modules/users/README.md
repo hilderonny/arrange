@@ -16,6 +16,46 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |---|---|
 |`identifyuser`|Globale Middleware, die aus dem Request einen JSON Webtoken extrahiert (falls vorhanden) und das `request.user` Objekt erzeugt, welches Informationen und Hilfsfunktionen für den angemeldeten Benutzer enthält|
 
+## Berechtigungen
+
+|Berechtigung|Beschreibung|
+|---|---|
+|`PERMISSION_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
+
+
+## API GET `/api/users/listusergroups`
+
+Listet alle Benutzergruppen mit Id und Namen auf.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const response = await fetch('/api/users/listusergroups')
+// Berechtigung fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
+// Es wird immer ein Feld zurück gegeben.
+response.json() = [
+    { id: 'usergroupid', name: 'Administratoren' }
+]
+```
+
+
+## API GET `/api/users/listusers`
+
+Listet alle Benutzer mit Id und Namen auf.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const response = await fetch('/api/users/listusers')
+// Berechtigung fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
+// Es wird immer ein Feld zurück gegeben (zumindest der abfragende Benutzer muss ja existieren)
+response.json() = [
+    { id: 'userId', name: 'Benutzername' }
+]
+```
+
 
 ## API POST `/api/users/login`
 
@@ -59,6 +99,27 @@ const response = await fetch('/api/users/register', {
 response.status === 409
 // Registrierung war erfolgreich, es wird ein Cookie 'users-token' mit dem JSON Web Token als Wert gesetzt
 response.status === 200
+```
+
+
+## API GET `/api/users/userdetails/:user_id`
+
+Liefert Detailinformationen über einen bestimmten Benutzer sowie die Id's der Benutzergruppen, denen er angehört.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const userId = 'user0815'
+const response = await fetch('/api/users/userdetails/' + userId)
+// Berechtigung fehlt
+response.status === 403
+// Benutzer mit gegebener Id nicht gefunden
+response.status === 404
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Benutzerinfos zurück.
+response.json() = {
+    id: 'userId',
+    name: 'Benutzername',
+    usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
+}
 ```
 
 

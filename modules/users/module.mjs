@@ -4,6 +4,8 @@ import { createRegisterApi } from './api/register.mjs'
 import { createLoginApi } from './api/login.mjs'
 import { createLogoutApi } from './api/logout.mjs'
 import { createListUsersApi } from './api/listusers.mjs'
+import { createUserDetailsApi } from './api/userdetails.mjs'
+import { createListUsergroupsApi } from './api/listusergroups.mjs'
 
 async function init(arrange) {
     // Tabelle für Benutzergruppen anlegen und befüllen
@@ -40,6 +42,10 @@ async function publishRoutes(arrange) {
     createLogoutApi(arrange)
     // API für Benutzerliste
     createListUsersApi(arrange)
+    // API für Benutzerdetails
+    createUserDetailsApi(arrange)
+    // API für Benutzergruppenliste
+    createListUsergroupsApi(arrange)
 }
 
 export { init, publishMiddlewares, publishRoutes }

@@ -10,7 +10,6 @@ function createListUsersApi(arrange) {
             id: kvp[0],
             name: kvp[1].name
         }})
-        console.log(userList)
         response.send(userList)
     })
 
