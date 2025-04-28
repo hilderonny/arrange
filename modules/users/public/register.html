@@ -31,10 +31,7 @@
                     body: JSON.stringify({ username: username, password: password })
                 })
                 if (response.status === 200) {
-                    // Registrierung hat geklappt, Token extrahieren und für spätere Requests speichern
-                    const data = await response.json()
-                    localStorage.setItem('users/token', data.token)
-                    // Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
+                    // Registrierung hat geklappt, Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
                     parent.location.href = '/'
                 } else {
                     errorParagraph.style.display = 'block'

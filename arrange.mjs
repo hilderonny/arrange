@@ -4,7 +4,7 @@ import { loadModules } from './helpers/modulehelper.mjs'
 import https from 'https'
 import fs from 'fs'
 import * as logHelper from './helpers/loghelper.mjs'
-
+import cookieParser from 'cookie-parser'
 
 logHelper.log('[ARRANGE] Arrange wird gestartet.')
 
@@ -19,7 +19,8 @@ import localConfig  from './localconfig.json' with { type: 'json' }
 
     // Webserver initialisieren
     const webServer = express()
-    webServer.use(express.json())
+    webServer.use(express.json()) // request.body automatisch in JSON konvertieren lassen
+    webServer.use(cookieParser()) // Cookies für JSON Web Token verwenden
 
     // Arrange Objekt vorbereiten
     const arrange = {

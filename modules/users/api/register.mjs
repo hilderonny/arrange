@@ -31,9 +31,10 @@ function createRegisterApi(arrange) {
             usergroupassignmentsTable[randomUUID()] = { userid: userId, usergroupid: 'USERGROUP_ADMIN' }
             usergroupassignmentsTable.save()
         }
-        // JSON Web Token generieren
+        // JSON Web Token generieren und in Cookie speichern
         const token = jsonwebtoken.sign({ userid: userId }, arrange.localConfig.tokensecret)
-        response.send({ token: token })
+        response.cookie('users-token', token, { maxAge: 24*60*60*1000 })
+        response.sendStatus(200)
     })
 
 }

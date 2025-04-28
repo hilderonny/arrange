@@ -30,6 +30,9 @@ function loadDatabase(database_directory, log) {
         // Die find() - Funktion ist eine Weiterleitung zur Suche über die Werte
         // Liefert ein Array zurück, in dem der 0. Eintrag die Id und der 1. Eintrag der Inhalt ist
         tableContent.find = (fn) => Object.entries(tableContent).find((kvp) => fn(kvp[1]))
+        // Die filter() - Funktion ist eine Weiterleitung zur Suche über die Werte
+        // Liefert ein Array von Arrays zurück, in dem der 0. Eintrag die Id und der 1. Eintrag der Inhalt ist
+        tableContent.filter = (fn) => Object.entries(tableContent).filter((kvp) => fn(kvp[1]))
         return tableContent
     }
 

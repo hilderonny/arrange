@@ -17,9 +17,10 @@ function createLoginApi(arrange) {
             // Benutzer nicht gefunden oder Passwort falsh
             return response.sendStatus(403)
         }
-        // JSON Web Token generieren
+        // JSON Web Token generieren und in Cookie speichern
         const token = jsonwebtoken.sign({ userid: existingUser[0] }, arrange.localConfig.tokensecret)
-        response.send({ token: token })
+        response.cookie('users-token', token, { maxAge: 24*60*60*1000 })
+        response.sendStatus(200)
     })
 
 }

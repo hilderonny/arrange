@@ -13,6 +13,7 @@ app = {
     navigationIcon // URL zu kleinem Icon für die Navigation
     homeIcon // URL zu großen Icon für Home Screen
     name // Name der Anwendung, wird in Navigation und auf Home-Screen angezeigt
+    permission // Optional. Id der Berechtigung, die notwendig ist, um die App zu verwenden
 }
 ```
 

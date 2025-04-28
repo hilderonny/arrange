@@ -8,29 +8,26 @@
  */
 import jsonwebtoken from 'jsonwebtoken'
 
-function canUserRead(arrange, user_id, permission_name) {
-
-}
-
-function canUserWrite(arrange, user_id, permission_name) {
-
+function hasUserPermission(arrange, user_id, permission_name) {
+    const usergroupassignmentsTable = arrange.database['users/usergroupassignments']
+    const assignedUsergroupIds = usergroupassignmentsTable.filter(a => a.userid === user_id).map(kvp => kvp[1].usergroupid)
+    const permissionAssignmentsTable = arrange.database['users/permissionassignments']
+    const hasPermission = permissionAssignmentsTable.find(pa => assignedUsergroupIds.indexOf(pa.usergroupid) > -1 && pa.permissionid === permission_name)
+    return !!hasPermission
 }
 
 function createMiddleware(arrange) {
     return (request, _, next) => {
-        // Token müssen entweder im HTTP-Header 'x-access-token' oder
-        // bei Downloads als Request-Parameter 'token' gesendet werden
-        const token = request.query.token || request.headers['x-access-token']
+        const token = request.cookies['users-token']
         if (token) {
-            jsonwebtoken.verify(token, arrange.localconfig.tokensecret, (error, decodedToken) => {
+            jsonwebtoken.verify(token, arrange.localConfig.tokensecret, (error, decodedToken) => {
                 if (!error) {
+                    const userId = decodedToken.userid
                     request.user = {
-                        id: decodedToken.userid,
-                        canRead: (permission_name) => canUserRead(arrange, decodedToken.userid, permission_name),
-                        canWrite: (permission_name) => canUserWrite(arrange, decodedToken.userid, permission_name)
+                        id: userId,
+                        hasPermission: (permission_name) => hasUserPermission(arrange, userId, permission_name)
                     }
                 }
-                // Request soll immer verarbeitet werden, auch wenn kein user Objekt erzeugt wurde
                 next()
             })
         } else {

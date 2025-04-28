@@ -19,7 +19,7 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 
 ## API POST `/api/users/login`
 
-Meldet einen benutzer an.
+Meldet einen Benutzer an.
 
 ```js
 const response = await fetch('/api/users/login', {
@@ -29,12 +29,18 @@ const response = await fetch('/api/users/login', {
 })
 // Benutzer existiert nicht oder falsches Passwort
 response.status === 403
-// Registrierung war erfolgreich
+// Anmeldung war erfolgreich, es wird ein Cookie 'users-token' mit dem JSON Web Token als Wert gesetzt
 response.status === 200
-const data = await response.json()
-data = {
-    token // JSON Web Token. Sollte in localStorage['users/token'] gespeichert werden
-}
+```
+
+
+## API GET `/api/users/logout`
+
+Meldet einen Benutzer ab.
+
+```js
+const response = await fetch('/api/users/logout')
+// Das Cookie 'users-token' wird gelöscht
 ```
 
 
@@ -51,12 +57,8 @@ const response = await fetch('/api/users/register', {
 })
 // Benutzer mit demselben Namen existiert bereits
 response.status === 409
-// Registrierung war erfolgreich
+// Registrierung war erfolgreich, es wird ein Cookie 'users-token' mit dem JSON Web Token als Wert gesetzt
 response.status === 200
-const data = await response.json()
-data = {
-    token // JSON Web Token. Sollte in localStorage['users/token'] gespeichert werden
-}
 ```
 
 
@@ -124,9 +126,7 @@ Speichert Zuordnungen von Berechtigungen zu Benutzergruppen.
 arrange.database['users/permissionassignments'] = {
     'permissionassignment_id' : { 
         usergroupid: 'usergroup_4711', // Id der Benutzergruppe
-        permissionid: 'permission_42', // Id der Berechtigung
-        canread: true, // Gibt an, ob Benutzergruppe lesen darf
-        canwrite: false // Gibt an, ob Benutzergruppe schreiben darf
+        permissionid: 'permission_42' // Id der Berechtigung
     }
 }
 ```
@@ -140,10 +140,8 @@ Ohne Anmeldung existiert diese Eigenschaft nicht.
 ```js
 request.user = { // Optional vorhanden. Wenn vorhanden, ist Benutzer angemeldet
     id, // Id des Benutzers
-    canRead(permission_name),  // Optional vorhandene Funktion. 
-                               // Prüft, ob angemeldeter Benutzer bestimmte Leseberechtigung hat
-    canWrite(permission_name), // Optional vorhandene Funktion. 
-                               //Prüft, ob angemeldeter Benutzer bestimmte Schreibberechtigung hat
+    hasPermission(permission_name),  // Optional vorhandene Funktion. 
+                                     // Prüft, ob angemeldeter Benutzer bestimmte Berechtigung hat
 }
 ```
 
@@ -163,6 +161,10 @@ arrange.webServer.get('/api/example', (request, response) => {
     }
     // Oder kürzer
     if (!request.user) return response.sendStatus(401)
+    // Berechtigung prüfen
+    if (!request.user.hasPermission('PERMISSION_ADMINISTRATION_USER')) {
+        return response.sendStatus(401)
+    }
 })
 ```
 

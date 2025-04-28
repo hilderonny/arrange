@@ -2,6 +2,7 @@ import express from 'express'
 import * as identifyUserMiddleware from './middlewares/identifyuser.mjs'
 import { createRegisterApi } from './api/register.mjs'
 import { createLoginApi } from './api/login.mjs'
+import { createLogoutApi } from './api/logout.mjs'
 
 async function init(arrange) {
     // Tabelle für Benutzergruppen anlegen und befüllen
@@ -17,12 +18,12 @@ async function init(arrange) {
     permissionsTable.save()
     // Tabelle für Berechtigungszuordnungen anlegen und befüllen
     const permissionAssignmentsTable = arrange.database['users/permissionassignments']
-    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER', canread: true, canwrite: true }
-    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USERGROUP', canread: true, canwrite: true }
+    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER' }
+    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USERGROUP' }
     permissionAssignmentsTable.save()
     // Apps registrieren
-    arrange.apps.push({ id: 'users-users', label: 'Benutzer', icon: '/modules/users/images/user.png', url: '/modules/users/users.html' })
-    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html' })
+    arrange.apps.push({ id: 'users-users', label: 'Benutzer', icon: '/modules/users/images/user.png', url: '/modules/users/users.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
+    arrange.apps.push({ id: 'users-usergroups', label: 'Benutzergruppen', icon: '/modules/users/images/group.png', url: '/modules/users/usergroups.html', permission: 'USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USERGROUP' })
 }
 
 async function publishMiddlewares(arrange) {
@@ -37,6 +38,8 @@ async function publishRoutes(arrange) {
     createRegisterApi(arrange)
     // API für Benutzeranmeldung
     createLoginApi(arrange)
+    // API für Benutzerabmeldung
+    createLogoutApi(arrange)
 }
 
 export { init, publishMiddlewares, publishRoutes }

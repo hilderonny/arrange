@@ -10,6 +10,7 @@
             h1 { font-size: 24pt; margin-bottom: 24px; }
 
             div.toolbar { position: absolute; right: 10px; top: 10px; }
+            div.toolbar > a { display: none; }
 
             .apps { align-self: center; }
             .apps > div { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; }
@@ -23,7 +24,7 @@
             (async () => {
 
                 // Toolbar abhängig von Anmeldestatus aufbauen
-                const token = localStorage.getItem('users/token')
+                const token = document.cookie.split(';').find(c => c.trim().startsWith('users-token='))
                 document.getElementById('loginLink').style.display = token ? 'none' : 'initial'
                 document.getElementById('registerLink').style.display = token ? 'none' : 'initial'
                 document.getElementById('logoutLink').style.display = token ? 'initial' : 'none'

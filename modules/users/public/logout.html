@@ -2,12 +2,13 @@
 <html>
 
     <head>
-        <script>
+        <script type="module">
 
-            // Anmeldetoken löschen
-            localStorage.removeItem('users/token')
-            // Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
-            parent.location.href = '/'
+            (async () => {
+                await fetch('/api/users/logout')
+                // Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
+                parent.location.href = '/'
+            })()
 
         </script>
 
