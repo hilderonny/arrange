@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 
 function loadDatabase(database_directory, log) {
 
@@ -34,6 +35,9 @@ function loadDatabase(database_directory, log) {
     function saveTable(table_name, table_content) {
         const fileName = database_directory + table_name + '.json'
         log('[DATABASE] Speichere Datenbankdatei %s.', fileName)
+        // Sicherstellen, dass Verzeichnisstruktur existiert
+        fs.mkdirSync(path.dirname(fileName), { recursive: true})
+        // Datei speichern
         fs.writeFileSync(fileName, JSON.stringify(table_content))
     }
 

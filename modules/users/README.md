@@ -17,12 +17,12 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |`identifyuser`|Globale Middleware, die aus dem Request einen JSON Webtoken extrahiert (falls vorhanden) und das `request.user` Objekt erzeugt, welches Informationen und Hilfsfunktionen für den angemeldeten Benutzer enthält|
 
 
-## Datenbanktabelle `users`
+## Datenbanktabelle `users/users`
 
 Speichert alle Benutzer, die Zugriff auf das System haben
 
 ```js
-arrange.database['users'] = {
+arrange.database['users/users'] = {
     'user_id' : { 
         name: 'ronny', // Benutzername für Anmeldung
         password: 'jiovrlwuqhvnr4728oz7rtn', // Verschlüsseltes Passwort
@@ -31,14 +31,14 @@ arrange.database['users'] = {
 ```
 
 
-## Datenbanktabelle `usergroups`
+## Datenbanktabelle `users/usergroups`
 
 Speichert Benutzergruppen.
 Benutzer können Benutzergruppen angehören.
 Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
 
 ```js
-arrange.database['usergroups'] = {
+arrange.database['users/usergroups'] = {
     'usergroup_id' : { 
         name: 'Administratoren' // Anzeigename
     }
@@ -46,12 +46,12 @@ arrange.database['usergroups'] = {
 ```
 
 
-## Datenbanktabelle `usergroupassignments`
+## Datenbanktabelle `users/usergroupassignments`
 
 Speichert Zuordnungen von Benutzern zu Benutzergruppen.
 
 ```js
-arrange.database['usergroupassignments'] = {
+arrange.database['users/usergroupassignments'] = {
     'usergroupassignment_id' : { 
         userid: 'user_0815', // Id des Benutzers
         usergroupid: 'usergroup_4711' // Id der Benutzergruppe
@@ -60,12 +60,12 @@ arrange.database['usergroupassignments'] = {
 ```
 
 
-## Datenbanktabelle `permissions`
+## Datenbanktabelle `users/permissions`
 
 Speichert Berechtigungen
 
 ```js
-arrange.database['permissions'] = {
+arrange.database['users/permissions'] = {
     'permission_id' : { 
         label: 'Benutzerverwaltung', // Anzeigename
     }
@@ -73,12 +73,12 @@ arrange.database['permissions'] = {
 ```
 
 
-## Datenbanktabelle `permissionassignments`
+## Datenbanktabelle `users/permissionassignments`
 
 Speichert Zuordnungen von Berechtigungen zu Benutzergruppen.
 
 ```js
-arrange.database['permissionassignments'] = {
+arrange.database['users/permissionassignments'] = {
     'permissionassignment_id' : { 
         usergroupid: 'usergroup_4711', // Id der Benutzergruppe
         permissionid: 'permission_42', // Id der Berechtigung

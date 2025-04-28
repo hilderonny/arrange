@@ -14,9 +14,11 @@ Wenn Module auf noch nicht existierende Tabellen zugreifen, so wird diese eben e
 
 Jede Tabelle wird als Objekt gespeichert, wobei der Key einer Property des Objektes der Id des Datensatzes entspricht.
 
+Der Datenbankname kann auch Slashes (`/`) enthalten. In diesem Fall wird der Name wie eine Verzeichnisstruktur behandelt. Diese Struktur wird sogar bevorzugt, damit die Tabellen nach Modulen geordnet werden können.
+
 ```js
 // Benutzertabelle laden oder anlegen
-const usersTable = arrange.database['users']
+const usersTable = arrange.database['users/usergroups']
 // Benutzer anhand seiner Id laden
 const existingUser = usersTable['existing_user_id']
 // Neuen Benutzer anlegen
