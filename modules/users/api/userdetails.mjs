@@ -1,4 +1,4 @@
-function createUserDetailsApi(arrange) {
+export default (arrange) => {
 
     // Benutzerdetails und zugehörende Benutzergruppen zurück geben
     arrange.webServer.get('/api/users/userdetails/:user_id', async(request, response) => {
@@ -24,5 +24,3 @@ function createUserDetailsApi(arrange) {
     })
 
 }
-
-export { createUserDetailsApi }

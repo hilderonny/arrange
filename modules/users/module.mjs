@@ -1,11 +1,6 @@
 import express from 'express'
+import fs from 'node:fs'
 import * as identifyUserMiddleware from './middlewares/identifyuser.mjs'
-import { createRegisterApi } from './api/register.mjs'
-import { createLoginApi } from './api/login.mjs'
-import { createLogoutApi } from './api/logout.mjs'
-import { createListUsersApi } from './api/listusers.mjs'
-import { createUserDetailsApi } from './api/userdetails.mjs'
-import { createListUsergroupsApi } from './api/listusergroups.mjs'
 
 async function init(arrange) {
     // Tabelle für Benutzergruppen anlegen und befüllen
@@ -34,18 +29,14 @@ async function publishMiddlewares(arrange) {
 async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/users` veröffentlichen
     arrange.webServer.use('/modules/users', express.static(`${import.meta.dirname}/public`))
-    // API für Benutzerregistrierung
-    createRegisterApi(arrange)
-    // API für Benutzeranmeldung
-    createLoginApi(arrange)
-    // API für Benutzerabmeldung
-    createLogoutApi(arrange)
-    // API für Benutzerliste
-    createListUsersApi(arrange)
-    // API für Benutzerdetails
-    createUserDetailsApi(arrange)
-    // API für Benutzergruppenliste
-    createListUsergroupsApi(arrange)
+    // Alle APIs laden
+    for (const fileName of fs.readdirSync('./modules/users/api')) {
+        if (fileName.endsWith('.mjs')) {
+            arrange.log('[MODULE USERS] Lade API %s.', fileName)
+            const api = await import(`./api/${fileName}`)
+            api.default(arrange)
+        }
+    }
 }
 
 export { init, publishMiddlewares, publishRoutes }

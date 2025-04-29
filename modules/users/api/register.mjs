@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import jsonwebtoken from 'jsonwebtoken'
 
-function createRegisterApi(arrange) {
+export default (arrange) => {
 
     // Neuen Benutzer registrieren
     arrange.webServer.post('/api/users/register', async(request, response) => {
@@ -38,5 +38,3 @@ function createRegisterApi(arrange) {
     })
 
 }
-
-export { createRegisterApi }

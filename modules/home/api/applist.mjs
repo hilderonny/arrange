@@ -1,4 +1,4 @@
-function createAppListApi(arrange) {
+export default (arrange) => {
 
     // Liste von Apps für Navigation
     arrange.webServer.get('/api/home/applist', async(request, response) => {
@@ -12,5 +12,3 @@ function createAppListApi(arrange) {
     })
 
 }
-
-export { createAppListApi }

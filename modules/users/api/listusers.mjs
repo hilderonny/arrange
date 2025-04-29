@@ -1,4 +1,4 @@
-function createListUsersApi(arrange) {
+export default (arrange) => {
 
     // Benutzer auflisten
     arrange.webServer.get('/api/users/listusers', async(request, response) => {
@@ -14,5 +14,3 @@ function createListUsersApi(arrange) {
     })
 
 }
-
-export { createListUsersApi }

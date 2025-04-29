@@ -1,4 +1,4 @@
-function createLogoutApi(arrange) {
+export default (arrange) => {
 
     // Benutzer abmelden
     arrange.webServer.get('/api/users/logout', async(_, response) => {
@@ -7,5 +7,3 @@ function createLogoutApi(arrange) {
     })
 
 }
-
-export { createLogoutApi }

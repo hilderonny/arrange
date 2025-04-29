@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import jsonwebtoken from 'jsonwebtoken'
 
-function createLoginApi(arrange) {
+export default (arrange) => {
 
     // Benutzer anmelden
     arrange.webServer.post('/api/users/login', async(request, response) => {
@@ -24,5 +24,3 @@ function createLoginApi(arrange) {
     })
 
 }
-
-export { createLoginApi }
