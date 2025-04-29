@@ -9,7 +9,7 @@ export default (arrange) => {
         const password = request.body.password
         // Passwort hashen
         const hashedPassword = createHash('sha256').update(password).digest('hex')
-        // Benutzerdatenbank öffnen
+        // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
         // Prüfen, ob es den Benutzer mit dem gegebenen Benutzernamen schon gibt
         const existingUser = usersTable.find(user => user.name === username && user.password === hashedPassword)

@@ -13,7 +13,7 @@
 
             label { color: #627088; }
             input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
-            input.id { font-size: 10pt; padding: 9.5px; }
+            input.id { font-size: 8pt; padding: 10.5px; }
             input:read-only { background-color: #fafafa; color: #606060; }
             select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
             button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
@@ -29,8 +29,8 @@
             .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
 
             #link-users + label, #usersCard .links label { background-image: url(./images/user.png); }
-            #link-usergroups + label { background-image: url(./images/group.png); }
-            #link-permissions + label { background-image: url(./images/unlock.png); }
+            #link-usergroups + label, #usergroupsCard .links label { background-image: url(./images/group.png); }
+            #link-permissions + label, #permissionsCard .links label { background-image: url(./images/unlock.png); }
 
         </style>
 
@@ -39,11 +39,26 @@
             const usersCard = document.getElementById('usersCard')
             const usersLinks = usersCard.querySelector('.links')
             const userDetailsCard = document.getElementById('userDetailsCard')
-            const usernameHeader = document.getElementById('usernameHeader')
+            const userNameHeader = document.getElementById('userNameHeader')
             const userIdInput = document.getElementById('userIdInput')
-            const usernameInput = document.getElementById('usernameInput')
+            const userNameInput = document.getElementById('userNameInput')
             const passwordInput = document.getElementById('passwordInput')
             const usergroupsOfUserDiv = document.getElementById('usergroupsOfUserDiv')
+
+            const usergroupsCard = document.getElementById('usergroupsCard')
+            const usergroupsLinks = usergroupsCard.querySelector('.links')
+            const usergroupDetailsCard = document.getElementById('usergroupDetailsCard')
+            const usergroupNameHeader = document.getElementById('usergroupNameHeader')
+            const usergroupIdInput = document.getElementById('usergroupIdInput')
+            const usergroupNameInput = document.getElementById('usergroupNameInput')
+            const permissionsOfUsergroupDiv = document.getElementById('permissionsOfUsergroupDiv')
+
+            const permissionsCard = document.getElementById('permissionsCard')
+            const permissionsLinks = permissionsCard.querySelector('.links')
+            const permissionDetailsCard = document.getElementById('permissionDetailsCard')
+            const permissionLabelHeader = document.getElementById('permissionLabelHeader')
+            const permissionIdInput = document.getElementById('permissionIdInput')
+            const permissionLabelInput = document.getElementById('permissionLabelInput')
 
             // Ein Auswahlfeld für zu einem Benutzer zugehörige Benutzergruppe wird erzeugt
             function createUsergroupSelect(usergroups, selected_usergroup_id) {
@@ -86,9 +101,9 @@
                 const userDetailsResponse = await fetch('/api/users/userdetails/' + user_id)
                 if (userDetailsResponse.status === 200) {
                     const userDetails = await userDetailsResponse.json()
-                    usernameHeader.innerHTML = userDetails.name
+                    userNameHeader.innerHTML = userDetails.name
                     userIdInput.value = userDetails.id
-                    usernameInput.value = userDetails.name
+                    userNameInput.value = userDetails.name
                     // Benutzergruppen laden
                     const usergroupsResponse = await fetch('/api/users/listusergroups')
                     if (usergroupsResponse.status === 200) {
@@ -116,11 +131,30 @@
                 // Benutzerdetailkarte anzeigen
                 userDetailsCard.classList.remove('hidden')
             }
+
+            // Eine Berechtigung wurde in der Berechtigungsliste selektiert.
+            // Die Berechtigungsdetailkarte wird angezeigt.
+            async function selectPermission(permission_id) {
+                // Berechtigungsinfos laden
+                const permissionDetailsResponse = await fetch('/api/users/permissiondetails/' + permission_id)
+                if (permissionDetailsResponse.status === 200) {
+                    const permissionDetails = await permissionDetailsResponse.json()
+                    permissionLabelHeader.innerHTML = permissionDetails.label
+                    permissionIdInput.value = permissionDetails.id
+                    permissionLabelInput.value = permissionDetails.label
+                }
+                // Berechtigungsdetailkarte anzeigen
+                permissionDetailsCard.classList.remove('hidden')
+            }
             
             // Klick-Handler für Karte in erster (linker) Spalte
             document.getElementById('link-users').addEventListener('click', async () => {
                 // Karten ausblenden
                 userDetailsCard.classList.add('hidden')
+                usergroupsCard.classList.add('hidden')
+                usergroupDetailsCard.classList.add('hidden')
+                permissionsCard.classList.add('hidden')
+                permissionDetailsCard.classList.add('hidden')
                 // Benutzerliste laden
                 usersLinks.innerHTML = ''
                 const usersResponse = await fetch('/api/users/listusers')
@@ -147,12 +181,44 @@
                 usersCard.classList.remove('hidden')
             })
             document.getElementById('link-usergroups').addEventListener('click', async () => {
+                // Karten ausblenden
                 usersCard.classList.add('hidden')
                 userDetailsCard.classList.add('hidden')
+                usergroupDetailsCard.classList.add('hidden')
+                permissionsCard.classList.add('hidden')
+                permissionDetailsCard.classList.add('hidden')
             })
             document.getElementById('link-permissions').addEventListener('click', async () => {
+                // Karten ausblenden
                 usersCard.classList.add('hidden')
                 userDetailsCard.classList.add('hidden')
+                usergroupsCard.classList.add('hidden')
+                usergroupDetailsCard.classList.add('hidden')
+                permissionDetailsCard.classList.add('hidden')
+                // Berechtigungsliste laden
+                permissionsLinks.innerHTML = ''
+                const permissionsResponse = await fetch('/api/users/listpermissions')
+                if (permissionsResponse.status === 200) {
+                    const permissions = await permissionsResponse.json()
+                    permissions.sort((a, b) => a.label.localeCompare(b.label)) // Alphabetisch sortieren
+                    for (const permission of permissions) {
+                        const inputElement = document.createElement('input')
+                        const inputElementId = 'link-permission' + permission.id
+                        inputElement.setAttribute('type', 'radio')
+                        inputElement.setAttribute('id', inputElementId)
+                        inputElement.setAttribute('name', 'link-permission')
+                        inputElement.addEventListener('click', async () => {
+                            await selectPermission(permission.id)
+                        })
+                        permissionsLinks.appendChild(inputElement)
+                        const labelElement = document.createElement('label')
+                        labelElement.setAttribute('for', inputElementId)
+                        labelElement.innerHTML = permission.label
+                        permissionsLinks.appendChild(labelElement)
+                    }
+                }
+                // Berechtigungslistenkarte anzeigen
+                permissionsCard.classList.remove('hidden')
             })
 
         </script>
@@ -175,12 +241,11 @@
             <div class="toolbar">
                 <button>Neu</button>
             </div>
-            <div class="links">
-            </div>
+            <div class="links"></div>
         </div>
 
         <div class="card hidden" id="userDetailsCard">
-            <h1 id="usernameHeader"></h1>
+            <h1 id="userNameHeader"></h1>
             <div class="toolbar">
                 <button>Speichern</button>
                 <button class="destruct">Löschen</button>
@@ -190,22 +255,61 @@
             <label>Id</label>
             <input class="id" id="userIdInput" readonly />
             <label>Benutzername</label>
-            <input id="usernameInput" readonly />
+            <input id="userNameInput" readonly />
             <label>Neues Passwort</label>
             <input id="passwordInput" type="password" />
 
             <h2>Gruppenzugehörigkeit</h2>
-            <div id="usergroupsOfUserDiv">
-                <select>
-                    <option>Benutzergruppe 1</option>
-                    <option class="destruct">Zugehörigkeit löschen</option>
-                </select>
-                <select>
-                    <option disabled selected>Auswählen ...</option>
-                    <option>Benutzergruppe 1</option>
-                </select>
-            </div>
+            <div id="usergroupsOfUserDiv"></div>
         </div>
+
+        <div class="card hidden" id="usergroupsCard">
+            <h1>Benutzergruppen</h1>
+            <div class="toolbar">
+                <button>Neu</button>
+            </div>
+            <div class="links"></div>
+        </div>
+
+        <div class="card hidden" id="usergroupDetailsCard">
+            <h1 id="usergroupNameHeader"></h1>
+            <div class="toolbar">
+                <button>Speichern</button>
+                <button class="destruct">Löschen</button>
+            </div>
+
+            <h2>Details</h2>
+            <label>Id</label>
+            <input class="id" id="usergroupIdInput" readonly />
+            <label>Gruppenname</label>
+            <input id="usergroupNameInput" />
+
+            <h2>Berechtigungen</h2>
+            <div id="permissionsOfUsergroupDiv"></div>
+        </div>
+
+        <div class="card hidden" id="permissionsCard">
+            <h1>Berechtigungen</h1>
+            <div class="toolbar">
+                <button>Neu</button>
+            </div>
+            <div class="links"></div>
+        </div>
+
+        <div class="card hidden" id="permissionDetailsCard">
+            <h1 id="permissionLabelHeader"></h1>
+            <div class="toolbar">
+                <button>Speichern</button>
+                <button class="destruct">Löschen</button>
+            </div>
+
+            <h2>Details</h2>
+            <label>Id</label>
+            <input class="id" id="permissionIdInput" readonly />
+            <label>Bezeichnung</label>
+            <input id="permissionLabelInput" />
+        </div>
+
     </body>
 
 </html>

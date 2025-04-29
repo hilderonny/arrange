@@ -12,7 +12,7 @@ export default (arrange) => {
         // Benutzer generieren
         const userId = randomUUID()
         const user = { name: username, password: hashedPassword }
-        // Benutzerdatenbank öffnen
+        // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
         // Prüfen, ob es den Benutzer mit dem gegebenen Benutzernamen schon gibt
         const existingUser = usersTable.find(u => u.name === username)

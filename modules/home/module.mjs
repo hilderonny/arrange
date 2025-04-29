@@ -12,7 +12,7 @@ async function publishRoutes(arrange) {
     // Alle APIs laden
     for (const fileName of fs.readdirSync('./modules/home/api')) {
         if (fileName.endsWith('.mjs')) {
-            arrange.log('[MODULE USERS] Lade API %s.', fileName)
+            arrange.log('[MODULE HOME] Lade API %s.', fileName)
             const api = await import(`./api/${fileName}`)
             api.default(arrange)
         }

@@ -40,6 +40,23 @@ response.json() = [
 ```
 
 
+## API GET `/api/users/listpermissions`
+
+Listet alle Berechtigungen mit Id und Bezeichnung auf.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const response = await fetch('/api/users/listpermissions')
+// Berechtigung fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
+// Es wird immer ein Feld zurück gegeben.
+response.json() = [
+    { id: 'permissionId', label: 'Berechtigungsbezeichnung' }
+]
+```
+
+
 ## API GET `/api/users/listusers`
 
 Listet alle Benutzer mit Id und Namen auf.
@@ -81,6 +98,26 @@ Meldet einen Benutzer ab.
 ```js
 const response = await fetch('/api/users/logout')
 // Das Cookie 'users-token' wird gelöscht
+```
+
+
+## API GET `/api/users/permissiondetails/:permission_id`
+
+Liefert Detailinformationen über eine bestimmte Berechtigung.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const permissionId = 'user0815'
+const response = await fetch('/api/users/permissiondetails/' + permissionId)
+// Berechtigung des angemeldeten benutzers zur Einsicht fehlt
+response.status === 403
+// Berechtigung mit gegebener Id nicht gefunden
+response.status === 404
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
+response.json() = {
+    id: 'permissionId',
+    label: 'Bezeichnung'
+}
 ```
 
 
