@@ -44,6 +44,9 @@
             const userNameInput = document.getElementById('userNameInput')
             const passwordInput = document.getElementById('passwordInput')
             const usergroupsOfUserDiv = document.getElementById('usergroupsOfUserDiv')
+            const newUserButton = usersCard.querySelector('button.new')
+            const saveUserButton = userDetailsCard.querySelector('button.save')
+            const deleteUserButton = userDetailsCard.querySelector('button.delete')
 
             const usergroupsCard = document.getElementById('usergroupsCard')
             const usergroupsLinks = usergroupsCard.querySelector('.links')
@@ -52,50 +55,92 @@
             const usergroupIdInput = document.getElementById('usergroupIdInput')
             const usergroupNameInput = document.getElementById('usergroupNameInput')
             const permissionsOfUsergroupDiv = document.getElementById('permissionsOfUsergroupDiv')
+            const newUsergroupButton = usergroupsCard.querySelector('button.new')
+            const saveUsergroupButton = usergroupDetailsCard.querySelector('button.save')
+            const deleteUsergroupButton = usergroupDetailsCard.querySelector('button.delete')
 
             const permissionsCard = document.getElementById('permissionsCard')
             const permissionsLinks = permissionsCard.querySelector('.links')
             const permissionDetailsCard = document.getElementById('permissionDetailsCard')
-            const permissionLabelHeader = document.getElementById('permissionLabelHeader')
+            const permissionNameHeader = document.getElementById('permissionNameHeader')
             const permissionIdInput = document.getElementById('permissionIdInput')
-            const permissionLabelInput = document.getElementById('permissionLabelInput')
+            const permissionNameInput = document.getElementById('permissionNameInput')
             const newPermissionButton = permissionsCard.querySelector('button.new')
             const savePermissionButton = permissionDetailsCard.querySelector('button.save')
             const deletePermissionButton = permissionDetailsCard.querySelector('button.delete')
 
-            // Ein Auswahlfeld für eine Zugehörigkeit wird erzeugt
-            function createAssignmentSelect(target_list, selected_usergroup_id) {
-                const selectElement = document.createElement('select')
-                if (!selected_usergroup_id) {
-                    selectElement.innerHTML = '<option disabled selected value="ADDUSERGROUPASSIGNMENT">Hinzufügen ...</option>'
+
+
+            /********** Allgemeine Funktionen **********/
+
+
+
+            // Aktualisiert eine Liste einer Listenkarte
+            async function updateList(listNode, api, input_identifier, select_handler) {
+                listNode.innerHTML = ''
+                const response = await fetch(api)
+                if (response.status === 200) {
+                    const records = await response.json()
+                    records.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                    for (const record of records) {
+                        const inputElement = document.createElement('input')
+                        const inputElementId = input_identifier + '-' + record.id
+                        inputElement.setAttribute('type', 'radio')
+                        inputElement.setAttribute('id', inputElementId)
+                        inputElement.setAttribute('name', input_identifier)
+                        inputElement.addEventListener('click', async () => {
+                            await select_handler(record.id)
+                        })
+                        listNode.appendChild(inputElement)
+                        const labelElement = document.createElement('label')
+                        labelElement.setAttribute('for', inputElementId)
+                        labelElement.innerHTML = record.name
+                        listNode.appendChild(labelElement)
+                    }
                 }
-                // Einen Eintrag für jede existierende Benutzergruppe
-                for (const usergroup of usergroups) {
+            }
+
+            // Ein Auswahlfeld für eine Zugehörigkeit wird erzeugt
+            function createAssignmentSelect(assignments, selected_assignment_id) {
+                const selectElement = document.createElement('select')
+                if (!selected_assignment_id) {
+                    selectElement.innerHTML = '<option disabled selected value="ADDASSIGNMENT">Hinzufügen ...</option>'
+                }
+                // Einen Eintrag für jede existierende Zuordnung
+                for (const assignment of assignments) {
                     const optionElement = document.createElement('option')
-                    optionElement.value = usergroup.id
-                    optionElement.innerHTML = usergroup.name
-                    if (usergroup.id === selected_usergroup_id) {
+                    optionElement.value = assignment.id
+                    optionElement.innerHTML = assignment.name
+                    if (assignment.id === selected_assignment_id) {
                         optionElement.selected = true
                     }
                     selectElement.appendChild(optionElement)
                 }
-                // Letzter Eintrag dient zum Löschen der Zugehörigkeit
-                // Wird aber nur erzeugt, wenn eine Benutzergruppe selektiert ist
-                if (selected_usergroup_id) {
+                // Letzter Eintrag dient zum Löschen der Zuordnung
+                // Wird aber nur erzeugt, wenn eine Zuordnung selektiert ist
+                if (selected_assignment_id) {
                     const deleteOption = document.createElement('option')
-                    deleteOption.value = 'DELETEUSERGROUPASSIGNMENT'
+                    deleteOption.value = 'DELETEASSIGNMENT'
                     deleteOption.classList.add('delete')
-                    deleteOption.innerHTML = 'Zugehörigkeit löschen'
+                    deleteOption.innerHTML = 'Löschen ...'
                     selectElement.appendChild(deleteOption)
                 }
                 selectElement.addEventListener('change', () => {
                     // Feld löschen, wenn ausgewählt
-                    if (selectElement.value === 'DELETEUSERGROUPASSIGNMENT') {
+                    if (selectElement.value === 'DELETEASSIGNMENT') {
                         selectElement.parentNode.removeChild(selectElement)
                     }
                 })
                 return selectElement
             }
+
+
+
+
+
+
+
+
 
             // Ein Benutzer wurde in der Benutzerliste selektiert.
             // Die Benutzerdetailkarte wird angezeigt.
@@ -176,72 +221,58 @@
             /********** Benutzergruppen **********/
 
 
+            async function createAssignmentSelects(target_node, api, assignment_ids) {
+                const response = await fetch(api)
+                if (response.status === 200) {
+                    const assignments = await response.json()
+                    assignments.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                    // Select-Felder für alle Zugehörigkeiten erstellen
+                    target_node.innerHTML = ''
+                    for (const assignmentId of assignment_ids) {
+                        const selectElement = createAssignmentSelect(assignments, assignmentId)
+                        target_node.appendChild(selectElement)
+                    }
+                    // Zusätzliches Feld erstellen, damit neue Zuordnungen erstellt werden können
+                    const additionalSelectElement = createAssignmentSelect(assignments)
+                    additionalSelectElement.addEventListener('change', () => {
+                        const newAssignmentId = additionalSelectElement.value
+                        // Neues Selectfeld vor dem letzten einfügen
+                        const newSelectElement = createAssignmentSelect(assignments, newAssignmentId)
+                        target_node.insertBefore(newSelectElement, additionalSelectElement)
+                        additionalSelectElement.value = 'ADDASSIGNMENT'
+                        newSelectElement.focus()
+                    })
+                    target_node.appendChild(additionalSelectElement)
+                }
+            }
+
 
             // Eine Benutzergruppe wurde in der Benutzergruppenliste selektiert.
             // Die Benutzergruppendetailkarte wird angezeigt.
             async function selectUsergroup(usergroup_id) {
                 // Benutzergruppeninfos laden
-                const usergroupDetailsResponse = await fetch('/api/users/usergroupdetails/' + permission_id)
+                const usergroupDetailsResponse = await fetch('/api/users/usergroupdetails/' + usergroup_id)
                 if (usergroupDetailsResponse.status === 200) {
                     const usergroupDetails = await usergroupDetailsResponse.json()
                     usergroupNameHeader.innerHTML = usergroupDetails.name
                     usergroupIdInput.value = usergroupDetails.id
                     usergroupNameInput.value = usergroupDetails.name
                     // Berechtigungen laden
-                    const permissionsResponse = await fetch('/api/users/listpermissions')
-                    if (permissionsResponse.status === 200) {
-                        const permissions = await permissionsResponse.json()
-                        permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
-                        // Select-Felder für alle Zugehörigkeiten erstellen
-                        permissionsOfUsergroupDiv.innerHTML = ''
-                        for (const permissionId of usergroupDetails.permissionids) {
-                            const selectElement = createPermissionSelect(usergroups, permissionId)
-                            // TODO HIER
-                            usergroupsOfUserDiv.appendChild(selectElement)
-                        }
-                        // Zusätzliches Feld erstellen, damit neue Zugehörigkeiten erstellt werden können
-                        const additionalSelectElement = createUsergroupSelect(usergroups)
-                        additionalSelectElement.addEventListener('change', () => {
-                            const newUsergroupId = additionalSelectElement.value
-                            // Neues Selectfeld vor dem letzten einfügen
-                            const newSelectElement = createUsergroupSelect(usergroups, newUsergroupId)
-                            usergroupsOfUserDiv.insertBefore(newSelectElement, additionalSelectElement)
-                            additionalSelectElement.value = 'ADDUSERGROUPASSIGNMENT'
-                            newSelectElement.focus()
-                        })
-                        usergroupsOfUserDiv.appendChild(additionalSelectElement)
-                    }
+                    await createAssignmentSelects(permissionsOfUsergroupDiv, '/api/users/listpermissions', usergroupDetails.permissionids)
                 }
                 // Berechtigungsdetailkarte anzeigen
-                deletePermissionButton.classList.remove('hidden')
-                permissionDetailsCard.classList.remove('hidden')
-            }
-            
-            // Aktualisiert die Berechtigungsliste
-            async function updatePermissionsList() {
-                permissionsLinks.innerHTML = ''
-                const permissionsResponse = await fetch('/api/users/listpermissions')
-                if (permissionsResponse.status === 200) {
-                    const permissions = await permissionsResponse.json()
-                    permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
-                    for (const permission of permissions) {
-                        const inputElement = document.createElement('input')
-                        const inputElementId = 'link-permission-' + permission.id
-                        inputElement.setAttribute('type', 'radio')
-                        inputElement.setAttribute('id', inputElementId)
-                        inputElement.setAttribute('name', 'link-permission')
-                        inputElement.addEventListener('click', async () => {
-                            await selectPermission(permission.id)
-                        })
-                        permissionsLinks.appendChild(inputElement)
-                        const labelElement = document.createElement('label')
-                        labelElement.setAttribute('for', inputElementId)
-                        labelElement.innerHTML = permission.name
-                        permissionsLinks.appendChild(labelElement)
-                    }
-                }
+                deleteUsergroupButton.classList.remove('hidden')
+                usergroupDetailsCard.classList.remove('hidden')
             }
 
+            // Aktualisiert die Benutzergruppenliste
+            async function updateUsergroupsList() {
+                await updateList(usergroupsLinks, '/api/users/listusergroups', 'link-usergroup', selectUsergroup)
+            }
+
+            // TODO: Hier weiter!
+
+            /*
             // Neue Berechtigung vorbereiten
             newPermissionButton.addEventListener('click', () => {
                 // Detailfelder leeren
@@ -289,19 +320,19 @@
                     alert('Die Berechtigung wurde gelöscht.')
                 }
             })
-
-            // Feature Berechtigungen auswählen
-            document.getElementById('link-permissions').addEventListener('click', async () => {
+*/
+            // Feature Benutzergruppen auswählen
+            document.getElementById('link-usergroups').addEventListener('click', async () => {
                 // Karten ausblenden
                 usersCard.classList.add('hidden')
                 userDetailsCard.classList.add('hidden')
-                usergroupsCard.classList.add('hidden')
                 usergroupDetailsCard.classList.add('hidden')
+                permissionsCard.classList.add('hidden')
                 permissionDetailsCard.classList.add('hidden')
                 // Berechtigungsliste laden
-                await updatePermissionsList()
-                // Berechtigungslistenkarte anzeigen
-                permissionsCard.classList.remove('hidden')
+                await updateUsergroupsList()
+                // Benutzergruppenlistenkarte anzeigen
+                usergroupsCard.classList.remove('hidden')
             })
 
 
@@ -325,30 +356,10 @@
                 deletePermissionButton.classList.remove('hidden')
                 permissionDetailsCard.classList.remove('hidden')
             }
-            
+
             // Aktualisiert die Berechtigungsliste
             async function updatePermissionsList() {
-                permissionsLinks.innerHTML = ''
-                const permissionsResponse = await fetch('/api/users/listpermissions')
-                if (permissionsResponse.status === 200) {
-                    const permissions = await permissionsResponse.json()
-                    permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
-                    for (const permission of permissions) {
-                        const inputElement = document.createElement('input')
-                        const inputElementId = 'link-permission-' + permission.id
-                        inputElement.setAttribute('type', 'radio')
-                        inputElement.setAttribute('id', inputElementId)
-                        inputElement.setAttribute('name', 'link-permission')
-                        inputElement.addEventListener('click', async () => {
-                            await selectPermission(permission.id)
-                        })
-                        permissionsLinks.appendChild(inputElement)
-                        const labelElement = document.createElement('label')
-                        labelElement.setAttribute('for', inputElementId)
-                        labelElement.innerHTML = permission.name
-                        permissionsLinks.appendChild(labelElement)
-                    }
-                }
+                await updateList(permissionsLinks, '/api/users/listpermissions', 'link-permission', selectPermission)
             }
 
             // Neue Berechtigung vorbereiten
@@ -431,7 +442,7 @@
         <div class="card hidden" id="usersCard">
             <h1>Benutzer</h1>
             <div class="toolbar">
-                <button>Neu</button>
+                <button class="new">Neu</button>
             </div>
             <div class="links"></div>
         </div>
@@ -458,7 +469,7 @@
         <div class="card hidden" id="usergroupsCard">
             <h1>Benutzergruppen</h1>
             <div class="toolbar">
-                <button>Neu</button>
+                <button class="new">Neu</button>
             </div>
             <div class="links"></div>
         </div>
