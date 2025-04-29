@@ -3,8 +3,9 @@
 
 ## Installation
 
-1. Repository klonen
-2. Terminal öffnen, `.\nodejs\npm install` aufrufen
+1. NodeJS installieren
+2. Repository klonen
+3. Terminal öffnen, `npm install` aufrufen
 
 
 ## Konfiguration

@@ -8,7 +8,7 @@
             "console": "integratedTerminal",
             "name": "Launch Program",
             "program": "${workspaceFolder}/arrange.mjs",
-            "runtimeExecutable": "${workspaceFolder}/nodejs/node",
+            "runtimeExecutable": "node",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"
