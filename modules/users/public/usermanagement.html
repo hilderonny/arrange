@@ -17,10 +17,10 @@
             input:read-only { background-color: #fafafa; color: #606060; }
             select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
             button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
-            .destruct { background-color: red; color: white; }
+            .delete { background-color: red; color: white; }
 
             .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
-            .card.hidden { display: none; }
+            .hidden { display: none; }
 
             .links { flex: 1; overflow: auto; }
             .links input { display: none; }
@@ -59,6 +59,9 @@
             const permissionLabelHeader = document.getElementById('permissionLabelHeader')
             const permissionIdInput = document.getElementById('permissionIdInput')
             const permissionLabelInput = document.getElementById('permissionLabelInput')
+            const newPermissionButton = permissionsCard.querySelector('button.new')
+            const savePermissionButton = permissionDetailsCard.querySelector('button.save')
+            const deletePermissionButton = permissionDetailsCard.querySelector('button.delete')
 
             // Ein Auswahlfeld für zu einem Benutzer zugehörige Benutzergruppe wird erzeugt
             function createUsergroupSelect(usergroups, selected_usergroup_id) {
@@ -81,7 +84,7 @@
                 if (selected_usergroup_id) {
                     const deleteOption = document.createElement('option')
                     deleteOption.value = 'DELETEUSERGROUPASSIGNMENT'
-                    deleteOption.classList.add('destruct')
+                    deleteOption.classList.add('delete')
                     deleteOption.innerHTML = 'Zugehörigkeit löschen'
                     selectElement.appendChild(deleteOption)
                 }
@@ -131,21 +134,6 @@
                 // Benutzerdetailkarte anzeigen
                 userDetailsCard.classList.remove('hidden')
             }
-
-            // Eine Berechtigung wurde in der Berechtigungsliste selektiert.
-            // Die Berechtigungsdetailkarte wird angezeigt.
-            async function selectPermission(permission_id) {
-                // Berechtigungsinfos laden
-                const permissionDetailsResponse = await fetch('/api/users/permissiondetails/' + permission_id)
-                if (permissionDetailsResponse.status === 200) {
-                    const permissionDetails = await permissionDetailsResponse.json()
-                    permissionLabelHeader.innerHTML = permissionDetails.label
-                    permissionIdInput.value = permissionDetails.id
-                    permissionLabelInput.value = permissionDetails.label
-                }
-                // Berechtigungsdetailkarte anzeigen
-                permissionDetailsCard.classList.remove('hidden')
-            }
             
             // Klick-Handler für Karte in erster (linker) Spalte
             document.getElementById('link-users').addEventListener('click', async () => {
@@ -188,14 +176,31 @@
                 permissionsCard.classList.add('hidden')
                 permissionDetailsCard.classList.add('hidden')
             })
-            document.getElementById('link-permissions').addEventListener('click', async () => {
-                // Karten ausblenden
-                usersCard.classList.add('hidden')
-                userDetailsCard.classList.add('hidden')
-                usergroupsCard.classList.add('hidden')
-                usergroupDetailsCard.classList.add('hidden')
-                permissionDetailsCard.classList.add('hidden')
-                // Berechtigungsliste laden
+
+
+            
+            /********** Berechtigungen **********/
+
+
+
+            // Eine Berechtigung wurde in der Berechtigungsliste selektiert.
+            // Die Berechtigungsdetailkarte wird angezeigt.
+            async function selectPermission(permission_id) {
+                // Berechtigungsinfos laden
+                const permissionDetailsResponse = await fetch('/api/users/permissiondetails/' + permission_id)
+                if (permissionDetailsResponse.status === 200) {
+                    const permissionDetails = await permissionDetailsResponse.json()
+                    permissionLabelHeader.innerHTML = permissionDetails.label
+                    permissionIdInput.value = permissionDetails.id
+                    permissionLabelInput.value = permissionDetails.label
+                }
+                // Berechtigungsdetailkarte anzeigen
+                deletePermissionButton.classList.remove('hidden')
+                permissionDetailsCard.classList.remove('hidden')
+            }
+            
+            // Aktualisiert die Berechtigungsliste
+            async function updatePermissionsList() {
                 permissionsLinks.innerHTML = ''
                 const permissionsResponse = await fetch('/api/users/listpermissions')
                 if (permissionsResponse.status === 200) {
@@ -203,7 +208,7 @@
                     permissions.sort((a, b) => a.label.localeCompare(b.label)) // Alphabetisch sortieren
                     for (const permission of permissions) {
                         const inputElement = document.createElement('input')
-                        const inputElementId = 'link-permission' + permission.id
+                        const inputElementId = 'link-permission-' + permission.id
                         inputElement.setAttribute('type', 'radio')
                         inputElement.setAttribute('id', inputElementId)
                         inputElement.setAttribute('name', 'link-permission')
@@ -217,6 +222,66 @@
                         permissionsLinks.appendChild(labelElement)
                     }
                 }
+            }
+
+            // Neue Berechtigung vorbereiten
+            newPermissionButton.addEventListener('click', () => {
+                // Detailfelder leeren
+                permissionLabelHeader.innerHTML = 'Neue Berechtigung'
+                permissionIdInput.value = ''
+                permissionLabelInput.value = ''
+                // Selektion in Liste entfernen
+                permissionsLinks.querySelectorAll(`input`).forEach(input => input.checked = false)
+                // Berechtigungsdetailkarte anzeigen
+                deletePermissionButton.classList.add('hidden')
+                permissionDetailsCard.classList.remove('hidden')
+            })
+
+            // Berechtigung speichern
+            savePermissionButton.addEventListener('click', async () => {
+                const permission = {
+                    id: permissionIdInput.value,
+                    label: permissionLabelInput.value
+                }
+                const response = await fetch('/api/users/savepermission', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(permission)
+                })
+                if (response.status === 200) {
+                    const permissionId = (await response.json()).id
+                    // Berechtigungsliste neu laden
+                    await updatePermissionsList()
+                    await selectPermission(permissionId)
+                    permissionsLinks.querySelector(`[id="link-permission-${permissionId}"]`).checked = true
+                    alert('Die Berechtigung wurde gespeichert.')
+                }
+            })
+
+            // Berechtigung löschen
+            deletePermissionButton.addEventListener('click', async () => {
+                // Sicherheitsabfrage
+                if (!confirm('Soll die Berechtigung wirklich gelöscht werden?')) return
+                const response = await fetch('/api/users/deletepermission/' + permissionIdInput.value, { method: 'DELETE' })
+                if (response.status === 200) {
+                    // Detailkarte ausblenden
+                    permissionDetailsCard.classList.add('hidden')
+                    // Berechtigungsliste neu laden
+                    await updatePermissionsList()
+                    alert('Die Berechtigung wurde gelöscht.')
+                }
+            })
+
+            // Feature Berechtigungen auswählen
+            document.getElementById('link-permissions').addEventListener('click', async () => {
+                // Karten ausblenden
+                usersCard.classList.add('hidden')
+                userDetailsCard.classList.add('hidden')
+                usergroupsCard.classList.add('hidden')
+                usergroupDetailsCard.classList.add('hidden')
+                permissionDetailsCard.classList.add('hidden')
+                // Berechtigungsliste laden
+                await updatePermissionsList()
                 // Berechtigungslistenkarte anzeigen
                 permissionsCard.classList.remove('hidden')
             })
@@ -247,8 +312,8 @@
         <div class="card hidden" id="userDetailsCard">
             <h1 id="userNameHeader"></h1>
             <div class="toolbar">
-                <button>Speichern</button>
-                <button class="destruct">Löschen</button>
+                <button class="save">Speichern</button>
+                <button class="delete">Löschen</button>
             </div>
 
             <h2>Details</h2>
@@ -274,8 +339,8 @@
         <div class="card hidden" id="usergroupDetailsCard">
             <h1 id="usergroupNameHeader"></h1>
             <div class="toolbar">
-                <button>Speichern</button>
-                <button class="destruct">Löschen</button>
+                <button class="save">Speichern</button>
+                <button class="delete">Löschen</button>
             </div>
 
             <h2>Details</h2>
@@ -291,7 +356,7 @@
         <div class="card hidden" id="permissionsCard">
             <h1>Berechtigungen</h1>
             <div class="toolbar">
-                <button>Neu</button>
+                <button class="new">Neu</button>
             </div>
             <div class="links"></div>
         </div>
@@ -299,8 +364,8 @@
         <div class="card hidden" id="permissionDetailsCard">
             <h1 id="permissionLabelHeader"></h1>
             <div class="toolbar">
-                <button>Speichern</button>
-                <button class="destruct">Löschen</button>
+                <button class="save">Speichern</button>
+                <button class="delete">Löschen</button>
             </div>
 
             <h2>Details</h2>

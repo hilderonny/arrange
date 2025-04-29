@@ -23,6 +23,22 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |`PERMISSION_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
 
 
+## API POST `/api/users/deletepermission/:permission_id`
+
+Löscht eine Berechtigung
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const permissionId = 'user0815'
+const response = await fetch('/api/users/deletepermission/' + permissionId)
+const response = await fetch('/api/users/deletepermission/permissionId', { method: 'DELETE' })
+// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+response.status === 403
+// Berechtigung erfolgreich gelöscht oder gar nicht vorhanden
+response.status === 200
+```
+
+
 ## API GET `/api/users/listusergroups`
 
 Listet alle Benutzergruppen mit Id und Namen auf.
@@ -109,7 +125,7 @@ Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 ```js
 const permissionId = 'user0815'
 const response = await fetch('/api/users/permissiondetails/' + permissionId)
-// Berechtigung des angemeldeten benutzers zur Einsicht fehlt
+// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
 response.status === 403
 // Berechtigung mit gegebener Id nicht gefunden
 response.status === 404
@@ -136,6 +152,30 @@ const response = await fetch('/api/users/register', {
 response.status === 409
 // Registrierung war erfolgreich, es wird ein Cookie 'users-token' mit dem JSON Web Token als Wert gesetzt
 response.status === 200
+```
+
+
+## API POST `/api/users/savepermission`
+
+Speichert eine Berechtigung oder legt diese an.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const response = await fetch('/api/users/savepermission', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        id: 'permissionId', // Optional. Wenn nicht angegeben, wird eine ID generiert
+        label: 'Bezeichnung'
+    })
+})
+// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
+response.json() = {
+    id: 'permissionId', // Generierte Id, wenn vormals weggelassen
+    label: 'Bezeichnung'
+}
 ```
 
 

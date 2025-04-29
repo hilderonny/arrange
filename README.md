@@ -25,7 +25,7 @@ Alle Pfadangaben sind entweder relativ zu `arrange.mjs` oder absolut anzugeben.
 ## Starten
 
 ```cmd
-.\nodejs\node .\server.mjs`
+node .\server.mjs`
 ```
 
 
