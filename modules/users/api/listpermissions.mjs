@@ -8,7 +8,7 @@ export default (arrange) => {
         const permissionsTable = arrange.database['users/permissions']
         const permissionList = permissionsTable.entries().map(kvp => { return {
             id: kvp[0],
-            label: kvp[1].label
+            name: kvp[1].name
         }})
         response.send(permissionList)
     })

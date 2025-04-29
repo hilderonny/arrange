@@ -11,7 +11,7 @@ export default (arrange) => {
         // Berechtigung zum Speichern vorbereiten
         let permissionId = request.body.id
         const permission = {
-            label: request.body.label
+            name: request.body.name
         }
         // Id generieren, wenn nicht angegeben
         if (!permissionId) {
@@ -23,7 +23,7 @@ export default (arrange) => {
         // Rückgabe zusammenbasteln
         const permissionToReturn = {
             id: permissionId,
-            label: permission.label
+            name: permission.name
         }
         response.send(permissionToReturn)
     })

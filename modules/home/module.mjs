@@ -3,7 +3,7 @@ import fs from 'node:fs'
 
 async function init(arrange) {
     // App registrieren
-    arrange.apps.push({ id: 'home-home', label: 'Home', icon: '/images/house.png', url: '/home.html', default: true })
+    arrange.apps.push({ id: 'home-home', name: 'Home', icon: '/images/house.png', url: '/home.html', default: true })
 }
 
 async function publishRoutes(arrange) {

@@ -14,7 +14,7 @@ export default (arrange) => {
         // Rückgabe zusammenbasteln
         const permissionToReturn = {
             id: permissionId,
-            label: permission.label
+            name: permission.name
         }
         response.send(permissionToReturn)
     })

@@ -68,7 +68,7 @@ response.status === 403
 // Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
 // Es wird immer ein Feld zurück gegeben.
 response.json() = [
-    { id: 'permissionId', label: 'Berechtigungsbezeichnung' }
+    { id: 'permissionId', name: 'Berechtigungsbezeichnung' }
 ]
 ```
 
@@ -132,7 +132,7 @@ response.status === 404
 // Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
 response.json() = {
     id: 'permissionId',
-    label: 'Bezeichnung'
+    name: 'Bezeichnung'
 }
 ```
 
@@ -166,7 +166,7 @@ const response = await fetch('/api/users/savepermission', {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
         id: 'permissionId', // Optional. Wenn nicht angegeben, wird eine ID generiert
-        label: 'Bezeichnung'
+        name: 'Bezeichnung'
     })
 })
 // Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
@@ -174,7 +174,7 @@ response.status === 403
 // Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
 response.json() = {
     id: 'permissionId', // Generierte Id, wenn vormals weggelassen
-    label: 'Bezeichnung'
+    name: 'Bezeichnung'
 }
 ```
 
@@ -198,6 +198,29 @@ response.json() = {
     usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
 }
 ```
+
+
+## API GET `/api/users/usergroupdetails/:usergroup_id`
+
+Liefert Detailinformationen über eine bestimmte Benutzergruppe samt zugewiesener Berechtigungs-Ids.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const usergroupId = 'user0815'
+const response = await fetch('/api/users/usergroupdetails/' + usergroupId)
+// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+response.status === 403
+// Benutzergruppe mit gegebener Id nicht gefunden
+response.status === 404
+// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Benutzergruppeninfos zurück.
+response.json() = {
+    id: 'usergroupId',
+    name: 'Gruppenname',
+    permissionids: [ 'permissionid_1', 'permissionid_2' ]
+}
+```
+
+
 
 
 ## Datenbanktabelle `users/users`
@@ -250,7 +273,7 @@ Speichert Berechtigungen
 ```js
 arrange.database['users/permissions'] = {
     'permission_id' : { 
-        label: 'Benutzerverwaltung', // Anzeigename
+        name: 'Benutzerverwaltung', // Anzeigename
     }
 }
 ```

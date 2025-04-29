@@ -63,8 +63,8 @@
             const savePermissionButton = permissionDetailsCard.querySelector('button.save')
             const deletePermissionButton = permissionDetailsCard.querySelector('button.delete')
 
-            // Ein Auswahlfeld für zu einem Benutzer zugehörige Benutzergruppe wird erzeugt
-            function createUsergroupSelect(usergroups, selected_usergroup_id) {
+            // Ein Auswahlfeld für eine Zugehörigkeit wird erzeugt
+            function createAssignmentSelect(target_list, selected_usergroup_id) {
                 const selectElement = document.createElement('select')
                 if (!selected_usergroup_id) {
                     selectElement.innerHTML = '<option disabled selected value="ADDUSERGROUPASSIGNMENT">Hinzufügen ...</option>'
@@ -168,31 +168,49 @@
                 // Benutzerlistenkarte anzeigen
                 usersCard.classList.remove('hidden')
             })
-            document.getElementById('link-usergroups').addEventListener('click', async () => {
-                // Karten ausblenden
-                usersCard.classList.add('hidden')
-                userDetailsCard.classList.add('hidden')
-                usergroupDetailsCard.classList.add('hidden')
-                permissionsCard.classList.add('hidden')
-                permissionDetailsCard.classList.add('hidden')
-            })
-
 
             
-            /********** Berechtigungen **********/
 
 
 
-            // Eine Berechtigung wurde in der Berechtigungsliste selektiert.
-            // Die Berechtigungsdetailkarte wird angezeigt.
-            async function selectPermission(permission_id) {
-                // Berechtigungsinfos laden
-                const permissionDetailsResponse = await fetch('/api/users/permissiondetails/' + permission_id)
-                if (permissionDetailsResponse.status === 200) {
-                    const permissionDetails = await permissionDetailsResponse.json()
-                    permissionLabelHeader.innerHTML = permissionDetails.label
-                    permissionIdInput.value = permissionDetails.id
-                    permissionLabelInput.value = permissionDetails.label
+            /********** Benutzergruppen **********/
+
+
+
+            // Eine Benutzergruppe wurde in der Benutzergruppenliste selektiert.
+            // Die Benutzergruppendetailkarte wird angezeigt.
+            async function selectUsergroup(usergroup_id) {
+                // Benutzergruppeninfos laden
+                const usergroupDetailsResponse = await fetch('/api/users/usergroupdetails/' + permission_id)
+                if (usergroupDetailsResponse.status === 200) {
+                    const usergroupDetails = await usergroupDetailsResponse.json()
+                    usergroupNameHeader.innerHTML = usergroupDetails.name
+                    usergroupIdInput.value = usergroupDetails.id
+                    usergroupNameInput.value = usergroupDetails.name
+                    // Berechtigungen laden
+                    const permissionsResponse = await fetch('/api/users/listpermissions')
+                    if (permissionsResponse.status === 200) {
+                        const permissions = await permissionsResponse.json()
+                        permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                        // Select-Felder für alle Zugehörigkeiten erstellen
+                        permissionsOfUsergroupDiv.innerHTML = ''
+                        for (const permissionId of usergroupDetails.permissionids) {
+                            const selectElement = createPermissionSelect(usergroups, permissionId)
+                            // TODO HIER
+                            usergroupsOfUserDiv.appendChild(selectElement)
+                        }
+                        // Zusätzliches Feld erstellen, damit neue Zugehörigkeiten erstellt werden können
+                        const additionalSelectElement = createUsergroupSelect(usergroups)
+                        additionalSelectElement.addEventListener('change', () => {
+                            const newUsergroupId = additionalSelectElement.value
+                            // Neues Selectfeld vor dem letzten einfügen
+                            const newSelectElement = createUsergroupSelect(usergroups, newUsergroupId)
+                            usergroupsOfUserDiv.insertBefore(newSelectElement, additionalSelectElement)
+                            additionalSelectElement.value = 'ADDUSERGROUPASSIGNMENT'
+                            newSelectElement.focus()
+                        })
+                        usergroupsOfUserDiv.appendChild(additionalSelectElement)
+                    }
                 }
                 // Berechtigungsdetailkarte anzeigen
                 deletePermissionButton.classList.remove('hidden')
@@ -205,7 +223,7 @@
                 const permissionsResponse = await fetch('/api/users/listpermissions')
                 if (permissionsResponse.status === 200) {
                     const permissions = await permissionsResponse.json()
-                    permissions.sort((a, b) => a.label.localeCompare(b.label)) // Alphabetisch sortieren
+                    permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
                     for (const permission of permissions) {
                         const inputElement = document.createElement('input')
                         const inputElementId = 'link-permission-' + permission.id
@@ -218,7 +236,7 @@
                         permissionsLinks.appendChild(inputElement)
                         const labelElement = document.createElement('label')
                         labelElement.setAttribute('for', inputElementId)
-                        labelElement.innerHTML = permission.label
+                        labelElement.innerHTML = permission.name
                         permissionsLinks.appendChild(labelElement)
                     }
                 }
@@ -227,9 +245,9 @@
             // Neue Berechtigung vorbereiten
             newPermissionButton.addEventListener('click', () => {
                 // Detailfelder leeren
-                permissionLabelHeader.innerHTML = 'Neue Berechtigung'
+                permissionNameHeader.innerHTML = 'Neue Berechtigung'
                 permissionIdInput.value = ''
-                permissionLabelInput.value = ''
+                permissionNameInput.value = ''
                 // Selektion in Liste entfernen
                 permissionsLinks.querySelectorAll(`input`).forEach(input => input.checked = false)
                 // Berechtigungsdetailkarte anzeigen
@@ -241,7 +259,116 @@
             savePermissionButton.addEventListener('click', async () => {
                 const permission = {
                     id: permissionIdInput.value,
-                    label: permissionLabelInput.value
+                    name: permissionNameInput.value
+                }
+                const response = await fetch('/api/users/savepermission', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(permission)
+                })
+                if (response.status === 200) {
+                    const permissionId = (await response.json()).id
+                    // Berechtigungsliste neu laden
+                    await updatePermissionsList()
+                    await selectPermission(permissionId)
+                    permissionsLinks.querySelector(`[id="link-permission-${permissionId}"]`).checked = true
+                    alert('Die Berechtigung wurde gespeichert.')
+                }
+            })
+
+            // Berechtigung löschen
+            deletePermissionButton.addEventListener('click', async () => {
+                // Sicherheitsabfrage
+                if (!confirm('Soll die Berechtigung wirklich gelöscht werden?')) return
+                const response = await fetch('/api/users/deletepermission/' + permissionIdInput.value, { method: 'DELETE' })
+                if (response.status === 200) {
+                    // Detailkarte ausblenden
+                    permissionDetailsCard.classList.add('hidden')
+                    // Berechtigungsliste neu laden
+                    await updatePermissionsList()
+                    alert('Die Berechtigung wurde gelöscht.')
+                }
+            })
+
+            // Feature Berechtigungen auswählen
+            document.getElementById('link-permissions').addEventListener('click', async () => {
+                // Karten ausblenden
+                usersCard.classList.add('hidden')
+                userDetailsCard.classList.add('hidden')
+                usergroupsCard.classList.add('hidden')
+                usergroupDetailsCard.classList.add('hidden')
+                permissionDetailsCard.classList.add('hidden')
+                // Berechtigungsliste laden
+                await updatePermissionsList()
+                // Berechtigungslistenkarte anzeigen
+                permissionsCard.classList.remove('hidden')
+            })
+
+
+
+            /********** Berechtigungen **********/
+
+
+
+            // Eine Berechtigung wurde in der Berechtigungsliste selektiert.
+            // Die Berechtigungsdetailkarte wird angezeigt.
+            async function selectPermission(permission_id) {
+                // Berechtigungsinfos laden
+                const permissionDetailsResponse = await fetch('/api/users/permissiondetails/' + permission_id)
+                if (permissionDetailsResponse.status === 200) {
+                    const permissionDetails = await permissionDetailsResponse.json()
+                    permissionNameHeader.innerHTML = permissionDetails.name
+                    permissionIdInput.value = permissionDetails.id
+                    permissionNameInput.value = permissionDetails.name
+                }
+                // Berechtigungsdetailkarte anzeigen
+                deletePermissionButton.classList.remove('hidden')
+                permissionDetailsCard.classList.remove('hidden')
+            }
+            
+            // Aktualisiert die Berechtigungsliste
+            async function updatePermissionsList() {
+                permissionsLinks.innerHTML = ''
+                const permissionsResponse = await fetch('/api/users/listpermissions')
+                if (permissionsResponse.status === 200) {
+                    const permissions = await permissionsResponse.json()
+                    permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                    for (const permission of permissions) {
+                        const inputElement = document.createElement('input')
+                        const inputElementId = 'link-permission-' + permission.id
+                        inputElement.setAttribute('type', 'radio')
+                        inputElement.setAttribute('id', inputElementId)
+                        inputElement.setAttribute('name', 'link-permission')
+                        inputElement.addEventListener('click', async () => {
+                            await selectPermission(permission.id)
+                        })
+                        permissionsLinks.appendChild(inputElement)
+                        const labelElement = document.createElement('label')
+                        labelElement.setAttribute('for', inputElementId)
+                        labelElement.innerHTML = permission.name
+                        permissionsLinks.appendChild(labelElement)
+                    }
+                }
+            }
+
+            // Neue Berechtigung vorbereiten
+            newPermissionButton.addEventListener('click', () => {
+                // Detailfelder leeren
+                permissionNameHeader.innerHTML = 'Neue Berechtigung'
+                permissionIdInput.value = ''
+                permissionNameInput.value = ''
+                // Selektion in Liste entfernen
+                permissionsLinks.querySelectorAll(`input`).forEach(input => input.checked = false)
+                // Berechtigungsdetailkarte anzeigen
+                deletePermissionButton.classList.add('hidden')
+                permissionDetailsCard.classList.remove('hidden')
+            })
+
+            // Berechtigung speichern
+            savePermissionButton.addEventListener('click', async () => {
+                const permission = {
+                    id: permissionIdInput.value,
+                    name: permissionNameInput.value
                 }
                 const response = await fetch('/api/users/savepermission', {
                     method: 'POST',
@@ -362,7 +489,7 @@
         </div>
 
         <div class="card hidden" id="permissionDetailsCard">
-            <h1 id="permissionLabelHeader"></h1>
+            <h1 id="permissionNameHeader"></h1>
             <div class="toolbar">
                 <button class="save">Speichern</button>
                 <button class="delete">Löschen</button>
@@ -372,7 +499,7 @@
             <label>Id</label>
             <input class="id" id="permissionIdInput" readonly />
             <label>Bezeichnung</label>
-            <input id="permissionLabelInput" />
+            <input id="permissionNameInput" />
         </div>
 
     </body>

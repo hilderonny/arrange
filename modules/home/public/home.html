@@ -34,7 +34,7 @@
                 const appsElement = document.querySelector('body > div.apps')
                 for (const app of applist) {
                     const divElement = document.createElement('div')
-                    divElement.innerHTML = `<img src="${app.icon}"/><p>${app.label}</p>`
+                    divElement.innerHTML = `<img src="${app.icon}"/><p>${app.name}</p>`
                     divElement.addEventListener('click', () => {
                         // Selektion in Navigation durchführen
                         parent.postMessage({ action: 'selectApp', appid: app.id })

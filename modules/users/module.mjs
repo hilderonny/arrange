@@ -11,14 +11,14 @@ async function init(arrange) {
     // Tabelle `usergroupassignments` für Benutzerzuordnung zu Benutzergruppe wird bei der ersten Registrierung eines Benutzers angelegt
     // Tabelle für Berechtigungen anlegen und befüllen
     const permissionsTable = arrange.database['users/permissions']
-    permissionsTable['PERMISSION_ADMINISTRATION_USER'] = { label: 'Benutzerverwaltung' }
+    permissionsTable['PERMISSION_ADMINISTRATION_USER'] = { name: 'Benutzerverwaltung' }
     permissionsTable.save()
     // Tabelle für Berechtigungszuordnungen anlegen und befüllen
     const permissionAssignmentsTable = arrange.database['users/permissionassignments']
     permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER' }
     permissionAssignmentsTable.save()
     // Apps registrieren
-    arrange.apps.push({ id: 'users-users', label: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
+    arrange.apps.push({ id: 'users-users', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
 }
 
 async function publishMiddlewares(arrange) {

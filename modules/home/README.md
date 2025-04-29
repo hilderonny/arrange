@@ -26,7 +26,7 @@ Wird für den Aufbau der Navigation und des Home-Screens verwendet.
 response = [
     {
         name: 'users-users', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
-        label: 'Benutzer',
+        name: 'Benutzer',
         icon: '/modules/users/images/users.png',
         url: '/modules/users/index.html,
         default: true // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
