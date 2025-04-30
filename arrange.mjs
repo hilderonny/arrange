@@ -28,6 +28,7 @@ import localConfig  from './localconfig.json' with { type: 'json' }
         webServer: webServer,
         localConfig: localConfig,
         apps: [],
+        metadata: {},
         log: logHelper.log,
         logError: logHelper.error,
         logWarning: logHelper.warn

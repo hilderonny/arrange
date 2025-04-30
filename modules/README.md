@@ -77,6 +77,7 @@ arrange = {
    webServer // Verweis auf Express Instanz
    localConfig // Konfiguration aus localconfig.json
    apps // Liste von Apps, die auf Home-Seite und in Navigation angezeigt werden. Wird von Modul "home" geparst
+   metadata // Metainformationen über Datebnbanktabellen. Wird von Modul "home" geparst
    log() // Funktion zur Logausgabe
    logError() // Fehler protokollieren
    logWarning() // Warnung protokollieren

@@ -225,14 +225,22 @@ response.json() = {
 
 ## Datenbanktabelle `users/users`
 
-Speichert alle Benutzer, die Zugriff auf das System haben
+Speichert alle Benutzer, die Zugriff auf das System haben.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID des Benutzers. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Benutzername|Eindeutiger Name des Benutzers. Kommt nicht mehrmals vor.|Ja|
+|`password`|text|Passwort|Mit `crypto` verschlüsseltes Passwort||
+|`usergroupids`|reference|Benutzergruppen|Liste von Benutzergruppen-IDs, denen der Benutzer angehört||
 
 ```js
 arrange.database['users/users'] = {
-    'user_id' : { 
-        name: 'ronny', // Benutzername für Anmeldung
-        password: 'jiovrlwuqhvnr4728oz7rtn', // Verschlüsseltes Passwort
-        usergroupids: [ 'usergroupid_1', 'usergroupid_2' ] // Ids von zugehörenden Benutzergruppen
+    'user_id' : {
+        id: 'random_UUID',
+        name: 'ronny',
+        password: 'jiovrlwuqhvnr4728oz7rtn',
+        usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
     }
 }
 ```
@@ -244,11 +252,18 @@ Speichert Benutzergruppen.
 Benutzer können Benutzergruppen angehören.
 Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
 
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID der Benutzergruppe. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Name|Name der Benutzergruppe.|Ja|
+|`permissionids`|reference|Berechtigungen|Liste von Berechtigungs-IDs, über die die Benutzergruppe verfügt||
+
 ```js
 arrange.database['users/usergroups'] = {
     'usergroup_id' : { 
-        name: 'Administratoren' // Anzeigename,
-        permissionids: [ 'permission_1', 'permission_2' ] // Ids von zugehörenden Berechtigungen
+        id: 'random_UUID',
+        name: 'Administratoren',
+        permissionids: [ 'permission_1', 'permission_2' ]
     }
 }
 ```
@@ -256,12 +271,18 @@ arrange.database['users/usergroups'] = {
 
 ## Datenbanktabelle `users/permissions`
 
-Speichert Berechtigungen
+Speichert Berechtigungen.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID der Berechtigung. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Name|Name der Berechtigung.|Ja|
 
 ```js
 arrange.database['users/permissions'] = {
     'permission_id' : { 
-        name: 'Benutzerverwaltung', // Anzeigename
+        id: 'random_UUID',
+        name: 'Benutzerverwaltung',
     }
 }
 ```
