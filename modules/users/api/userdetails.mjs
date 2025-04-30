@@ -11,14 +11,11 @@ export default (arrange) => {
         const user = usersTable[userId]
         // Benutzer nicht gefunden
         if (!user) return response.sendStatus(404)
-        // Gruppenzugehörigkeit ermitteln
-        const usergroupassignmentsTable = arrange.database['users/usergroupassignments']
-        const assignedUsergroupIds = usergroupassignmentsTable.filter(a => a.userid === userId).map(kvp => kvp[1].usergroupid)
         // Rückgabe zusammenbasteln
         const userToReturn = {
             id: userId,
             name: user.name,
-            usergroupids: assignedUsergroupIds
+            usergroupids: user.usergroupids
         }
         response.send(userToReturn)
     })

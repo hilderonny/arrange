@@ -11,7 +11,11 @@ export default (arrange) => {
         const hashedPassword = createHash('sha256').update(password).digest('hex')
         // Benutzer generieren
         const userId = randomUUID()
-        const user = { name: username, password: hashedPassword }
+        const user = {
+            name: username, 
+            password: hashedPassword, 
+            usergroupids: []
+        }
         // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
         // Prüfen, ob es den Benutzer mit dem gegebenen Benutzernamen schon gibt
@@ -22,15 +26,12 @@ export default (arrange) => {
         }
         // Wenn es noch keinen Benutzer in der Datenbank gibt, dann wird dieser erste Benutzer der Administratoren-Gruppe zugeordnet
         const isFirstUser = usersTable.size() < 1
+        if (isFirstUser) {
+            user.usergroupids.push('USERGROUP_ADMIN')
+        }
         // Benutzer zu Benutzertabelle hinzufügen und speichern
         usersTable[userId] = user
         usersTable.save()
-        // Benutzergruppenzuordnung für ersten Admin machen
-        if (isFirstUser) {
-            const usergroupassignmentsTable = arrange.database['users/usergroupassignments']
-            usergroupassignmentsTable[randomUUID()] = { userid: userId, usergroupid: 'USERGROUP_ADMIN' }
-            usergroupassignmentsTable.save()
-        }
         // JSON Web Token generieren und in Cookie speichern
         const token = jsonwebtoken.sign({ userid: userId }, arrange.localConfig.tokensecret)
         response.cookie('users-token', token, { maxAge: 24*60*60*1000 })

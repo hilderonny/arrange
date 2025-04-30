@@ -9,14 +9,8 @@ export default (arrange) => {
         const permissionsTable = arrange.database['users/permissions']
         if (permissionsTable[permissionId]) {
             delete permissionsTable[permissionId]
+            // Eventuell vorhandene Verweise werden ignoriert. Darum müssen sich die Teile kümmern, die die Verweise benutzen
             permissionsTable.save()
-        }
-        // Berechtigungszuordnungstabelle bereinigen
-        const permissionAssignmentsTable = arrange.database['users/permissionassignments']
-        const permissionAssignments = permissionAssignmentsTable.filter(pa => pa.permissionid === permissionId)
-        if (permissionAssignments.length > 0) {
-            permissionAssignments.forEach(kvp => delete permissionAssignmentsTable[kvp[0]])
-            permissionAssignmentsTable.save()
         }
         response.sendStatus(200)
     })

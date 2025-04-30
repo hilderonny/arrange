@@ -11,14 +11,11 @@ export default (arrange) => {
         const usergroup = usergroupsTable[usergroupId]
         // Benutzergruppe nicht gefunden
         if (!usergroup) return response.sendStatus(404)
-        // Berechtigungen ermitteln
-        const permissionAssignmentsTable = arrange.database['users/permissionassignments']
-        const assignedPermissionIds = permissionAssignmentsTable.filter(pa => pa.usergroupid === usergroupId).map(kvp => kvp[1].permissionid)
         // Rückgabe zusammenbasteln
         const usergroupToReturn = {
             id: usergroupId,
             name: usergroup.name,
-            permissionids: assignedPermissionIds
+            permissionids: usergroup.permissionids
         }
         response.send(usergroupToReturn)
     })

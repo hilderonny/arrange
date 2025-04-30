@@ -1,29 +1,24 @@
 import express from 'express'
 import fs from 'node:fs'
-import * as identifyUserMiddleware from './middlewares/identifyuser.mjs'
 
 async function init(arrange) {
-    // Tabelle für Benutzergruppen anlegen und befüllen
-    const userGroupsTable = arrange.database['users/usergroups']
-    userGroupsTable['USERGROUP_ADMIN'] = { name: 'Administratoren' }
-    userGroupsTable.save()
     // Tabelle `users` für Benutzer wird bei der ersten Registrierung eines Benutzers angelegt
     // Tabelle `usergroupassignments` für Benutzerzuordnung zu Benutzergruppe wird bei der ersten Registrierung eines Benutzers angelegt
     // Tabelle für Berechtigungen anlegen und befüllen
     const permissionsTable = arrange.database['users/permissions']
     permissionsTable['PERMISSION_ADMINISTRATION_USER'] = { name: 'Benutzerverwaltung' }
     permissionsTable.save()
-    // Tabelle für Berechtigungszuordnungen anlegen und befüllen
-    const permissionAssignmentsTable = arrange.database['users/permissionassignments']
-    permissionAssignmentsTable['USERGROUP_ADMIN_PERMISSION_ADMINISTRATION_USER'] = { usergroupid: 'USERGROUP_ADMIN', permissionid: 'PERMISSION_ADMINISTRATION_USER' }
-    permissionAssignmentsTable.save()
+    // Tabelle für Benutzergruppen anlegen und befüllen
+    const userGroupsTable = arrange.database['users/usergroups']
+    userGroupsTable['USERGROUP_ADMIN'] = { name: 'Administratoren', permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ] }
+    userGroupsTable.save()
     // Apps registrieren
     arrange.apps.push({ id: 'users-users', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
 }
 
 async function publishMiddlewares(arrange) {
     // Benutzeridentifizierung
-    arrange.webServer.use(identifyUserMiddleware.createMiddleware(arrange))
+    arrange.webServer.use((await import('./middlewares/identifyuser.mjs')).default(arrange))
 }
 
 async function publishRoutes(arrange) {

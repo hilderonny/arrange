@@ -8,15 +8,20 @@
  */
 import jsonwebtoken from 'jsonwebtoken'
 
-function hasUserPermission(arrange, user_id, permission_name) {
-    const usergroupassignmentsTable = arrange.database['users/usergroupassignments']
-    const assignedUsergroupIds = usergroupassignmentsTable.filter(a => a.userid === user_id).map(kvp => kvp[1].usergroupid)
-    const permissionAssignmentsTable = arrange.database['users/permissionassignments']
-    const hasPermission = permissionAssignmentsTable.find(pa => assignedUsergroupIds.indexOf(pa.usergroupid) > -1 && pa.permissionid === permission_name)
-    return !!hasPermission
+function hasUserPermission(arrange, user_id, permission_id) {
+    const usersTable = arrange.database['users/users']
+    const user = usersTable[user_id]
+    if (!user || !user.usergroupids) return false
+    const usergroupsTable = arrange.database['users/usergroups']
+    for (const usergroupId of user.usergroupids) {
+        const usergroup = usergroupsTable[usergroupId]
+        if (usergroup && usergroup.permissionids && usergroup.permissionids.indexOf(permission_id) >= 0) return true // Berechtigung gefunden
+    }
+    // Berechtigung nirgends gefunden
+    return false
 }
 
-function createMiddleware(arrange) {
+export default (arrange) => {
     return (request, _, next) => {
         const token = request.cookies['users-token']
         if (token) {
@@ -25,7 +30,7 @@ function createMiddleware(arrange) {
                     const userId = decodedToken.userid
                     request.user = {
                         id: userId,
-                        hasPermission: (permission_name) => hasUserPermission(arrange, userId, permission_name)
+                        hasPermission: (permission_id) => hasUserPermission(arrange, userId, permission_id)
                     }
                 }
                 next()
@@ -35,5 +40,3 @@ function createMiddleware(arrange) {
         }
     }
 }
-
-export { createMiddleware }

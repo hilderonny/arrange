@@ -232,6 +232,7 @@ arrange.database['users/users'] = {
     'user_id' : { 
         name: 'ronny', // Benutzername für Anmeldung
         password: 'jiovrlwuqhvnr4728oz7rtn', // Verschlüsseltes Passwort
+        usergroupids: [ 'usergroupid_1', 'usergroupid_2' ] // Ids von zugehörenden Benutzergruppen
     }
 }
 ```
@@ -246,21 +247,8 @@ Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
 ```js
 arrange.database['users/usergroups'] = {
     'usergroup_id' : { 
-        name: 'Administratoren' // Anzeigename
-    }
-}
-```
-
-
-## Datenbanktabelle `users/usergroupassignments`
-
-Speichert Zuordnungen von Benutzern zu Benutzergruppen.
-
-```js
-arrange.database['users/usergroupassignments'] = {
-    'usergroupassignment_id' : { 
-        userid: 'user_0815', // Id des Benutzers
-        usergroupid: 'usergroup_4711' // Id der Benutzergruppe
+        name: 'Administratoren' // Anzeigename,
+        permissionids: [ 'permission_1', 'permission_2' ] // Ids von zugehörenden Berechtigungen
     }
 }
 ```
@@ -274,20 +262,6 @@ Speichert Berechtigungen
 arrange.database['users/permissions'] = {
     'permission_id' : { 
         name: 'Benutzerverwaltung', // Anzeigename
-    }
-}
-```
-
-
-## Datenbanktabelle `users/permissionassignments`
-
-Speichert Zuordnungen von Berechtigungen zu Benutzergruppen.
-
-```js
-arrange.database['users/permissionassignments'] = {
-    'permissionassignment_id' : { 
-        usergroupid: 'usergroup_4711', // Id der Benutzergruppe
-        permissionid: 'permission_42' // Id der Berechtigung
     }
 }
 ```
