@@ -26,8 +26,7 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
         if (saveSucceeded) {
             // Listenkarte aktualisieren
             listCard.refresh()
-            // Detailkarte aktualisieren, übernimmt Titel
-            detailsCard.refresh()
+            // Die Detailkarte aktualisiert sich selbst nach dem Speichern
         }
     }    
     // Hier wird das Originalobjekt übergeben, damit es in der Liste gefunden werden kann
@@ -38,8 +37,7 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
         if (deletionSucceeded) {
             // Datensatz aus Liste löschen
             data.splice(data.indexOf(object_to_delete), 1)
-            // Alle Karten rechts neben Listenkarte entfernen
-            while (listCard.nextSibling) listCard.nextSibling.remove()
+            // Detailkarte schließt sich selbst
             // Listenkarte aktualisieren
             listCard.refresh()
         }
@@ -83,10 +81,7 @@ function createListCard(data, metadata, select_handler, new_handler) {
         toolbarDiv.classList.add('toolbar')
         cardDiv.appendChild(toolbarDiv)
         // Neu-Button
-        const newButton = document.createElement('div')
-        newButton.classList.add('new')
-        newButton.innerHTML = 'Neu'
-        newButton.addEventListener('click', async () => {
+        const newButton = createButton('Neu', 'new', async () => {
             await new_handler()
         })
         toolbarDiv.appendChild(newButton)
@@ -107,9 +102,7 @@ function createListCard(data, metadata, select_handler, new_handler) {
             input.id = 'link-' + index
             linksDiv.appendChild(input)
             // Label
-            const label = document.createElement('label')
-            label.setAttribute('for', input.id)
-            label.innerHTML = element[metadata.titlePropertyName]
+            const label = createLabel(element[metadata.titlePropertyName], input.id)
             // Icon
             const iconUrl = element[metadata.iconPropertyName]
             if (iconUrl) label.style.backgroundImage = `url(${iconUrl})`
@@ -130,9 +123,111 @@ function createListCard(data, metadata, select_handler, new_handler) {
 
 // TODO: Dokumentieren
 function createDetailsCard(title_property_name, data, metadata, save_handler, delete_handler) {
-    // TODO: Implementieren, inkl. refresh() - Methode
-    const detailsCard = document.createElement('div')
-    return detailsCard
+    // DOM-Struktur vorbereiten, Karte selbst
+    const cardDiv = document.createElement('div')
+    cardDiv.classList.add('card')
+    // Überschrift
+    const titleH1 = document.createElement('h1')
+    cardDiv.appendChild(titleH1)
+    // Toolbar
+    if (save_handler || delete_handler) {
+        // Speichern-Button
+        if (save_handler) {
+            const saveButton = createButton('Speichern', 'save', async () => {
+                // TODO: Geänderte Inhalten zusammentragen
+                const saveResult = await save_handler(...)
+                // Bei Erfolg Detailseite neu aufbauen
+                if (saveResult) {
+                    cardDiv.refresh()
+                }
+            })
+            toolbarDiv.appendChild(saveButton)
+        }
+        // Löschen-Button
+        if (save_handler) {
+            const deleteButton = createButton('Löschen', 'delete', async () => {
+                // Das ursprüngliche Objekt wird zum Nachschlagen an das Callback übergeben
+                const deleteResult = await delete_handler(data)
+                // Wenn das Objekt gelöscht wurde, schließt sich die Detailkarte
+                if (deleteResult) {
+                    cardDiv.remove()
+                }
+            })
+            toolbarDiv.appendChild(deleteButton)
+        }
+    }
+    // Abschnitt für dynamische Inhalte
+    const dataDiv = document.createElement('div')
+    dataDiv.classList.add('data')
+    cardDiv.appendChild(dataDiv)
+    // Methode zum Aktualisieren der Inhalte
+    cardDiv.refresh = () => {
+        // Inhalte leeren
+        dataDiv.innerHTML = ''
+        // Eingabefelder für alle Objekt-Properties erzeugen
+        for (const [index, fieldMetadata] of metadata.entries()) {
+            const inputId = 'data-' + index
+            const value = data[fieldMetadata.property]
+            const title = fieldMetadata.label
+            const isReadOnly = fieldMetadata.readonly
+            // TODO: Feld abhängig vom Typ erzeugen
+            switch (fieldMetadata.type) {
+                // Einfaches Textfeld
+                case 'text':
+                    const label = createLabel(title)
+                    dataDiv.appendChild(label)
+                    // TODO: ID-Felder mit separater Klasse versehen, damit Text kleiner wird?
+                    const textInput = createTextInput(value, inputId, isReadOnly)
+                    dataDiv.appendChild(textInput)
+                    break
+                // TODO: Passwort-Feld
+                // TODO: Mehrfachauswahlfeld
+                case 'multiselect':
+                    break
+            }
+        }
+    }
+    // Inhalte erstmalig generieren
+    cardDiv.refresh()
+    // Detailkarte zurück geben
+    return cardDiv
+}
+
+// TODO: Dokumentieren
+function createButton(content, style_class, click_handler) {
+    const button = document.createElement('button')
+    if (style_class) {
+        button.setAttribute('class', style_class)
+    }
+    button.innerHTML = content
+    button.addEventListener('click', click_handler)
+    return button
+}
+
+// TODO: Dokumentieren
+function createTextInput(value, id, read_only) {
+    const input = document.createElement('input')
+    input.setAttribute('type', 'text')
+    if (value) {
+        input.value = value
+    }
+    if (id) {
+        input.id = id
+    }
+    if (read_only) {
+        input.readOnly = true
+    }
+    return input
+}
+
+// TODO: Dokumentieren
+function createLabel(content, for_id) {
+    const label = document.createElement('label')
+    label.innerHTML = content
+    if (for_id) {
+        label.setAttribute('for', for_id)
+    }
+    return label
 }
 
 export { createListAndDetailsCards, createListCard, createDetailsCard }
