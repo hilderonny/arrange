@@ -20,6 +20,7 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
     // Metadaten für Listenkarte
     const listMetadata = {
         listTitle: metadata.listTitle,
+        identifierPropertyName: metadata.identifierPropertyName,
         titlePropertyName: metadata.titlePropertyName,
         iconPropertyName: metadata.iconPropertyName
     }
@@ -107,31 +108,40 @@ function createListCard(data, metadata, select_handler, new_handler) {
     linksDiv.classList.add('links')
     cardDiv.appendChild(linksDiv)
     // Methode zum Aktualisieren der Inhalte definieren
-    cardDiv.refresh = () => {
+    cardDiv.refresh = function(new_data, selected_identifier) {
         // Liste leeren
         linksDiv.innerHTML = ''
-        for (const [index, element] of data.entries()) {
-            const inputId = 'link-' + index
-            // Radio Input
-            const input = createInput(undefined, 'radio', inputId, false)
-            input.setAttribute('name', 'link')
-            linksDiv.appendChild(input)
-            // Label
-            const label = createLabel(element[metadata.titlePropertyName], input.id)
-            // Icon
+        for (const element of new_data) {
+            // Label with icon
+            const label = createLabel(element[metadata.titlePropertyName])
             const iconUrl = element[metadata.iconPropertyName]
             if (iconUrl) label.style.backgroundImage = `url(${iconUrl})`
             linksDiv.appendChild(label)
+            // Radio Input
+            const input = createInput(undefined, 'radio', false)
+            input.setAttribute('name', 'link')
+            label.appendChild(input)
+            // Bei Bedarf vorselektieren
+            const isSelected = selected_identifier && (element[metadata.identifierPropertyName] === selected_identifier)
+            console.log(isSelected, selected_identifier, metadata.identifierPropertyName, element)
+            if (isSelected) {
+                input.checked = true
+            }
             // Select-Handler anhängen, wenn angegeben
             if (select_handler) {
-                input.addEventListener('click', async () => {
+                const internalSelectHandler = async function() {
                     await select_handler(element)
-                })
+                }
+                input.addEventListener('click', internalSelectHandler)
+                // Bei Vorauswhl Selektion triggern
+                if (isSelected) {
+                    internalSelectHandler()
+                }
             }
         }
     }
-    // Inhalte erstmalig generieren
-    cardDiv.refresh()
+    // Inhalte erstmalig generieren, ohne Vorselektion
+    cardDiv.refresh(data)
     // Listenkarte zurück geben
     return cardDiv
 }
@@ -156,34 +166,36 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
     cardDiv.appendChild(titleH1)
     // Toolbar
     if (save_handler || delete_handler) {
+        const toolbarDiv = document.createElement('toolbar')
+        toolbarDiv.classList.add('toolbar')
+        cardDiv.appendChild(toolbarDiv)
         // Speichern-Button
         if (save_handler) {
             const saveButton = createButton('Speichern', 'save', async () => {
                 // Geänderte Inhalte anhand der Metadaten zusammentragen
-                const objectToSave = {}
-                for (const [index, fieldMetadata] of metadata.entries()) {
-                    const domNode = dataDiv.getElementById('data-' + index)
+                for (const fieldMetadata of metadata) {
+                    const domNode = fieldMetadata.domNode
                     const propertyName = fieldMetadata.property
                     switch (fieldMetadata.type) {
                         // Einfaches Textfeld
                         case 'text':
                             const text = domNode.value
-                            objectToSave[propertyName] = text
+                            data[propertyName] = text
                             break
                         // Passwortfeld
                         case 'password':
                             const password = domNode.value
-                            objectToSave[propertyName] = password
+                            data[propertyName] = password
                             break
                         // Mehrfachauswahlfeld
                         case 'multiselect':
                             const selectedValues = domNode.getSelectedValues()
-                            objectToSave[propertyName] = selectedValues
+                            data[propertyName] = selectedValues
                             break
                     }
                 }
                 // Callback zum Speichern aufrufen
-                const saveResult = await save_handler(objectToSave)
+                const saveResult = await save_handler(data)
                 // Bei Erfolg Detailseite neu aufbauen
                 if (saveResult) {
                     cardDiv.refresh()
@@ -209,32 +221,33 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
     dataDiv.classList.add('data')
     cardDiv.appendChild(dataDiv)
     // Methode zum Aktualisieren der Inhalte
-    cardDiv.refresh = () => {
+    cardDiv.refresh = function () {
         // Überschrift
-        titleH1.innerHTML = data[title_property_name]
+        titleH1.innerHTML = data[title_property_name] || ''
         // Inhalte leeren
         dataDiv.innerHTML = ''
         // Eingabefelder für alle Objekt-Properties erzeugen
-        for (const [index, fieldMetadata] of metadata.entries()) {
-            const inputId = 'data-' + index
+        for (const fieldMetadata of metadata) {
             const value = data[fieldMetadata.property]
             const title = fieldMetadata.label
-            const isReadOnly = fieldMetadata.readonly
+            const isReadOnly = !!fieldMetadata.readonly
             // Feld abhängig vom Typ erzeugen
             switch (fieldMetadata.type) {
                 // Einfaches Textfeld
                 case 'text':
                     const textLabel = createLabel(title)
                     dataDiv.appendChild(textLabel)
-                    const textInput = createInput(value, 'text', inputId, isReadOnly)
+                    const textInput = createInput(value, 'text', isReadOnly)
                     dataDiv.appendChild(textInput)
+                    fieldMetadata.domNode = textInput // Eingabefeld an Metadata für spätere Referenz speichern
                     break
                 // Passwort-Feld
                 case 'password':
                     const passwordLabel = createLabel(title)
                     dataDiv.appendChild(passwordLabel)
-                    const passwordInput = createInput(value, 'password', inputId, isReadOnly)
+                    const passwordInput = createInput(value, 'password', isReadOnly)
                     dataDiv.appendChild(passwordInput)
+                    fieldMetadata.domNode = passwordInput
                     break
                 // Mehrfachauswahlfeld
                 case 'multiselect':
@@ -242,6 +255,7 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
                     dataDiv.appendChild(multiselectHeader)
                     const multiSelectElement = createMultiSelect(value, fieldMetadata.options)
                     dataDiv.appendChild(multiSelectElement)
+                    fieldMetadata.domNode = multiSelectElement
                     break
             }
         }
@@ -263,9 +277,11 @@ function createMultiSelect(selected_values, options) {
     const multiSelect = document.createElement('div')
     multiSelect.classList.add('multiselect')
     // Select-Boxen für vorselektierte Werte erstellen
-    for (const selectedValue of selected_values) {
-        const selectElement = createDynamicSelect(selectedValue, options)
-        multiSelect.appendChild(selectElement)
+    if (selected_values) {
+        for (const selectedValue of selected_values) {
+            const selectElement = createDynamicSelect(selectedValue, options)
+            multiSelect.appendChild(selectElement)
+        }
     }
     // Zusätzliches Feld erstellen, damit neue Zuordnungen erstellt werden können
     const addSelectElement = createDynamicSelect(undefined, options)
@@ -277,12 +293,13 @@ function createMultiSelect(selected_values, options) {
         addSelectElement.value = '__ADD__'
         selectToInsert.focus()
     })
+    multiSelect.appendChild(addSelectElement)
     // Funktion zum Abfragen der derzeitigen Auswahl
-    multiSelect.getSelectedValues = () => {
+    multiSelect.getSelectedValues = function () {
         const selectedValues = []
         for (const selectElement of multiSelect.querySelectorAll('select')) {
             const value = selectElement.value
-            if (value === '__ADD__' || value === '__DELETE__') return
+            if (value === '__ADD__' || value === '__DELETE__') continue
             selectedValues.push(value)
         }
         return selectedValues
@@ -309,7 +326,7 @@ function createDynamicSelect(selected_value, options) {
     // Für alle Optionen Einträge erstellen
     for (const option of options) {
         const isSelected = option.value === selected_value
-        const optionElement = createOption(option.label, option.value, isSelected)
+        const optionElement = createOption(option.label, option.value, false, isSelected)
         selectElement.appendChild(optionElement)
     }
     // Letzter Eintrag dient zum Löschen der Zuordnung
@@ -363,17 +380,13 @@ function createButton(content, style_class, click_handler) {
  * 
  * @param {string} value Vorgegebener Wert des Feldes
  * @param {string} type Typ des Elements. Kann `text`, `password`, `radio` sein
- * @param {string} id Id des Input-Feldes
  * @param {boolean} read_only Gibt an, ob Eingabefeld nur lesbar sein soll
  */
-function createInput(value, type, id, read_only) {
+function createInput(value, type, read_only) {
     const input = document.createElement('input')
     input.setAttribute('type', type)
     if (value) {
         input.value = value
-    }
-    if (id) {
-        input.id = id
     }
     if (read_only) {
         input.readOnly = true
@@ -382,18 +395,13 @@ function createInput(value, type, id, read_only) {
 }
 
 /**
- * Erstellt ein Label mit gegebenem Inhalt und ordnet es einem Input-Element mit
- * gegebener Id zu.
+ * Erstellt ein Label mit gegebenem Inhalt.
  * 
  * @param {string} content Text im Label, kann auch HTML sein
- * @param {string} for_id Id des Input-Elementes, dem das Label angehört. Kann `undefined` sein.
  */
-function createLabel(content, for_id) {
+function createLabel(content) {
     const label = document.createElement('label')
     label.innerHTML = content
-    if (for_id) {
-        label.setAttribute('for', for_id)
-    }
     return label
 }
 

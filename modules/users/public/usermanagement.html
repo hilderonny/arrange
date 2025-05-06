@@ -59,53 +59,58 @@
 
             /********** Benutzer **********/
 
-            async function createUsersCard() {
-                // Serverabfrage nach Benutzern
+            async function fetchUsersSorted() {
                 const usersResponse = await fetch('/api/users/listusers')
                 if (usersResponse.status !== 200) return
                 const users = await usersResponse.json()
                 users.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
                 // Benutzer mit Icons versehen
                 users.forEach(user => user.icon = './images/user.png')
+                return users
+            }
+
+            async function createUsersCard() {
+                // Serverabfrage nach Benutzern
+                let users = await fetchUsersSorted()
                 // Metadaten vorbereiten
-                const permissionsReponse = await fetch('/api/users/listpermissions')
-                if (permissionsReponse.status !== 200) return
-                const permissions = await permissionsReponse.json()
-                permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                const usergroupsReponse = await fetch('/api/users/listusergroups')
+                if (usergroupsReponse.status !== 200) return
+                const usergroups = await usergroupsReponse.json()
+                usergroups.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
                 // In Metadatenstruktur mappen
-                const permissionsMetadata = permissions.map(permission => {
+                const usergroupsMetadata = usergroups.map(usergroup => {
                     return {
-                        value: permission.id,
-                        label: permission.name
+                        value: usergroup.id,
+                        label: usergroup.name
                     }
                 })
                 const usersMetadata = {
                     listTitle: 'Benutzer',
+                    identifierPropertyName: 'id',
                     titlePropertyName: 'name',
                     iconPropertyName: 'icon',
                     fields: [
-                        {
-                            property: 'id',
-                            label: 'Id',
-                            type: 'text', 
-                            readonly: true
-                        },
-                        {
-                            property: 'name',
-                            label: 'Gruppenname',
-                            type: 'text'
-                        },
-                        {
-                            property: 'permissionids',
-                            label: 'Berechtigungen',
-                            type: 'multiselect',
-                            options: permissionsMetadata
-                        }
+                        { property: 'id', label: 'Id', type: 'text', readonly: true },
+                        { property: 'name', label: 'Benutzername', type: 'text' },
+                        { property: 'password', label: 'Neues Passwort', type: 'password' },
+                        { property: 'usergroupids', label: 'Benutzergruppen', type: 'multiselect', options: usergroupsMetadata }
                     ]
                 }
                 // Benutzer speichern
-                const usersSaveHandler = async (user_to_save) => {
-                    // TODO: Implementieren
+                const usersSaveHandler = async (user) => {
+                    const response = await fetch('/api/users/saveuser', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(user)
+                    })
+                    if (response.status === 200) {
+                        const savedUser = await response.json()
+                        const userId = savedUser.id
+                        // Einfach Liste und Detailansicht (mit Benutzer-Id vom Server) neu laden
+                        users = await fetchUsersSorted()
+                        usersListCard.refresh(users, userId)
+                        alert('Der Benutzer wurde gespeichert.')
+                    }
                 }
                 const usersDeleteHandler = async (user_to_delete) => {
                     // TODO: Implementieren

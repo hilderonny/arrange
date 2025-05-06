@@ -19,6 +19,7 @@ const data = [
 // Metainformationen für Liste und Detailansicht
 const metadata = {
     listTitle: 'Benutzergruppen', // Titel für Listenkarte
+    identifierPropertyName: 'id', // Feld mit Identifizierer, der für Vorselektionen genutzt wird. Üblicherweise `id`.
     titlePropertyName: 'name', // Feld, welches in der Liste und im Kopf der Detailansicht angezeigt wird
     iconPropertyName: 'icon', // Feld mit Icon
     fields: [ // Wird in Detailansicht benötigt
@@ -48,8 +49,7 @@ const metadata = {
 }
 // Speichern-Callback. Muss bei Erfolg true zurück geben, damit UI neu geladen wird
 const saveHandler = async (object_to_save) => {
-    // Das ursprüngliche data-Objekt wird nicht automatisch überschrieben, sondern ein neues angelegt
-    data.name = object_to_save.name // Name übernehmen
+    // Es wird das ursprüngliche data-Objekt mit aktualisierten Eigenschaften übergeben
     // ... Speichern-API aufrufen
     alert('Datensatz wurde gespeichert' )
     // Speichern erfolgreich, true zurück geben
