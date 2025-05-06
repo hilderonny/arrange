@@ -67,6 +67,8 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
         while (listCard.nextSibling) listCard.nextSibling.remove()
         // Detailkarte rechts neben Listenkarte anzeigen
         listCard.parentNode.insertBefore(detailsCard, listCard.nextSibling)
+        // Selektion in Liste entfernen
+        listCard.querySelectorAll('input').forEach(input => input.checked = false)
     }
     // Listenkarte erstellen und zurück geben
     listCard = createListCard(data, listMetadata, internalSelectHandler, internalNewHandler)
@@ -112,21 +114,23 @@ function createListCard(data, metadata, select_handler, new_handler) {
         // Liste leeren
         linksDiv.innerHTML = ''
         for (const element of new_data) {
+            // Radio Input
+            const inputId = 'link-' + metadata.listTitle + '-' + element[metadata.identifierPropertyName]
+            const input = createInput(undefined, 'radio', false)
+            input.setAttribute('name', 'link-' + metadata.listTitle)
+            input.setAttribute('id', inputId)
+            linksDiv.appendChild(input)
+            // Bei Bedarf vorselektieren
+            const isSelected = selected_identifier && (element[metadata.identifierPropertyName] === selected_identifier)
+            if (isSelected) {
+                input.checked = true
+                console.log(input)
+            }
             // Label with icon
-            const label = createLabel(element[metadata.titlePropertyName])
+            const label = createLabel(element[metadata.titlePropertyName], inputId)
             const iconUrl = element[metadata.iconPropertyName]
             if (iconUrl) label.style.backgroundImage = `url(${iconUrl})`
             linksDiv.appendChild(label)
-            // Radio Input
-            const input = createInput(undefined, 'radio', false)
-            input.setAttribute('name', 'link')
-            label.appendChild(input)
-            // Bei Bedarf vorselektieren
-            const isSelected = selected_identifier && (element[metadata.identifierPropertyName] === selected_identifier)
-            console.log(isSelected, selected_identifier, metadata.identifierPropertyName, element)
-            if (isSelected) {
-                input.checked = true
-            }
             // Select-Handler anhängen, wenn angegeben
             if (select_handler) {
                 const internalSelectHandler = async function() {
@@ -398,10 +402,14 @@ function createInput(value, type, read_only) {
  * Erstellt ein Label mit gegebenem Inhalt.
  * 
  * @param {string} content Text im Label, kann auch HTML sein
+ * @param {string} for_id Optional. Id des zugehörigen Input-Feldes
  */
-function createLabel(content) {
+function createLabel(content, for_id) {
     const label = document.createElement('label')
     label.innerHTML = content
+    if (for_id) {
+        label.setAttribute('for', for_id)
+    }
     return label
 }
 
