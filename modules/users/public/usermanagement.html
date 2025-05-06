@@ -13,14 +13,12 @@
 
             label { color: #627088; }
             input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
-            input.id { font-size: 8pt; padding: 10.5px; }
             input:read-only { background-color: #fafafa; color: #606060; }
             select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
             button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
             .delete { background-color: red; color: white; }
 
             .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
-            .hidden { display: none; }
 
             .links { flex: 1; overflow: auto; }
             .links input { display: none; }
@@ -28,13 +26,107 @@
             .links label:hover { background-color: #e5e8ec; cursor: pointer; }
             .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
 
-            #link-users + label, #usersCard .links label { background-image: url(./images/user.png); }
-            #link-usergroups + label, #usergroupsCard .links label { background-image: url(./images/group.png); }
-            #link-permissions + label, #permissionsCard .links label { background-image: url(./images/unlock.png); }
-
         </style>
 
         <script type="module">
+
+            import { createListCard, createListAndDetailsCards } from '/js/cardhelper.mjs'
+
+            /********** Features **********/
+
+            let featuresCard
+            const featuresData = [
+                { handler: createUsersCard, label: 'Benutzer', icon: './images/user.png' },
+                { handler: createUsergroupsCard, label: 'Benutzergruppen', icon: './images/group.png' },
+                { handler: createPermissionsCard, label: 'Berechtigungen', icon: './images/unlock.png' }
+            ]
+            const featuresMetadata = {
+                listTitle: 'Benutzerverwaltung',
+                titlePropertyName: 'label',
+                iconPropertyName: 'icon'
+            }
+            const featuresSelectHandler = async (selected_object) => {
+                // Alle weiteren geöffneten Karten schließen
+                while (featuresCard.nextSibling) {
+                    featuresCard.nextSibling.remove()
+                }
+                // Selektierte Karte anhand seines Handlers einbinden
+                const selectedCard = await selected_object.handler()
+                featuresCard.parentNode.appendChild(selectedCard)
+            }
+            featuresCard = createListCard(featuresData, featuresMetadata, featuresSelectHandler, undefined)
+            document.body.appendChild(featuresCard)
+
+            /********** Benutzer **********/
+
+            async function createUsersCard() {
+                // Serverabfrage nach Benutzern
+                const usersResponse = await fetch('/api/users/listusers')
+                if (usersResponse.status !== 200) return
+                const users = await usersResponse.json()
+                users.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                // Benutzer mit Icons versehen
+                users.forEach(user => user.icon = './images/user.png')
+                // Metadaten vorbereiten
+                const permissionsReponse = await fetch('/api/users/listpermissions')
+                if (permissionsReponse.status !== 200) return
+                const permissions = await permissionsReponse.json()
+                permissions.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
+                // In Metadatenstruktur mappen
+                const permissionsMetadata = permissions.map(permission => {
+                    return {
+                        value: permission.id,
+                        label: permission.name
+                    }
+                })
+                const usersMetadata = {
+                    listTitle: 'Benutzer',
+                    titlePropertyName: 'name',
+                    iconPropertyName: 'icon',
+                    fields: [
+                        {
+                            property: 'id',
+                            label: 'Id',
+                            type: 'text', 
+                            readonly: true
+                        },
+                        {
+                            property: 'name',
+                            label: 'Gruppenname',
+                            type: 'text'
+                        },
+                        {
+                            property: 'permissionids',
+                            label: 'Berechtigungen',
+                            type: 'multiselect',
+                            options: permissionsMetadata
+                        }
+                    ]
+                }
+                // Benutzer speichern
+                const usersSaveHandler = async (user_to_save) => {
+                    // TODO: Implementieren
+                }
+                const usersDeleteHandler = async (user_to_delete) => {
+                    // TODO: Implementieren
+                }
+                const usersListCard = createListAndDetailsCards(users, usersMetadata, usersSaveHandler, usersDeleteHandler)
+                return usersListCard
+            }
+        
+            /********** Benutzergruppen **********/
+
+            async function createUsergroupsCard() {
+                // TODO: Implementieren
+            }
+        
+            /********** Berechtigungen **********/
+
+            async function createPermissionsCard() {
+                // TODO: Implementieren
+            }
+
+            /*
 
             const usersCard = document.getElementById('usersCard')
             const usersLinks = usersCard.querySelector('.links')
@@ -71,7 +163,6 @@
 
 
 
-            /********** Allgemeine Funktionen **********/
 
 
 
@@ -218,8 +309,6 @@
 
 
 
-            /********** Benutzergruppen **********/
-
 
             async function createAssignmentSelects(target_node, api, assignment_ids) {
                 const response = await fetch(api)
@@ -320,7 +409,7 @@
                     alert('Die Berechtigung wurde gelöscht.')
                 }
             })
-*/
+
             // Feature Benutzergruppen auswählen
             document.getElementById('link-usergroups').addEventListener('click', async () => {
                 // Karten ausblenden
@@ -337,7 +426,6 @@
 
 
 
-            /********** Berechtigungen **********/
 
 
 
@@ -423,12 +511,15 @@
                 // Berechtigungslistenkarte anzeigen
                 permissionsCard.classList.remove('hidden')
             })
+                */
 
         </script>
 
     </head>
 
     <body>
+
+        <!--
 
         <div class="card" id="featuresCard">
             <h1>Benutzerverwaltung</h1>
@@ -512,6 +603,7 @@
             <label>Bezeichnung</label>
             <input id="permissionNameInput" />
         </div>
+    -->
 
     </body>
 

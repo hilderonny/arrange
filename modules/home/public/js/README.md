@@ -6,7 +6,7 @@ TODO: Diese Doku in Modul-README integrieren
 
 ```js
 // Funktionen importieren
-import { createListAndDetailsCards } from '/modules/home/js/cardhelper.mjs'
+import { createListAndDetailsCards } from '/js/cardhelper.mjs'
 // Objektliste mit vollständigen Daten
 const data = [
     {
@@ -75,7 +75,7 @@ document.body.appendChild(listCard)
 
 ```js
 // Funktionen importieren
-import { createListCard } from '/modules/home/js/cardhelper.mjs'
+import { createListCard } from '/js/cardhelper.mjs'
 // Anzuzeigende Liste
 const data = [
     { id: 'USERGROUP_ADMIN', name: 'Administratoren', icon: './images/group.png' }
@@ -105,7 +105,7 @@ document.body.appendChild(listCard)
 
 ```js
 // Funktionen importieren
-import { createDetailsCard } from '/modules/home/js/cardhelper.mjs'
+import { createDetailsCard } from '/js/cardhelper.mjs'
 // Wird von Handlern referenziert
 let detailsCard
 // Anzuzeigendes Objekt
