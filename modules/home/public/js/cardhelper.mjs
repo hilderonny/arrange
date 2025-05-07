@@ -91,7 +91,7 @@ async function createListAndDetailsCards(metadata) {
         listCard.querySelectorAll('input').forEach(input => input.checked = false)
     }
     // Listenkarte erstellen und zurück geben
-    listCard = createListCard(data, listMetadata, internalSelectHandler, metadata.saveApi ? internalNewHandler : undefined)
+    listCard = createListCard(data, listMetadata, internalSelectHandler, metadata.saveApi && metadata.canCreate ? internalNewHandler : undefined)
     return listCard
 }
 
@@ -227,7 +227,7 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
             toolbarDiv.appendChild(saveButton)
         }
         // Löschen-Button
-        if (save_handler) {
+        if (delete_handler) {
             const deleteButton = createButton('Löschen', 'delete', async () => {
                 // Das ursprüngliche Objekt wird zum Nachschlagen an das Callback übergeben
                 const deleteResult = await delete_handler(data)

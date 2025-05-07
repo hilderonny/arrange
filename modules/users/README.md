@@ -23,22 +23,6 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |`PERMISSION_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
 
 
-## API DELETE `/api/users/deletepermission/:permission_id`
-
-Löscht eine Berechtigung
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
-
-```js
-const permissionId = 'user0815'
-const response = await fetch('/api/users/deletepermission/' + permissionId)
-const response = await fetch('/api/users/deletepermission/permissionId', { method: 'DELETE' })
-// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
-response.status === 403
-// Berechtigung erfolgreich gelöscht oder gar nicht vorhanden
-response.status === 200
-```
-
-
 ## API DELETE `/api/users/deleteuser`
 
 Löscht einen Benutzer.
@@ -176,24 +160,31 @@ response.status === 200
 
 ## API POST `/api/users/savepermission`
 
-Speichert eine Berechtigung oder legt diese an.
+Speichert eine Berechtigung.
 Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Die übergebene Berechtigung muss eine Id haben, es können keine neuen Berechtigungen angelegt werden.
+Der Response enthält die gespeicherte Berechtigung.
 
 ```js
+const permissionToSave = {
+    id: 'PERMISSION_ADMINISTRATION_USER', 
+    name: 'Administration'
+}
 const response = await fetch('/api/users/savepermission', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        id: 'permissionId', // Optional. Wenn nicht angegeben, wird eine ID generiert
-        name: 'Bezeichnung'
-    })
+    body: JSON.stringify(permissionToSave)
 })
 // Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
+// Berechtigung nicht vorhanden
+response.status === 404
+// Berechtigung erfolgreich gespeichert
+response.status === 200
 response.json() = {
-    id: 'permissionId', // Generierte Id, wenn vormals weggelassen
-    name: 'Bezeichnung'
+    id: 'PERMISSION_ADMINISTRATION_USER',
+    name: 'Administration',
+    icon: './images/unlock.png' // Dynamisch vergebenes Icon für Listen
 }
 ```
 

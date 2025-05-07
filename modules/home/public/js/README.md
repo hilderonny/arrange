@@ -16,6 +16,7 @@ const metadata = {
     listApi: '/api/users/listusergroups', // API für Auflistung der Objekte
     saveApi: '/api/users/saveusergroup', // Optional. API zum Speichern und Neuanlegen eines Datensatzes
     deleteApi: '/api/users/deleteusergroup', // Optional. API zum Löschen eines Datensatzes
+    canCreate: true, // Gibt an, ob der Neu-Button angezeigt wird. Erfordert saveApi. Ist z.B. bei der Berechtigungsverwaltung auf false gesetzt, damit keine neuen Berechtigungen erstellt werden.
     fields: [ // Wird in Detailansicht benötigt
         { // Reihenfolge im Array bestimmt Anzeigereihenfolge
             property: 'id',
