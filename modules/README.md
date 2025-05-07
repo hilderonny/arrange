@@ -75,7 +75,6 @@ Alle diese Funktionen sind optional. Wenn sie fehlen, ist das kein Fehler, sonde
 arrange = {
    databaseHelper // Verweis auf databasehelper Instanz
    webServer // Verweis auf Express Instanz
-   localConfig // Konfiguration aus localconfig.json
    apps // Liste von Apps, die auf Home-Seite und in Navigation angezeigt werden. Wird von Modul "home" geparst
    metadata // Metainformationen über Datebnbanktabellen. Wird von Modul "home" geparst
    log() // Funktion zur Logausgabe

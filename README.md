@@ -10,24 +10,33 @@
 
 ## Konfiguration
 
-Die Konfiguration der Instanz erfolgt in der Datei `/localconfig.json`, die ein Objekt mit Einstellungen enthält.
+TODO: Konfiguration in Umgebungsvariablen auslagern und in launch.json hinterlegen
+
+Die Konfiguration der Instanz erfolgt in Umgebungsvariablen.
 Alle Pfadangaben sind entweder relativ zu `arrange.mjs` oder absolut anzugeben.
 
-|Schlüssel|Bedeutung|Beispiel|
+|Umgebungsvariable|Bedeutung|Beispiel|
 |---|---|---|
-|`databasedirectory`|Pfad zum Verzeichnis, in dem alle Datenbandateien liegen.|`./database/`|
-|`publiccertificatefile`|Pfad zum öffentlichen SSL Zertifikat|`./pub.cert`|
-|`privatekeyfile`|Pfad zur privaten SSL Schlüsseldatei|`./priv.key`|
-|`httpsport`|Port, an dem Arrange als Webanwendung lauschen soll|`443`|
-|`modulespath`|Verzeichnispfad, in dem die Module zu finden sind|`./modules/`|
-|`tokensecret`|Schlüssel, der für JSON WebTokens verwendet wird|`irgendwas`|
+|`ARRANGE_DATABASE_DIRECTORY`|Pfad zum Verzeichnis, in dem alle Datenbandateien liegen.|`./database/`|
+|`ARRANGE_PUBLIC_CERTIFICATE_FILE`|Pfad zum öffentlichen SSL Zertifikat|`./pub.cert`|
+|`ARRANGE_PRIVATE_KEY_FILE`|Pfad zur privaten SSL Schlüsseldatei|`./priv.key`|
+|`ARRANGE_HTTPS_PORT`|Port, an dem Arrange als Webanwendung lauschen soll|`443`|
+|`ARRANGE_MODULES_PATH`|Verzeichnispfad, in dem die Module zu finden sind|`./modules/`|
+|`ARRANGE_TOKEN_SECRET`|Schlüssel, der für JSON WebTokens verwendet wird|`irgendwas`|
 
 ## Starten
 
+Windows Kommandozeile (fehlende Leerzeichen vor `&&` beachten!)
+
 ```cmd
-node .\server.mjs`
+SET ARRANGE_DATABASE_DIRECTORY=./database/&& SET ARRANGE_PUBLIC_CERTIFICATE_FILE=./pub.cert&& SET ARRANGE_PRIVATE_KEY_FILE=./priv.key&& SET ARRANGE_HTTPS_PORT=443&& SET ARRANGE_MODULES_PATH=./modules/&& SET ARRANGE_TOKEN_SECRET=hubbelebubbele&& node arrange.mjs
 ```
 
+Powershell
+
+```ps
+$env:ARRANGE_DATABASE_DIRECTORY="./database/"; $env:ARRANGE_PUBLIC_CERTIFICATE_FILE="./pub.cert"; $env:ARRANGE_PRIVATE_KEY_FILE="./priv.key"; $env:ARRANGE_HTTPS_PORT="443"; $env:ARRANGE_MODULES_PATH="./modules/"; $env:ARRANGE_TOKEN_SECRET="hubbelebubbele"; node arrange.mjs
+```
 
 
 

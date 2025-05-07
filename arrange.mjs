@@ -6,16 +6,12 @@ import fs from 'fs'
 import * as logHelper from './helpers/loghelper.mjs'
 import cookieParser from 'cookie-parser'
 
-logHelper.log('[ARRANGE] Arrange wird gestartet.')
-
-// Konfigurationsdatei laden
-import localConfig  from './localconfig.json' with { type: 'json' }
-
-
 (async () => {
 
+    logHelper.log('[ARRANGE] Arrange wird gestartet.')
+
     // Datenbank laden
-    const database = loadDatabase(localConfig.databasedirectory, logHelper.log)
+    const database = loadDatabase(process.env.ARRANGE_DATABASE_DIRECTORY, logHelper.log)
 
     // Webserver initialisieren
     const webServer = express()
@@ -26,7 +22,6 @@ import localConfig  from './localconfig.json' with { type: 'json' }
     const arrange = {
         database: database,
         webServer: webServer,
-        localConfig: localConfig,
         apps: [],
         metadata: {},
         log: logHelper.log,
@@ -35,16 +30,16 @@ import localConfig  from './localconfig.json' with { type: 'json' }
     }
 
     // Module laden
-    await loadModules(localConfig.modulespath, arrange)
+    await loadModules(process.env.ARRANGE_MODULES_PATH, arrange)
 
     // HTTPS Server initialisieren und starten
     const httpsOptions = {
-        key: fs.readFileSync(localConfig.privatekeyfile),
-        cert: fs.readFileSync(localConfig.publiccertificatefile)
+        key: fs.readFileSync(process.env.ARRANGE_PRIVATE_KEY_FILE),
+        cert: fs.readFileSync(process.env.ARRANGE_PUBLIC_CERTIFICATE_FILE)
     }
     const httpsServer = https.createServer(httpsOptions, webServer)
-    httpsServer.listen(localConfig.httpsport, () => {
-        logHelper.log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', localConfig.httpsport)
+    httpsServer.listen(process.env.ARRANGE_HTTPS_PORT, () => {
+        logHelper.log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', process.env.ARRANGE_HTTPS_PORT)
     })
 
 })()

@@ -1,8 +1,0 @@
-{
-    "databasedirectory":"./database/",
-    "publiccertificatefile": "./pub.cert",
-    "privatekeyfile": "./priv.key",
-    "httpsport": 443,
-    "modulespath": "./modules/",
-    "tokensecret": "hubbelebubbele"
-}

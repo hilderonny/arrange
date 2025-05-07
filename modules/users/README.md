@@ -4,11 +4,11 @@ Dieses Modul stellt Datenbankstrukturen, UI, Middlewares und APIs für die Benut
 
 ## Voraussetzungen
 
-Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folgender Schlüssel vorhanden sein.
+Damit das Modul korrekt funktioniert, muss folgende Umgebungsvariable definiert sein.
 
 |Schlüssel|Beschreibung|
 |---|---|
-|`tokensecret`|Zeichenkette, die den Secret Key für die JSON WebToken Verschlüsselung beinhaltet|
+|`ARRANGE_TOKEN_SECRET`|Zeichenkette, die den Secret Key für die JSON WebToken Verschlüsselung beinhaltet|
 
 ## Middlewares
 
