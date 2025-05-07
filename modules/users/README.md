@@ -59,20 +59,23 @@ response.status === 200
 ```
 
 
-## API GET `/api/users/listusergroups`
+## API DELETE `/api/users/deleteusergroup`
 
-Listet alle Benutzergruppen mit Id und Namen auf.
+Löscht eine Benutzergruppe.
 Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Die zu löschende Benutzergruppe muss als JSON-Objekt im Body übergeben werden und muss ein Feld `id` enthalten.
 
 ```js
-const response = await fetch('/api/users/listusergroups')
-// Berechtigung fehlt
+const usergroupToDelete = { id: 'usergroup4711' }
+const response = await fetch('/api/users/deleteusergroup', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(usergroupToDelete)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
-// Es wird immer ein Feld zurück gegeben.
-response.json() = [
-    { id: 'usergroupid', name: 'Administratoren' }
-]
+// Benutzergruppe erfolgreich gelöscht oder gar nicht vorhanden
+response.status === 200
 ```
 
 
@@ -85,17 +88,32 @@ Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 const response = await fetch('/api/users/listpermissions')
 // Berechtigung fehlt
 response.status === 403
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
-// Es wird immer ein Feld zurück gegeben.
+// Ein erfolgreicher Aufruf liefert ein JSON-Array zurück.
 response.json() = [
     { id: 'permissionId', name: 'Berechtigungsbezeichnung' }
 ]
 ```
 
 
+## API GET `/api/users/listusergroups`
+
+Listet alle Benutzergruppen mit Id, Namen und zugehörigen Berechtigungs-IDs auf.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+
+```js
+const response = await fetch('/api/users/listusergroups')
+// Berechtigung fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Array zurück.
+response.json() = [
+    { id: 'usergroupid', name: 'Administratoren', permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ] }
+]
+```
+
+
 ## API GET `/api/users/listusers`
 
-Listet alle Benutzer mit Id, Namen und Benuztzergruppen-IDs auf.
+Listet alle Benutzer mit Id, Namen und Benutzergruppen-IDs auf.
 Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 Jeder Benutzer hat außerdem ein Icon.
 
@@ -103,7 +121,7 @@ Jeder Benutzer hat außerdem ein Icon.
 const response = await fetch('/api/users/listusers')
 // Berechtigung fehlt
 response.status === 403
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
+// Ein erfolgreicher Aufruf liefert ein JSON-Array zurück.
 // Es wird immer ein gefülltes Feld zurück gegeben (zumindest der abfragende Benutzer muss ja existieren)
 response.json() = [
     { id: 'userId', name: 'Benutzername', icon: './images/user.png', usergroupids: [ 'USERGROUP_ADMIN' ] }
@@ -210,6 +228,37 @@ response.json() = {
     name: 'Benutzername',
     icon: './images/icon.png', // Dynamisch vergebenes Icon für Listen
     usergroupids: [ 'USERGROUP_ADMIN' ]
+}
+```
+
+
+## API POST `/api/users/saveusergroup`
+
+Speichert eine Benutzergruppe.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Wenn die übergebene Benutzergruppe kein `id` Feld hat, wird sie als neue Benutzergruppe interpretiert, eine Id generiert und gespeichert.
+Der Response enthält die gespeicherte Benutzergruppe mit `id`.
+
+```js
+const usergroupToSave = {
+    id: 'usergroupId', 
+    name: 'Gruppenname',
+    permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ]
+}
+const response = await fetch('/api/users/saveusergroup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(usergroupToSave)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
+response.status === 403
+// Benutzergruppe erfolgreich gespeichert bzw. angelegt
+response.status === 200
+response.json() = {
+    id: 'userid', // Generierte Id, wenn vormals weggelassen
+    name: 'Gruppenname',
+    icon: './images/group.png', // Dynamisch vergebenes Icon für Listen
+    permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ]
 }
 ```
 

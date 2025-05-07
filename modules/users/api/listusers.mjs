@@ -6,9 +6,7 @@ export default (arrange) => {
         if (!request.user || !request.user.hasPermission('PERMISSION_ADMINISTRATION_USER')) return response.sendStatus(401)
         // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
-        const userList = usersTable.entries().map(kvp => {
-            const userId = kvp[0]
-            const user = kvp[1]
+        const userList = usersTable.entries().map(([userId, user]) => {
             return {
                 id: userId, // Id wird dynamisch angehängt, landet aber nicht im Datensatz in der Datenbank
                 name: user.name,

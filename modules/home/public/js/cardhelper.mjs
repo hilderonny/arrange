@@ -302,8 +302,12 @@ function createMultiSelect(selected_values, options) {
     // Select-Boxen für vorselektierte Werte erstellen
     if (selected_values) {
         for (const selectedValue of selected_values) {
-            const selectElement = createDynamicSelect(selectedValue, options)
-            multiSelect.appendChild(selectElement)
+            // Feld nur dann einblenden, wenn der Wert in den Optionen enthalten ist.
+            // Das Gegenteil kann bei Benutzern passieren, wenn eine Benutzergruppe, der der Benutzer angehört, gelöscht wird
+            if (options.find(option => option.value === selectedValue)) {
+                const selectElement = createDynamicSelect(selectedValue, options)
+                multiSelect.appendChild(selectElement)
+            }
         }
     }
     // Zusätzliches Feld erstellen, damit neue Zuordnungen erstellt werden können
@@ -358,7 +362,9 @@ function createDynamicSelect(selected_value, options) {
         const deleteOption = createOption('Löschen ...', '__DELETE__', false, false)
         selectElement.appendChild(deleteOption)
         selectElement.addEventListener('change', () => {
-            selectElement.remove()
+            if (selectElement.value === '__DELETE__') {
+                selectElement.remove()
+            }
         })
     }
     return selectElement
