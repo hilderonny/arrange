@@ -15,7 +15,7 @@
                 "ARRANGE_MODULES_PATH": "./modules/",
                 "ARRANGE_TOKEN_SECRET": "hubbelebubbele"
             },
-            "program": "${workspaceFolder}/arrange.mjs",
+            "program": "${workspaceFolder}/server.mjs",
             "runtimeExecutable": "node",
             "request": "launch",
             "skipFiles": [
