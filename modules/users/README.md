@@ -138,26 +138,6 @@ const response = await fetch('/api/users/logout')
 ```
 
 
-## API GET `/api/users/permissiondetails/:permission_id`
-
-Liefert Detailinformationen über eine bestimmte Berechtigung.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
-
-```js
-const permissionId = 'user0815'
-const response = await fetch('/api/users/permissiondetails/' + permissionId)
-// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
-response.status === 403
-// Berechtigung mit gegebener Id nicht gefunden
-response.status === 404
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
-response.json() = {
-    id: 'permissionId',
-    name: 'Bezeichnung'
-}
-```
-
-
 ## API POST `/api/users/register`
 
 Registriert einen neuen Benutzer.
@@ -230,48 +210,6 @@ response.json() = {
     name: 'Benutzername',
     icon: './images/icon.png', // Dynamisch vergebenes Icon für Listen
     usergroupids: [ 'USERGROUP_ADMIN' ]
-}
-```
-
-
-## API GET `/api/users/userdetails/:user_id`
-
-Liefert Detailinformationen über einen bestimmten Benutzer sowie die Id's der Benutzergruppen, denen er angehört.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
-
-```js
-const userId = 'user0815'
-const response = await fetch('/api/users/userdetails/' + userId)
-// Berechtigung fehlt
-response.status === 403
-// Benutzer mit gegebener Id nicht gefunden
-response.status === 404
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Benutzerinfos zurück.
-response.json() = {
-    id: 'userId',
-    name: 'Benutzername',
-    usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
-}
-```
-
-
-## API GET `/api/users/usergroupdetails/:usergroup_id`
-
-Liefert Detailinformationen über eine bestimmte Benutzergruppe samt zugewiesener Berechtigungs-Ids.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
-
-```js
-const usergroupId = 'user0815'
-const response = await fetch('/api/users/usergroupdetails/' + usergroupId)
-// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
-response.status === 403
-// Benutzergruppe mit gegebener Id nicht gefunden
-response.status === 404
-// Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Benutzergruppeninfos zurück.
-response.json() = {
-    id: 'usergroupId',
-    name: 'Gruppenname',
-    permissionids: [ 'permissionid_1', 'permissionid_2' ]
 }
 ```
 
