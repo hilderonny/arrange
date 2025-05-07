@@ -2,21 +2,6 @@ import express from 'express'
 import fs from 'node:fs'
 
 async function init(arrange) {
-    // Metainformationen für Tabellen definieren
-    arrange.metadata['users/users'] = {
-        'id': { type: 'text', label: 'Id' },
-        'name': { type: 'text', label: 'Benutzername', istitle: true },
-        'usergroupids': { type: 'reference', label: 'Benutzergruppen', table: 'users/usergroups' }
-    }
-    arrange.metadata['users/usergroups'] = {
-        'id': { type: 'text', label: 'Id' },
-        'name': { type: 'text', label: 'Name', istitle: true },
-        'permissionids': { type: 'reference', label: 'Berechtigungen', table: 'users/permissions' }
-    }
-    arrange.metadata['users/permissions'] = {
-        'id': { type: 'text', label: 'Id' },
-        'name': { type: 'text', label: 'Name', istitle: true }
-    }
     // Tabelle `users` für Benutzer wird bei der ersten Registrierung eines Benutzers angelegt
     // Tabelle für Berechtigungen anlegen und befüllen
     const permissionsTable = arrange.database['users/permissions']
