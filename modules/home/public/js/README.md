@@ -2,6 +2,28 @@
 
 TODO: Diese Doku in Modul-README integrieren
 
+## Stylesheets
+
+Die hier aufgeführten Funktionen verlassen sich auf das Vorhandensein der Stylesheets, die das Home-Modul mitbringt.
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="/styles/base.css">
+    </head>
+</html>
+```
+
+Die CSS-Klassen am `body`-Element an jeder Seite bestimmen, wie deren Inhalt gerendert wird.
+
+|CSS-Klasse|Beschreibung|
+|---|---|
+|`cards`|Wird von Modulen benutzt, die auf den horizontalen Karten (Listen- und Detailansichten) basieren|
+|`form`|Formulare, wie Anmelde- und Registrierseiten|
+|`icongrid`|Das Home-Modul benutzt diese Klasse, um Icons und Labels in Form eines Home-Screens in einem Gitter darzustellen|
+|`root`|Wird für die alles umgebende Root-Seite verwendet, die die Navigation und die Modul-IFrames enthält|
+
 ## Listen- und Detailansichten für Datenbankobjekt
 
 ```js

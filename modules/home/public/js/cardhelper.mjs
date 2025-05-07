@@ -4,7 +4,11 @@
  * Funktionen zur Erstellung von Listen-und Detailkarten
  */
 
-// TODO: fetchData Dokumentieren
+/**
+ * Lädt Objektlisten von einer GET-API und gibt diese als JSON-Array zurück.
+ * 
+ * @param {string} getApi GET-API, die Listen von vollständigen Objekten zurück gibt
+ */
 async function fetchData(getApi) {
     const dataResponse = await fetch(getApi)
     if (dataResponse.status !== 200) return

@@ -2,33 +2,7 @@
 <html>
 
     <head>
-        <!-- TODO: Stylesheets in home-Modul auslagern -->
-        <style>
-
-            * { margin: 0; padding: 0; font-family: sans-serif; font-size: 12pt; color: #1e2f55; box-sizing: border-box; }
-            html, body { width: 100%; height: 100%; }
-            body { padding: 0; display: flex; flex-direction: row; }
-
-            h1 { font-size: 16pt; margin-bottom: 12px; }
-            h2 { margin: 16px 0; }
-
-            label { color: #627088; }
-            input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
-            input:read-only { background-color: #fafafa; color: #606060; }
-            select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
-            button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
-            .delete { background-color: red; color: white; }
-
-            .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
-
-            .links { flex: 1; overflow: auto; }
-            .links input { display: none; }
-            .links label { color: #627088; display: block; padding: 11px 13px 11px 32px; text-decoration: none; border-radius: 4px; user-select: none; background: no-repeat 9px center; background-size: 16px; position: relative; }
-            .links label:hover { background-color: #e5e8ec; cursor: pointer; }
-            .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
-
-        </style>
-
+        <link rel="stylesheet" href="/styles/base.css">
         <script type="module">
 
             import { createListCard, createListAndDetailsCards } from '/js/cardhelper.mjs'
@@ -152,6 +126,6 @@
 
     </head>
 
-    <body></body>
+    <body class="cards"></body>
 
 </html>
