@@ -4,11 +4,11 @@ Dieses Modul stellt Datenbankstrukturen, UI, Middlewares und APIs für die Benut
 
 ## Voraussetzungen
 
-Damit das Modul korrekt funktioniert, muss folgende Umgebungsvariable definiert sein.
+Damit das Modul korrekt funktioniert, muss folgende arrange-Variable definiert sein.
 
 |Schlüssel|Beschreibung|
 |---|---|
-|`ARRANGE_TOKEN_SECRET`|Zeichenkette, die den Secret Key für die JSON WebToken Verschlüsselung beinhaltet|
+|`tokenSecret`|Zeichenkette, die den Secret Key für die JSON WebToken Verschlüsselung beinhaltet|
 
 ## Middlewares
 

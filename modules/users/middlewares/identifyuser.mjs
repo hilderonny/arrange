@@ -25,7 +25,7 @@ export default (arrange) => {
     return (request, _, next) => {
         const token = request.cookies['users-token']
         if (token) {
-            jsonwebtoken.verify(token, process.env.ARRANGE_TOKEN_SECRET, (error, decodedToken) => {
+            jsonwebtoken.verify(token, arrange.tokenSecret, (error, decodedToken) => {
                 if (!error) {
                     const userId = decodedToken.userid
                     request.user = {

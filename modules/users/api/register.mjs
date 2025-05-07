@@ -33,7 +33,7 @@ export default (arrange) => {
         usersTable[userId] = user
         usersTable.save()
         // JSON Web Token generieren und in Cookie speichern
-        const token = jsonwebtoken.sign({ userid: userId }, process.env.ARRANGE_TOKEN_SECRET)
+        const token = jsonwebtoken.sign({ userid: userId }, arrange.tokenSecret)
         response.cookie('users-token', token, { maxAge: 24*60*60*1000 })
         response.sendStatus(200)
     })

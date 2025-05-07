@@ -10,14 +10,14 @@ import cookieParser from 'cookie-parser'
  * Erstellt und starten eine arrange Instanz
  * 
  * @param {string} database_directory Pfad zum Verzeichnis, in dem alle Datenbandateien liegen
- * @param {string} modules_path Verzeichnispfad, in dem die Module zu finden sind
  * @param {string} private_key_file Pfad zur privaten SSL Schlüsseldatei
  * @param {string} public_certificate_file Pfad zum öffentlichen SSL Zertifikat
  * @param {int} https_port Port, an dem arrange als Webanwendung lauschen soll
  * @param {string} token_secret Schlüssel, der für JSON WebTokens verwendet wird
+ * @param {string[]} modules_to_load Liste von Modulverzeichnissen, die geladen werden sollen
  * @returns arrange-Objekt
  */
-async function start(database_directory, modules_path, private_key_file, public_certificate_file, https_port, token_secret) {
+async function start(database_directory, private_key_file, public_certificate_file, https_port, token_secret, modules_to_load) {
 
     logHelper.log('[ARRANGE] Arrange wird gestartet.')
 
@@ -42,7 +42,7 @@ async function start(database_directory, modules_path, private_key_file, public_
     }
 
     // Module laden
-    await loadModules(modules_path, arrange)
+    await loadModules(modules_to_load, arrange)
 
     // HTTPS Server initialisieren und starten
     const httpsOptions = {

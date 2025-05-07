@@ -2,27 +2,22 @@ import fs from 'node:fs'
 import { log } from './loghelper.mjs'
 
 /**
- * Lädt alle Module im Modulverzeichnispfad und initialisiert diese
+ * Lädt alle angegebenen Module und initialisiert diese
  * 
- * @param {string} modules_path Verzeichnispfad, in dem die Modulunterverzeichnisse liegen
+ * @param {string} modules_to_load Liste von Modulverzeichnissen, die geladen werden sollen
  * @param {object} arrange Arrange-Objekt, das Konfigurationen und Hilfsfunktionen enthält
  */
-async function loadModules(modules_path, arrange) {
-
-    log('[MODULES] Lade Module von %s.', modules_path)
+async function loadModules(modules_to_load, arrange) {
 
     const allModules = []
 
-    // Alle Unterverzeichnisse in modules_path suchen und Module laden
-    for (const file of fs.readdirSync(modules_path)) {
-        const fullPath = `${modules_path}${file}`
-        if (fs.statSync(fullPath).isDirectory()) {
-            const moduleFilePath = `${fullPath}/module.mjs`
-            if (fs.existsSync(moduleFilePath)) {
-                log('[MODULES] Lade Modul %s.', moduleFilePath)
-                const module = await import(`../${moduleFilePath}`)
-                allModules.push(module)
-            }
+    // In allen Verzeichnissen nach 'module.mjs' suchen und Modul laden
+    for (const modulePath of modules_to_load) {
+        const moduleFilePath = `${modulePath}/module.mjs`
+        if (fs.existsSync(moduleFilePath)) {
+            log('[MODULES] Lade Modul %s.', moduleFilePath)
+            const module = await import(`../${moduleFilePath}`)
+            allModules.push(module)
         }
     }
 
