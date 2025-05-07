@@ -7,21 +7,15 @@ TODO: Diese Doku in Modul-README integrieren
 ```js
 // Funktionen importieren
 import { createListAndDetailsCards } from '/js/cardhelper.mjs'
-// Objektliste mit vollständigen Daten
-const data = [
-    {
-        id: 'USERGROUP_ADMIN',
-        name: 'Administratoren',
-        permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ],
-        icon: './images/group.png' // Icons müssen jedem Objekt mitgegeben werden, für Liste
-    }
-]
 // Metainformationen für Liste und Detailansicht
 const metadata = {
     listTitle: 'Benutzergruppen', // Titel für Listenkarte
     identifierPropertyName: 'id', // Feld mit Identifizierer, der für Vorselektionen genutzt wird. Üblicherweise `id`.
     titlePropertyName: 'name', // Feld, welches in der Liste und im Kopf der Detailansicht angezeigt wird
     iconPropertyName: 'icon', // Feld mit Icon
+    listApi: '/api/users/listusergroups', // API für Auflistung der Objekte
+    saveApi: '/api/users/saveusergroup', // Optional. API zum Speichern und Neuanlegen eines Datensatzes
+    deleteApi: '/api/users/deleteusergroup', // Optional. API zum Löschen eines Datensatzes
     fields: [ // Wird in Detailansicht benötigt
         { // Reihenfolge im Array bestimmt Anzeigereihenfolge
             property: 'id',
@@ -47,29 +41,32 @@ const metadata = {
         }
     ]
 }
-// Speichern-Callback. Muss bei Erfolg true zurück geben, damit UI neu geladen wird
-const saveHandler = async (object_to_save) => {
-    // Es wird das ursprüngliche data-Objekt mit aktualisierten Eigenschaften übergeben
-    // ... Speichern-API aufrufen
-    alert('Datensatz wurde gespeichert' )
-    // Speichern erfolgreich, true zurück geben
-    return true
-}
-// Löschen-Callback. Bei Erfolg muss true zurück gegeben werden, 
-// damit Detailkarte geschlossen und Liste aktualisiert werden kann
-const deleteHandler = async (object_to_delete) => {
-    // object_to_delete kann genutzt werden, um Warnung zu individualisieren
-    if (!confirm(`Soll ${object_to_delete.name} wirklich gelöscht werden?`)) return false
-    // ... Löschen-API aufrufen
-    // Erfolg zurückmelden
-    return true
-}
-// Es wird die Listenkarte zurück gegeben
-// Wenn saveHandler angegeben ist, werden die Neu- und Speichern-Buttons angezeigt
-// Der Löschen-Button wird nur dann angezeigt, wenn ein deleteHandler angegeben ist
-const listCard = createListAndDetailsCards(data, metadata, saveHandler, deleteHandler)
+// Es wird die Listenkarte zurück gegeben.
+// Wenn `saveApi` in den Metadaten angegeben ist, werden die Neu- und Speichern-Buttons angezeigt.
+// Der Löschen-Button wird nur dann angezeigt, wenn `deleteApi` in den Metadaten angegeben ist.
+const listCard = await createListAndDetailsCards(metadata)
 document.body.appendChild(listCard)
 ```
+
+### Metadaten
+
+#### `listApi`
+
+`GET` API, die ein Array mit allen Objektdaten zurück gibt.
+Die Inhalte der Einzelobjekte müssen so vollständig sein, dass sie so, wie sie sind, wieder an die `saveApi` und an die `deleteApi` übergeben werden können, und diese APIs damit was anfangen können.
+Die API muss sich darum kümmern, dass die Elemente bereits sortiert zurück gegeben werden.
+
+#### `saveApi`
+
+`POST` API, die im Body das zu speichernde Objekt als JSON-Struktur bekommt.
+Die API muss sich um die Neuanlage kümmern, wenn beispielsweise kein `id` Feld enthalten ist.
+Die API soll bei Erfolg den Status `200` sowie das gespeicherte Objekt als JSON zurück geben.
+
+#### `deleteApi`
+
+`DELETE` API, die als Body das zu löschende Objekt bekommt.
+Anhand dieses Objektes muss die API fähig sein, das Objekt zu löschen.
+Im Erfolgsfall wird einfach ein Status `200` erwartet.
 
 ## Listenkarten
 

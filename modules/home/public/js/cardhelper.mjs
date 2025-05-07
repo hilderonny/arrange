@@ -4,15 +4,22 @@
  * Funktionen zur Erstellung von Listen-und Detailkarten
  */
 
+// TODO: fetchData Dokumentieren
+async function fetchData(getApi) {
+    const dataResponse = await fetch(getApi)
+    if (dataResponse.status !== 200) return
+    const data = await dataResponse.json()
+    return data
+}
+
 /**
  * Erstellt ein Listenkarte, bei denen die einzelnen Einträge mit jeweiligen Detailkarten verknüpft sind, die automatisch gehandhabt werden.
  * 
- * @param {object[]} data Feld mit gleichartigen Objektdaten
  * @param {object} metadata Metainformationen über die Objektdaten. Werden zur Anzeige und Beschriftung verwendet
- * @param {(object_to_save) => any} save_handler Callback zum Speichern. Muss Speichern und Erfolgsmeldung durchführen und bei Erfolg `true` zurück geben
- * @param {(object_to_delete) => any} delete_handler Callback zum Löschen. Muss Sicherheitsabfrage machen und Objekt löschen. Bei Erfolg soll `true` zurück gegeben werden
  */
-function createListAndDetailsCards(data, metadata, save_handler, delete_handler) {
+async function createListAndDetailsCards(metadata) {
+    // Daten von listApi holen
+    let data = await fetchData(metadata.listApi)
     // Listenkarte für Referenzen vorbereiten
     let listCard
     // Detailkarte für Referenzen vorbereiten
@@ -22,38 +29,51 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
         listTitle: metadata.listTitle,
         identifierPropertyName: metadata.identifierPropertyName,
         titlePropertyName: metadata.titlePropertyName,
-        iconPropertyName: metadata.iconPropertyName
+        iconPropertyName: metadata.iconPropertyName,
+        listApi: metadata.listApi
     }
     // Metadatenstruktur für Detailansicht
     const detailsMetadata = metadata.fields
     // Die Speichern-Funktion aktualisiert bei Erfolg die Liste und die Detailansicht
     const internalSaveHandler = async (object_to_save) => {
-        // Übergebenes Callback aufrufen, welches das Speichern und die Erfolgsmeldung übernimmt
-        const saveSucceeded = await save_handler(object_to_save)
-        // Datensatz wurde gespeichert und in ursprüngliches Datenobjekt übernommen (macht save_handler)
-        if (saveSucceeded) {
-            // Listenkarte aktualisieren
-            listCard.refresh()
-            // Die Detailkarte aktualisiert sich selbst nach dem Speichern
+        // saveApi aufrufen
+        const response = await fetch(metadata.saveApi, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(object_to_save)
+        })
+        // Speichern war erfolgreich
+        if (response.status === 200) {
+            const savedData = await response.json()
+            const id = savedData[metadata.identifierPropertyName]
+            // Einfach Liste neu laden und gespeicherten Datensatz vorselektieren
+            data = await fetchData(metadata.listApi)
+            listCard.refresh(data, id)
+            alert('Der Datensatz wurde gespeichert.')
         }
     }    
     // Hier wird das Originalobjekt übergeben, damit es in der Liste gefunden werden kann
     const internalDeleteHandler = async (object_to_delete) => {
-        // Übergebenes Callback aufrufen, welches die Sicherheitsabfrage und das Löschen übernimmt
-        const deletionSucceeded = await delete_handler(object_to_delete)
+        // Sicherheitsabfrage
+        if (!confirm('Soll der Datensatz wirklich gelöscht werden?')) return
+        // deleteApi aufrufen
+        const response = await fetch(metadata.deleteApi, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(object_to_delete)
+        })
         // Löschen war erfolgreich
-        if (deletionSucceeded) {
-            // Datensatz aus Liste löschen
-            data.splice(data.indexOf(object_to_delete), 1)
-            // Detailkarte schließt sich selbst
-            // Listenkarte aktualisieren
-            listCard.refresh()
+        if (response.status === 200) {
+            // Einfach Liste neu laden ohne Vorselektion
+            data = await fetchData(metadata.listApi)
+            listCard.refresh(data)
+            alert('Der Datensatz wurde gelöscht.')
         }
     }
     // Selektion eines Listenelements
     const internalSelectHandler = (selected_object) => {
         // Detailkarte erstellen
-        detailsCard = createDetailsCard(metadata.titlePropertyName, selected_object, detailsMetadata, internalSaveHandler, internalDeleteHandler)
+        detailsCard = createDetailsCard(metadata.titlePropertyName, selected_object, detailsMetadata, metadata.saveApi ? internalSaveHandler : undefined, metadata.deleteApi ? internalDeleteHandler : undefined)
         // Erst mal alle Karten rechts neben der Listenkarte löschen
         while (listCard.nextSibling) listCard.nextSibling.remove()
         // Detailkarte rechts neben Listenkarte anzeigen
@@ -62,7 +82,7 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
     // Beim Neu-Button wird eine leere Detailkarte angezeigt
     const internalNewHandler = () => {
         const detailsData = {} // Für den Anfang leer
-        detailsCard = createDetailsCard(metadata.titlePropertyName, detailsData, detailsMetadata, internalSaveHandler, internalDeleteHandler)
+        detailsCard = createDetailsCard(metadata.titlePropertyName, detailsData, detailsMetadata, internalSaveHandler, metadata.deleteApi ? internalDeleteHandler : undefined)
         // Erst mal alle Karten rechts neben der Listenkarte löschen
         while (listCard.nextSibling) listCard.nextSibling.remove()
         // Detailkarte rechts neben Listenkarte anzeigen
@@ -71,7 +91,7 @@ function createListAndDetailsCards(data, metadata, save_handler, delete_handler)
         listCard.querySelectorAll('input').forEach(input => input.checked = false)
     }
     // Listenkarte erstellen und zurück geben
-    listCard = createListCard(data, listMetadata, internalSelectHandler, internalNewHandler)
+    listCard = createListCard(data, listMetadata, internalSelectHandler, metadata.saveApi ? internalNewHandler : undefined)
     return listCard
 }
 
@@ -124,7 +144,6 @@ function createListCard(data, metadata, select_handler, new_handler) {
             const isSelected = selected_identifier && (element[metadata.identifierPropertyName] === selected_identifier)
             if (isSelected) {
                 input.checked = true
-                console.log(input)
             }
             // Label with icon
             const label = createLabel(element[metadata.titlePropertyName], inputId)

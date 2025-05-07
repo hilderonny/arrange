@@ -23,7 +23,7 @@ Damit das Modul korrekt funktioniert, muss in der Datei `/localconfig.json` folg
 |`PERMISSION_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
 
 
-## API POST `/api/users/deletepermission/:permission_id`
+## API DELETE `/api/users/deletepermission/:permission_id`
 
 Löscht eine Berechtigung
 Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
@@ -32,9 +32,29 @@ Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 const permissionId = 'user0815'
 const response = await fetch('/api/users/deletepermission/' + permissionId)
 const response = await fetch('/api/users/deletepermission/permissionId', { method: 'DELETE' })
-// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
 // Berechtigung erfolgreich gelöscht oder gar nicht vorhanden
+response.status === 200
+```
+
+
+## API DELETE `/api/users/deleteuser`
+
+Löscht einen Benutzer.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Der zu löschende Benutzer muss als JSON-Objekt im Body übergeben werden und muss ein Feld `id` enthalten.
+
+```js
+const userToDelete = { id: 'user0815' }
+const response = await fetch('/api/users/deleteuser', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userToDelete)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
+response.status === 403
+// Benutzer erfolgreich gelöscht oder gar nicht vorhanden
 response.status === 200
 ```
 
@@ -75,17 +95,18 @@ response.json() = [
 
 ## API GET `/api/users/listusers`
 
-Listet alle Benutzer mit Id und Namen auf.
+Listet alle Benutzer mit Id, Namen und Benuztzergruppen-IDs auf.
 Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Jeder Benutzer hat außerdem ein Icon.
 
 ```js
 const response = await fetch('/api/users/listusers')
 // Berechtigung fehlt
 response.status === 403
 // Ein erfolgreicher Aufruf liefert ein JSON-Objekt zurück.
-// Es wird immer ein Feld zurück gegeben (zumindest der abfragende Benutzer muss ja existieren)
+// Es wird immer ein gefülltes Feld zurück gegeben (zumindest der abfragende Benutzer muss ja existieren)
 response.json() = [
-    { id: 'userId', name: 'Benutzername' }
+    { id: 'userId', name: 'Benutzername', icon: './images/user.png', usergroupids: [ 'USERGROUP_ADMIN' ] }
 ]
 ```
 
@@ -125,7 +146,7 @@ Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 ```js
 const permissionId = 'user0815'
 const response = await fetch('/api/users/permissiondetails/' + permissionId)
-// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
 // Berechtigung mit gegebener Id nicht gefunden
 response.status === 404
@@ -169,12 +190,46 @@ const response = await fetch('/api/users/savepermission', {
         name: 'Bezeichnung'
     })
 })
-// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
 // Ein erfolgreicher Aufruf liefert ein JSON-Objekt mit Berechtigungsinfos zurück.
 response.json() = {
     id: 'permissionId', // Generierte Id, wenn vormals weggelassen
     name: 'Bezeichnung'
+}
+```
+
+
+## API POST `/api/users/saveuser`
+
+Speichert einen Benutzer.
+Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Wenn im übergebenen Benutzer ein Passwort enthalten ist, wird das Passwort überschrieben.
+Ansonsten bleibt das Passwort des Benutzers unverändert.
+Wenn der übergebene Benutzer kein `id` Feld hat, wird er als neuer Benutzer interpretiert, eine Id generiert und gespeichert.
+Der Response enthält den gespeicherten Benutzer mit `id` aber ohne `password`.
+
+```js
+const userToSave = {
+    id: 'userId', 
+    name: 'Benutzername',
+    password: 'newpassword',
+    usergroupids: [ 'USERGROUP_ADMIN' ]
+}
+const response = await fetch('/api/users/saveuser', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userToSave)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
+response.status === 403
+// Benutzer erfolgreich gespeichert bzw. angelegt
+response.status === 200
+response.json() = {
+    id: 'userid', // Generierte Id, wenn vormals weggelassen
+    name: 'Benutzername',
+    icon: './images/icon.png', // Dynamisch vergebenes Icon für Listen
+    usergroupids: [ 'USERGROUP_ADMIN' ]
 }
 ```
 
@@ -208,7 +263,7 @@ Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
 ```js
 const usergroupId = 'user0815'
 const response = await fetch('/api/users/usergroupdetails/' + usergroupId)
-// Berechtigung des angemeldeten Benutzers zur Einsicht fehlt
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
 // Benutzergruppe mit gegebener Id nicht gefunden
 response.status === 404

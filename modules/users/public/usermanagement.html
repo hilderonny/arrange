@@ -2,6 +2,7 @@
 <html>
 
     <head>
+        <!-- TODO: Stylesheets in home-Modul auslagern -->
         <style>
 
             * { margin: 0; padding: 0; font-family: sans-serif; font-size: 12pt; color: #1e2f55; box-sizing: border-box; }
@@ -60,24 +61,11 @@
 
             /********** Benutzer **********/
 
-            async function fetchUsersSorted() {
-                const usersResponse = await fetch('/api/users/listusers')
-                if (usersResponse.status !== 200) return
-                const users = await usersResponse.json()
-                users.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
-                // Benutzer mit Icons versehen
-                users.forEach(user => user.icon = './images/user.png')
-                return users
-            }
-
             async function createUsersCard() {
-                // Serverabfrage nach Benutzern
-                let users = await fetchUsersSorted()
                 // Metadaten vorbereiten
                 const usergroupsReponse = await fetch('/api/users/listusergroups')
                 if (usergroupsReponse.status !== 200) return
                 const usergroups = await usergroupsReponse.json()
-                usergroups.sort((a, b) => a.name.localeCompare(b.name)) // Alphabetisch sortieren
                 // In Metadatenstruktur mappen
                 const usergroupsMetadata = usergroups.map(usergroup => {
                     return {
@@ -90,6 +78,9 @@
                     identifierPropertyName: 'id',
                     titlePropertyName: 'name',
                     iconPropertyName: 'icon',
+                    listApi: '/api/users/listusers',
+                    saveApi: '/api/users/saveuser',
+                    deleteApi: '/api/users/deleteuser',
                     fields: [
                         { property: 'id', label: 'Id', type: 'text', readonly: true },
                         { property: 'name', label: 'Benutzername', type: 'text' },
@@ -97,26 +88,7 @@
                         { property: 'usergroupids', label: 'Benutzergruppen', type: 'multiselect', options: usergroupsMetadata }
                     ]
                 }
-                // Benutzer speichern
-                const usersSaveHandler = async (user) => {
-                    const response = await fetch('/api/users/saveuser', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(user)
-                    })
-                    if (response.status === 200) {
-                        const savedUser = await response.json()
-                        const userId = savedUser.id
-                        // Einfach Liste und Detailansicht (mit Benutzer-Id vom Server) neu laden
-                        users = await fetchUsersSorted()
-                        usersListCard.refresh(users, userId)
-                        alert('Der Benutzer wurde gespeichert.')
-                    }
-                }
-                const usersDeleteHandler = async (user_to_delete) => {
-                    // TODO: usersDeleteHandler implementieren
-                }
-                const usersListCard = createListAndDetailsCards(users, usersMetadata, usersSaveHandler, usersDeleteHandler)
+                const usersListCard = await createListAndDetailsCards(usersMetadata)
                 return usersListCard
             }
         
