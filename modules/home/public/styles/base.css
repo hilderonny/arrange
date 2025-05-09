@@ -57,7 +57,7 @@ body.icongrid {
     div.toolbar > a { display: none; }
 
     .apps { align-self: center; }
-    .apps > div { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; }
+    .apps > div { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; margin: 8px; }
     .apps > div:hover { background-color: aliceblue; }
     .apps > div > img { height: 100px; margin: auto; display: block; }
     .apps > div > p { text-align: center; }
