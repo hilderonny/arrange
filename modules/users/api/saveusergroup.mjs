@@ -5,7 +5,7 @@ export default function (arrange) {
     // Benutzergruppe speichern oder anlegen, es wird immer der vollständige Benutzergruppendatensatz erwartet
     arrange.webServer.post('/api/users/saveusergroup', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('PERMISSION_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
         // Benutzergruppentabelle öffnen
         const usergroupsTable = arrange.database['users/usergroups']
         // Benutzergruppendatensatz vorbereiten, immer from scratch

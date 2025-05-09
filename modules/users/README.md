@@ -18,15 +18,17 @@ Damit das Modul korrekt funktioniert, muss folgende arrange-Variable definiert s
 
 ## Berechtigungen
 
+Alle vordefinierten Berechtigungen sollten IDs in der Form `<MODULNAME>_<PERMISSIONNAME>` erhalten.
+
 |Berechtigung|Beschreibung|
 |---|---|
-|`PERMISSION_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
+|`USERS_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
 
 
 ## API DELETE `/api/users/deleteuser`
 
 Löscht einen Benutzer.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Der zu löschende Benutzer muss als JSON-Objekt im Body übergeben werden und muss ein Feld `id` enthalten.
 
 ```js
@@ -46,7 +48,7 @@ response.status === 200
 ## API DELETE `/api/users/deleteusergroup`
 
 Löscht eine Benutzergruppe.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Die zu löschende Benutzergruppe muss als JSON-Objekt im Body übergeben werden und muss ein Feld `id` enthalten.
 
 ```js
@@ -66,7 +68,7 @@ response.status === 200
 ## API GET `/api/users/listpermissions`
 
 Listet alle Berechtigungen mit Id und Bezeichnung auf.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 
 ```js
 const response = await fetch('/api/users/listpermissions')
@@ -82,7 +84,7 @@ response.json() = [
 ## API GET `/api/users/listusergroups`
 
 Listet alle Benutzergruppen mit Id, Namen und zugehörigen Berechtigungs-IDs auf.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 
 ```js
 const response = await fetch('/api/users/listusergroups')
@@ -90,7 +92,7 @@ const response = await fetch('/api/users/listusergroups')
 response.status === 403
 // Ein erfolgreicher Aufruf liefert ein JSON-Array zurück.
 response.json() = [
-    { id: 'usergroupid', name: 'Administratoren', permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ] }
+    { id: 'usergroupid', name: 'Administratoren', permissionids: [ 'USERS_ADMINISTRATION_USER' ] }
 ]
 ```
 
@@ -98,7 +100,7 @@ response.json() = [
 ## API GET `/api/users/listusers`
 
 Listet alle Benutzer mit Id, Namen und Benutzergruppen-IDs auf.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Jeder Benutzer hat außerdem ein Icon.
 
 ```js
@@ -161,13 +163,13 @@ response.status === 200
 ## API POST `/api/users/savepermission`
 
 Speichert eine Berechtigung.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Die übergebene Berechtigung muss eine Id haben, es können keine neuen Berechtigungen angelegt werden.
 Der Response enthält die gespeicherte Berechtigung.
 
 ```js
 const permissionToSave = {
-    id: 'PERMISSION_ADMINISTRATION_USER', 
+    id: 'USERS_ADMINISTRATION_USER', 
     name: 'Administration'
 }
 const response = await fetch('/api/users/savepermission', {
@@ -182,7 +184,7 @@ response.status === 404
 // Berechtigung erfolgreich gespeichert
 response.status === 200
 response.json() = {
-    id: 'PERMISSION_ADMINISTRATION_USER',
+    id: 'USERS_ADMINISTRATION_USER',
     name: 'Administration',
     icon: './images/unlock.png' // Dynamisch vergebenes Icon für Listen
 }
@@ -192,7 +194,7 @@ response.json() = {
 ## API POST `/api/users/saveuser`
 
 Speichert einen Benutzer.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Wenn im übergebenen Benutzer ein Passwort enthalten ist, wird das Passwort überschrieben.
 Ansonsten bleibt das Passwort des Benutzers unverändert.
 Wenn der übergebene Benutzer kein `id` Feld hat, wird er als neuer Benutzer interpretiert, eine Id generiert und gespeichert.
@@ -226,7 +228,7 @@ response.json() = {
 ## API POST `/api/users/saveusergroup`
 
 Speichert eine Benutzergruppe.
-Erfordert Berechtigung `PERMISSION_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
 Wenn die übergebene Benutzergruppe kein `id` Feld hat, wird sie als neue Benutzergruppe interpretiert, eine Id generiert und gespeichert.
 Der Response enthält die gespeicherte Benutzergruppe mit `id`.
 
@@ -234,7 +236,7 @@ Der Response enthält die gespeicherte Benutzergruppe mit `id`.
 const usergroupToSave = {
     id: 'usergroupId', 
     name: 'Gruppenname',
-    permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ]
+    permissionids: [ 'USERS_ADMINISTRATION_USER' ]
 }
 const response = await fetch('/api/users/saveusergroup', {
     method: 'POST',
@@ -249,7 +251,7 @@ response.json() = {
     id: 'userid', // Generierte Id, wenn vormals weggelassen
     name: 'Gruppenname',
     icon: './images/group.png', // Dynamisch vergebenes Icon für Listen
-    permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ]
+    permissionids: [ 'USERS_ADMINISTRATION_USER' ]
 }
 ```
 
@@ -270,7 +272,6 @@ Speichert alle Benutzer, die Zugriff auf das System haben.
 ```js
 arrange.database['users/users'] = {
     'user_id' : {
-        id: 'random_UUID',
         name: 'ronny',
         password: 'jiovrlwuqhvnr4728oz7rtn',
         usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
@@ -294,7 +295,6 @@ Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
 ```js
 arrange.database['users/usergroups'] = {
     'usergroup_id' : { 
-        id: 'random_UUID',
         name: 'Administratoren',
         permissionids: [ 'permission_1', 'permission_2' ]
     }
@@ -314,7 +314,6 @@ Speichert Berechtigungen.
 ```js
 arrange.database['users/permissions'] = {
     'permission_id' : { 
-        id: 'random_UUID',
         name: 'Benutzerverwaltung',
     }
 }
@@ -351,7 +350,7 @@ arrange.webServer.get('/api/example', (request, response) => {
     // Oder kürzer
     if (!request.user) return response.sendStatus(401)
     // Berechtigung prüfen
-    if (!request.user.hasPermission('PERMISSION_ADMINISTRATION_USER')) {
+    if (!request.user.hasPermission('USERS_ADMINISTRATION_USER')) {
         return response.sendStatus(401)
     }
 })

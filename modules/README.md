@@ -51,7 +51,7 @@ async function publishMiddlewares(arrange) {
 async function publishRoutes(arrange) {
    // API mit Authentifizierung über den Request
    arrange.webServer.get(url, async(request, response) => {
-      if (request.user?.canWrite?('PERMISSION_ADMINISTRATION_USER')) {
+      if (request.user?.canWrite?('USERS_ADMINISTRATION_USER')) {
 
       }
    })

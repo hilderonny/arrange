@@ -5,14 +5,14 @@ async function init(arrange) {
     // Tabelle `users` für Benutzer wird bei der ersten Registrierung eines Benutzers angelegt
     // Tabelle für Berechtigungen anlegen und befüllen
     const permissionsTable = arrange.database['users/permissions']
-    permissionsTable['PERMISSION_ADMINISTRATION_USER'] = { name: 'Benutzerverwaltung' }
+    permissionsTable['USERS_ADMINISTRATION_USER'] = { name: 'Benutzerverwaltung' }
     permissionsTable.save()
     // Tabelle für Benutzergruppen anlegen und befüllen
     const userGroupsTable = arrange.database['users/usergroups']
-    userGroupsTable['USERGROUP_ADMIN'] = { name: 'Administratoren', permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ] }
+    userGroupsTable['USERGROUP_ADMIN'] = { name: 'Administratoren', permissionids: [ 'USERS_ADMINISTRATION_USER' ] }
     userGroupsTable.save()
     // Apps registrieren
-    arrange.apps.push({ id: 'users-users', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'PERMISSION_ADMINISTRATION_USER' })
+    arrange.apps.push({ id: 'users-users', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/usermanagement.html', permission: 'USERS_ADMINISTRATION_USER' })
 }
 
 async function publishMiddlewares(arrange) {
