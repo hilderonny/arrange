@@ -41,31 +41,50 @@ Powershell
 $env:ARRANGE_DATABASE_DIRECTORY="./database/"; $env:ARRANGE_PUBLIC_CERTIFICATE_FILE="./pub.cert"; $env:ARRANGE_PRIVATE_KEY_FILE="./priv.key"; $env:ARRANGE_HTTPS_PORT="443"; $env:ARRANGE_TOKEN_SECRET="hubbelebubbele"; node server.mjs
 ```
 
+## Installation unter Ubuntu
 
-
-
-
-
-
-# ALT
-
-## 2021 Installation on Ubuntu
+Zuvor muss NodeJS installiert worden sein.
 
 ```sh
-curl -s https://raw.githubusercontent.com/hilderonny/arrange/main/install.sh | sh
+git clone https://github.com/hilderonny/arrange.git
+cd arrange
+npm install
 ```
 
-Installs NodeJS v15, git, actual Postgres database and downloads the github repository into the current folder.
-After that it creates a service "arrange" and starts it on ports 80 and 443.
-The database "arrange" will be created and will get an user "arrange" / "arrange" which is used by the application.
-An admin user gets created the credentials "admin" / "admin".
+Datei `/etc/systemd/system/arrange.service` mit folgendem Inhalt erstellen:
 
-Make sure that you call this script from the folder where you want to install the sources into!
+```ini
+[Unit]
+Description=arrange
 
-## Webserver content
+[Service]
+ExecStart=/usr/bin/node /github/hilderonny/arrange/server.mjs
+WorkingDirectory=/github/hilderonny/arrange
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=arrange
+Environment="ARRANGE_DATABASE_DIRECTORY=./database/"
+Environment="ARRANGE_PUBLIC_CERTIFICATE_FILE=./pub.cert"
+Environment="ARRANGE_PRIVATE_KEY_FILE=./priv.key"
+Environment="ARRANGE_HTTPS_PORT=443"
+Environment="ARRANGE_TOKEN_SECRET=hubbelebubbele"
 
-The content of the `/files` directory are served as webserver content.
+[Install]
+WantedBy=multi-user.target
+````
 
-## APIs
+Dienst einrichten und starten
 
-Under [/api](./api/README.md) there are several JSON based APIs handling with files, metadata, records and SQL queries.
+```sh
+sudo systemctl enable arrange
+sudo systemctl start arrange
+```
+
+Aktualisierung geht so, in `arrange`-Verzeichnis:
+
+```sh
+git pull
+sudo systemctl restart arrange
+```
