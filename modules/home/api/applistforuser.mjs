@@ -1,6 +1,7 @@
 export default (arrange) => {
 
     // Liste von Apps für Navigation
+    // TODO: Generalisieren nach apihelper.listforpermission(), welches nach Berechtigung prüft
     arrange.webServer.get('/api/home/applistforuser', async(request, response) => {
         const appTable = arrange.database['home/apps']
         // App-Liste filtern und nur die zurück geben, auf die der Benutzer Zugriff hat

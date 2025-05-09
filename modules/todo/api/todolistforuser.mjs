@@ -1,6 +1,7 @@
 export default (arrange) => {
 
     // Aufgabenliste für angemeldeten Benutzer
+    // TODO: Generalisieren nach apihelper.listforuser(), welches nach userid am Datensatz prüft
     arrange.webServer.get('/api/todo/todolistforuser', async(request, response) => {
         // Benutzerberechtigung prüfen
         if (!request.user || !request.user.hasPermission('TODO_TODO')) return response.sendStatus(403)
