@@ -216,8 +216,28 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
                             break
                         // Mehrfachauswahlfeld
                         case 'multiselect':
-                            const selectedValues = domNode.getSelectedValues()
-                            data[propertyName] = selectedValues
+                            const selectedMultiSelectValues = domNode.getSelectedValues()
+                            data[propertyName] = selectedMultiSelectValues
+                            break
+                        // Optionale einfache Auswahl
+                        case 'optionalsingleselect':
+                            const selectedOptionalSingleSelectValue = domNode.value
+                            data[propertyName] = selectedOptionalSingleSelectValue
+                            break
+                        // Checkbox
+                        case 'boolean':
+                            const booleanValue = domNode.checked
+                            data[propertyName] = booleanValue
+                            break
+                        // Ganzzahl
+                        case 'int':
+                            const intValue = domNode.value
+                            data[propertyName] = intValue
+                            break
+                        // Icon URL
+                        case 'iconurl':
+                            const iconUrl = domNode.value
+                            data[propertyName] = iconUrl
                             break
                     }
                 }
@@ -278,11 +298,43 @@ function createDetailsCard(title_property_name, data, metadata, save_handler, de
                     break
                 // Mehrfachauswahlfeld
                 case 'multiselect':
-                    const multiselectHeader = document.createElement('h2')
-                    dataDiv.appendChild(multiselectHeader)
+                    const multiSelectHeader = document.createElement('h2')
+                    dataDiv.appendChild(multiSelectHeader)
                     const multiSelectElement = createMultiSelect(value, fieldMetadata.options)
                     dataDiv.appendChild(multiSelectElement)
                     fieldMetadata.domNode = multiSelectElement
+                    break
+                // Optionale einfache Auswahl
+                case 'optionalsingleselect':
+                    const optionalSingleSelectHeader = createLabel(title)
+                    dataDiv.appendChild(optionalSingleSelectHeader)
+                    const optionalSingleSelectElement = createOptionalSingleSelect(value, fieldMetadata.options)
+                    dataDiv.appendChild(optionalSingleSelectElement)
+                    fieldMetadata.domNode = optionalSingleSelectElement
+                    break
+                // Checkbox
+                case 'boolean':
+                    const booleanLabel = createLabel(title)
+                    dataDiv.appendChild(booleanLabel)
+                    const booleanInput = createInput(value, 'checkbox', isReadOnly)
+                    dataDiv.appendChild(booleanInput)
+                    fieldMetadata.domNode = booleanInput
+                    break
+                // Einfaches Textfeld
+                case 'int':
+                    const intLabel = createLabel(title)
+                    dataDiv.appendChild(intLabel)
+                    const intInput = createInput(value, 'number', isReadOnly)
+                    dataDiv.appendChild(intInput)
+                    fieldMetadata.domNode = intInput
+                    break
+                // Icon URL
+                case 'iconurl':
+                    const iconUrlLabel = createLabel(title)
+                    dataDiv.appendChild(iconUrlLabel)
+                    const iconUrlInput = createIconUrlInput(value)
+                    dataDiv.appendChild(iconUrlInput)
+                    fieldMetadata.domNode = iconUrlInput
                     break
             }
         }
@@ -339,7 +391,7 @@ function createMultiSelect(selected_values, options) {
 }
 
 /**
- * Erzeugt ein Select-Element mit angegebenen Optionen.
+ * Erzeugt ein dynamisches Select-Element mit angegebenen Optionen, welches in Multi-Selects für das Erweitern und Löschen von Unter-Selects verwendet wird.
  * Wenn kein Wert vorgegeben wird, wird eine zusätzliche Hinweisoption "Hinzufügen ..." angezeigt.
  * Wenn ein Wert vorgegeben wird, wird eine Option zum Löschen eingefügt, bei deren Auswahl das ganzes Select-Element gelöscht wird.
  * 
@@ -370,6 +422,29 @@ function createDynamicSelect(selected_value, options) {
                 selectElement.remove()
             }
         })
+    }
+    return selectElement
+}
+
+/**
+ * Erzeugt ein optionales Select-Element mit angegebenen Optionen.
+ * Wenn kein Wert vorgegeben wird, wird eine zusätzliche leere Hinweisoption angezeigt.
+ * Diese dient dazu, keine Auswahl zu repräsentieren.
+ * 
+ * @param {string} selected_value Wert, der vorselektiert sein soll
+ * @param {object[]} options Liste von Möglichkeiten, die ausgewählt werden können
+ */
+function createOptionalSingleSelect(selected_value, options) {
+    let hintOption
+    const selectElement = document.createElement('select')
+    // Optionales Feld
+    hintOption = createOption('', '', false, true)
+    selectElement.appendChild(hintOption)
+    // Für alle Optionen Einträge erstellen
+    for (const option of options) {
+        const isSelected = option.value === selected_value
+        const optionElement = createOption(option.label, option.value, false, isSelected)
+        selectElement.appendChild(optionElement)
     }
     return selectElement
 }
@@ -412,14 +487,18 @@ function createButton(content, style_class, click_handler) {
  * Erstellt ein input Feld.
  * 
  * @param {string} value Vorgegebener Wert des Feldes
- * @param {string} type Typ des Elements. Kann `text`, `password`, `radio` sein
+ * @param {string} type Typ des Elements. Kann `text`, `password`, `radio`, `checkbox` sein
  * @param {boolean} read_only Gibt an, ob Eingabefeld nur lesbar sein soll
  */
 function createInput(value, type, read_only) {
     const input = document.createElement('input')
     input.setAttribute('type', type)
-    if (value) {
-        input.value = value
+    if (value !== undefined) {
+        if (type === 'checkbox') {
+            input.checked = value
+        } else {
+            input.value = value
+        }
     }
     if (read_only) {
         input.readOnly = true
@@ -440,6 +519,25 @@ function createLabel(content, for_id) {
         label.setAttribute('for', for_id)
     }
     return label
+}
+
+/**
+ * Erstellt ein input Feld für Icon-URLs.
+ * Wenn die URL geändert wird, wird links davor das Icon als Vorschau angezeigt.
+ * 
+ * @param {string} value Vorgegebener Wert des Feldes
+ */
+function createIconUrlInput(value) {
+    // Eingabefeld erstellen und formatieren
+    const input = createInput(value, 'text', false)
+    input.classList.add('iconurl')
+    input.style.backgroundImage = `url(${value})`
+    // Bei Änderung der URL soll das Icon automatisch angezeigt werden
+    input.addEventListener('change', () => {
+        const url = input.value
+        input.style.backgroundImage = `url(${url})`
+    })
+    return input
 }
 
 export { createListAndDetailsCards, createListCard, createDetailsCard }

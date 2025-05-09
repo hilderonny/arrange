@@ -3,7 +3,7 @@ export default (arrange) => {
     // Benutzer auflisten
     arrange.webServer.get('/api/users/listpermissions', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || (!request.user.hasPermission('USERS_ADMINISTRATION_USER') && !request.user.hasPermission('HOME_APPMANAGEMENT'))) return response.sendStatus(401)
         // Berechtigungstabelle öffnen
         const permissionsTable = arrange.database['users/permissions']
         const permissionList = permissionsTable.entries().map(([permissionId, permission]) => { 

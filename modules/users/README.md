@@ -25,6 +25,68 @@ Alle vordefinierten Berechtigungen sollten IDs in der Form `<MODULNAME>_<PERMISS
 |`USERS_ADMINISTRATION_USER`|Verwaltung von Benutzern, Benutzergruppen und Berechtigungen|
 
 
+## Datenbanktabelle `users/users`
+
+Speichert alle Benutzer, die Zugriff auf das System haben.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID des Benutzers. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Benutzername|Eindeutiger Name des Benutzers. Kommt nicht mehrmals vor.|Ja|
+|`password`|text|Passwort|Mit `crypto` verschlüsseltes Passwort||
+|`usergroupids`|reference|Benutzergruppen|Liste von Benutzergruppen-IDs, denen der Benutzer angehört||
+
+```js
+arrange.database['users/users'] = {
+    'user_id' : {
+        name: 'ronny',
+        password: 'jiovrlwuqhvnr4728oz7rtn',
+        usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
+    }
+}
+```
+
+
+## Datenbanktabelle `users/usergroups`
+
+Speichert Benutzergruppen.
+Benutzer können Benutzergruppen angehören.
+Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID der Benutzergruppe. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Name|Name der Benutzergruppe.|Ja|
+|`permissionids`|reference|Berechtigungen|Liste von Berechtigungs-IDs, über die die Benutzergruppe verfügt||
+
+```js
+arrange.database['users/usergroups'] = {
+    'usergroup_id' : { 
+        name: 'Administratoren',
+        permissionids: [ 'permission_1', 'permission_2' ]
+    }
+}
+```
+
+
+## Datenbanktabelle `users/permissions`
+
+Speichert Berechtigungen.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|UUID der Berechtigung. Wird beim Erstellen generiert, wenn nicht angegeben.||
+|`name`|text|Name|Name der Berechtigung.|Ja|
+
+```js
+arrange.database['users/permissions'] = {
+    'permission_id' : { 
+        name: 'Benutzerverwaltung',
+    }
+}
+```
+
+
 ## API DELETE `/api/users/deleteuser`
 
 Löscht einen Benutzer.
@@ -68,7 +130,7 @@ response.status === 200
 ## API GET `/api/users/listpermissions`
 
 Listet alle Berechtigungen mit Id und Bezeichnung auf.
-Erfordert Berechtigung `USERS_ADMINISTRATION_USER`.
+Erfordert Berechtigung `USERS_ADMINISTRATION_USER` oder `HOME_APPMANAGEMENT`.
 
 ```js
 const response = await fetch('/api/users/listpermissions')
@@ -252,70 +314,6 @@ response.json() = {
     name: 'Gruppenname',
     icon: './images/group.png', // Dynamisch vergebenes Icon für Listen
     permissionids: [ 'USERS_ADMINISTRATION_USER' ]
-}
-```
-
-
-
-
-## Datenbanktabelle `users/users`
-
-Speichert alle Benutzer, die Zugriff auf das System haben.
-
-|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
-|---|---|---|---|---|
-|`id`|text|Id|UUID des Benutzers. Wird beim Erstellen generiert, wenn nicht angegeben.||
-|`name`|text|Benutzername|Eindeutiger Name des Benutzers. Kommt nicht mehrmals vor.|Ja|
-|`password`|text|Passwort|Mit `crypto` verschlüsseltes Passwort||
-|`usergroupids`|reference|Benutzergruppen|Liste von Benutzergruppen-IDs, denen der Benutzer angehört||
-
-```js
-arrange.database['users/users'] = {
-    'user_id' : {
-        name: 'ronny',
-        password: 'jiovrlwuqhvnr4728oz7rtn',
-        usergroupids: [ 'usergroupid_1', 'usergroupid_2' ]
-    }
-}
-```
-
-
-## Datenbanktabelle `users/usergroups`
-
-Speichert Benutzergruppen.
-Benutzer können Benutzergruppen angehören.
-Benutzergruppen wiederum können Berechtigungen zugewiesen werden.
-
-|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
-|---|---|---|---|---|
-|`id`|text|Id|UUID der Benutzergruppe. Wird beim Erstellen generiert, wenn nicht angegeben.||
-|`name`|text|Name|Name der Benutzergruppe.|Ja|
-|`permissionids`|reference|Berechtigungen|Liste von Berechtigungs-IDs, über die die Benutzergruppe verfügt||
-
-```js
-arrange.database['users/usergroups'] = {
-    'usergroup_id' : { 
-        name: 'Administratoren',
-        permissionids: [ 'permission_1', 'permission_2' ]
-    }
-}
-```
-
-
-## Datenbanktabelle `users/permissions`
-
-Speichert Berechtigungen.
-
-|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
-|---|---|---|---|---|
-|`id`|text|Id|UUID der Berechtigung. Wird beim Erstellen generiert, wenn nicht angegeben.||
-|`name`|text|Name|Name der Berechtigung.|Ja|
-
-```js
-arrange.database['users/permissions'] = {
-    'permission_id' : { 
-        name: 'Benutzerverwaltung',
-    }
 }
 ```
 

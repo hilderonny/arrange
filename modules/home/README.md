@@ -9,35 +9,131 @@ Diese wiederum erfordern Metainformationen über die Datenbankstrukturen.
 Diese Metastrukturen werden hier definiert und müssen von den Modulen, die die Funktionen
 verwenden wollen, gefüllt werden.
 
-Das Modul verwendet `arrange.apps[]`, um anzuzeigende Anwendungen zu ermitteln.
-Diese Liste muss von anderen Modulen gefüllt werden.
+Das Modul verwendet die Datenbanktabelle `home/apps`, um anzuzeigende Anwendungen zu ermitteln.
+Diese Tabelle muss von anderen Modulen gefüllt werden.
 
-## Struktur von `arrange.apps[]`
+## Berechtigungen
+
+
+|Berechtigung|Beschreibung|
+|---|---|
+|`HOME_APPMANAGEMENT`|Verwaltung von Apps.|
+
+## Datenbanktabelle `home/apps`
+
+Speichert alle Apps.
+
+|Feldname|Datentyp|Label|Beschreibung|Titelfeld|
+|---|---|---|---|---|
+|`id`|text|Id|Id der App. Bei vorgegebenen Apps sollte diese ID aus dem Modulnamen und dem Appnamen bestehen.||
+|`name`|text|Name|Name der App, wie sie in UI angezeigt wird|Ja|
+|`icon`|text|Icon|URL des Icons für die App. Kann relativ oder absolut sein.||
+|`url`|text|URL|URL der App. Wird in IFRAME geladen. Kann extern sein.||
+|`index`|int|Index|Reihenfolge-Index für Auflistungen. Module sollten ihre Indizes zusammenhalten. Index >= 10.000 sind Admin-Apps, Index >= 100.000 sind Profil und System-Apps.||
+|`isdefault`|boolean|Ist Standard-App|Wenn `true`, wird diese App beim Öffnen von arrange angezeigt.||
+|`permissionid`|text|Berechtigung|Optional. Wenn angegeben, braucht der Benutzer genau diese Berechtigung, um die App in der Liste anzuzeigen.||
 
 ```js
-app = {
-    navigationIcon // URL zu kleinem Icon für die Navigation
-    homeIcon // URL zu großen Icon für Home Screen
-    name // Name der Anwendung, wird in Navigation und auf Home-Screen angezeigt
-    permission // Optional. Id der Berechtigung, die notwendig ist, um die App zu verwenden
+arrange.database['home/apps'] = {
+    'HOME_HOME' : {
+        name: 'Home',
+        icon: '/images/house.png',
+        url: '/home.html',
+        index: 100,
+        isdefault: true,
+        permissionid: 'HOME_HOME'
+    }
 }
 ```
 
-## API GET `/api/home/applist`
+## API GET `/api/home/applistforuser`
 
-Liefert Liste aller in `arrange.apps` registrierten Apps zurück.
+Liefert Liste aller in `arrange.apps` registrierten Apps zurück, auf die der Benutzer Zugriff hat.
 Wird für den Aufbau der Navigation und des Home-Screens verwendet.
 
 ```js
 response = [
     {
-        name: 'users-users', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
-        name: 'Benutzer',
-        icon: '/modules/users/images/users.png',
-        url: '/modules/users/index.html,
-        default: true // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
+        id: 'HOME_HOME', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
+        name: 'Benutzerverwaltung',
+        icon: '/modules/users/images/group.png',
+        url: '/modules/users/uermanagement.html',
+        index: 100, // Reihenfolge in App-Listen
+        isdefault: false, // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
+        permissionid: 'USERS_ADMINISTRATION_USER'
    }
 ]
+```
+
+## API DELETE `/api/home/deleteapp`
+
+Löscht eine App.
+Erfordert Berechtigung `HOME_APPMANAGEMENT`.
+Die zu löschende App muss als JSON-Objekt im Body übergeben werden und muss ein Feld `id` enthalten.
+
+```js
+const appToDelete = { id: 'HOME_HOME' }
+const response = await fetch('/api/home/deleteapp', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(appToDelete)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
+response.status === 403
+// App erfolgreich gelöscht oder gar nicht vorhanden
+response.status === 200
+```
+
+## API GET `/api/home/listapps`
+
+Listet alle Apps für die App-Verwaltung auf.
+Erfordert Berechtigung `HOME_APPMANAGEMENT`.
+
+```js
+const response = await fetch('/api/home/listapps')
+// Berechtigung fehlt
+response.status === 403
+// Ein erfolgreicher Aufruf liefert ein JSON-Array zurück.
+response.json() = [
+    { id: 'HOME_HOME', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/uermanagement.html', index: 100, isdefault: true, permissionid: 'USERS_ADMINISTRATION_USER' }
+]
+```
+
+## API POST `/api/home/saveapp`
+
+Speichert eine app.
+Erfordert Berechtigung `HOME_APPMANAGEMENT`.
+Wenn die übergebene App kein `id` Feld hat, wird sie als neue App interpretiert, eine Id generiert und gespeichert.
+Der Response enthält die gespeicherte App mit `id`.
+
+```js
+const appToSave = {
+    id: 'appId', 
+    name: 'Benutzerverwaltung', 
+    icon: '/modules/users/images/group.png', 
+    url: '/modules/users/uermanagement.html',
+    index: 100,
+    isdefault: false,
+    permissionid: 'USERS_ADMINISTRATION_USER'
+}
+const response = await fetch('/api/home/saveapp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(appToSave)
+})
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
+response.status === 403
+// App erfolgreich gespeichert bzw. angelegt
+response.status === 200
+response.json() = {
+    id: 'appId', 
+    name: 'Benutzerverwaltung', 
+    icon: '/modules/users/images/group.png', 
+    url: '/modules/users/uermanagement.html', 
+    index: 100,
+    isdefault: false,
+    permissionid: 'USERS_ADMINISTRATION_USER'
+}
 ```
 
 ## Navigationsselektion erzwingen
@@ -104,7 +200,7 @@ const metadata = {
             type: 'multiselect', // Dynamisches Erweitern und Löschen der Select-Felder
             options: [
                 {
-                    value: 'PERMISSION_ADMINISTRATION_USER',
+                    value: 'USERS_ADMINISTRATION_USER',
                     label: 'Benutzerverwaltung',
                 }
             ]
@@ -179,7 +275,7 @@ let detailsCard
 const data = {
     id: 'USERGROUP_ADMIN',
     name: 'Administratoren',
-    permissionids: [ 'PERMISSION_ADMINISTRATION_USER' ]
+    permissionids: [ 'USERS_ADMINISTRATION_USER' ]
 }
 // Feldname, der Titel enthält, der oben angezeigt wird
 const titlePropertyName = 'name'
@@ -202,7 +298,7 @@ const metadata = [
         type: 'multiselect', // Dynamisches Erweitern und Löschen der Select-Felder
         options: [
             {
-                value: 'PERMISSION_ADMINISTRATION_USER',
+                value: 'USERS_ADMINISTRATION_USER',
                 label: 'Benutzerverwaltung',
             }
         ]

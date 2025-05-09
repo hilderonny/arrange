@@ -10,7 +10,7 @@
 
             (async () => {
 
-                const applist = await (await fetch('/api/home/applist')).json()
+                const applist = await (await fetch('/api/home/applistforuser')).json()
 
                 const linksElement = document.querySelector('body > div.navigation > div.links')
 
@@ -24,7 +24,7 @@
                     inputElement.addEventListener('click', () => {
                         self.frames['content'].location.href = app.url
                     })
-                    if (app.default) {
+                    if (app.isdefault) {
                         inputElement.checked = true
                         self.frames['content'].location.href = app.url
                     }

@@ -2,8 +2,15 @@ import express from 'express'
 import fs from 'node:fs'
 
 async function init(arrange) {
-    // App registrieren
-    arrange.apps.push({ id: 'home-home', name: 'Home', icon: '/images/house.png', url: '/home.html', default: true })
+    // Apps registrieren
+    const appTable = arrange.database['home/apps']
+    appTable['HOME_HOME'] = { name: 'Home', icon: '/images/house.png', url: '/home.html', index: 0, isdefault: true }
+    if (!appTable['HOME_APPMANAGEMENT']) appTable['HOME_APPMANAGEMENT'] = { name: 'App-Verwaltung', icon: '/images/apps.png', url: '/appmanagement.html', index: 10000, permissionid: 'HOME_APPMANAGEMENT' }
+    appTable.save()
+    // Berechtigung für App-Verwaltung erstellen
+    const permissionsTable = arrange.database['users/permissions']
+    if (!permissionsTable['HOME_APPMANAGEMENT']) permissionsTable['HOME_APPMANAGEMENT'] = { name: 'App-Verwaltung' }
+    permissionsTable.save()
 }
 
 async function publishRoutes(arrange) {

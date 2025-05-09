@@ -12,12 +12,18 @@ body.cards {
 
     label { color: #627088; }
     input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
+    input[type="checkbox"] { display: block; width: auto; }
+    input[type="number"] { text-align: right; }
     input:read-only { background-color: #fafafa; color: #606060; }
+    input.iconurl { padding-left: 44px; background-size: 32px; background-repeat: no-repeat; background-position: 2px center; background-repeat: no-repeat; }
     select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
     button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
     .delete { background-color: red; color: white; }
 
     .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
+
+    .toolbar { margin-bottom: 8px; }
+    .toolbar button { margin-right: 8px; }
 
     .links { flex: 1; overflow: auto; }
     .links input { display: none; }

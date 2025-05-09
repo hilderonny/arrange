@@ -32,13 +32,15 @@ async function init(arrange) {
    table[record_id] = record_content
    table.save()
    // App registrieren
-   arrange.apps.push({
-      name: 'users-users', // Eindeutiger identifizierer für HTML IDs. Sollte aus Modulnamen und Appnamen bestehen
-      label: 'Benutzer',
-      icon: '/modules/users/images/users.png',
-      url: '/modules/users/index.html,
-      default: true // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
-   })
+   const appTable = arrange.database['home/apps']
+   if (!appTable['USERS_USERMANAGEMENT']) appTable['USERS_USERMANAGEMENT'] = { // Nur anlegen, wenn nicht bereits vorhanden
+      name: 'Benutzerverwaltung',
+      icon: '/modules/users/images/group.png',
+      url: '/modules/users/usermanagement.html',
+      default: false, // Wenn Home-Modul diese Anwendung standardmäßig anzeigen soll
+      permissionid: 'USERS_ADMINISTRATION_USER'
+   }
+   appTable.save()
 }
 
 async function publishMiddlewares(arrange) {
