@@ -24,7 +24,7 @@
                 }
             }
 
-            document.getElementById('sendButton').addEventListener('click', register)
+            document.getElementById('registerForm').addEventListener('submit', register)
 
         </script>
 
@@ -32,17 +32,21 @@
     
     <body class="form">
 
-        <h1>Registrierung</h1>
+        <form id="registerForm" autocomplete="on">
 
-        <h2>Benutzername</h2>
-        <input id="usernameInput" name="username" autocomplete="username" />
+            <h1>Registrierung</h1>
 
-        <h2>Passwort</h2>
-        <input id="passwordInput" name="password" autocomplete="new-password" type="password"/>
+            <h2>Benutzername</h2>
+            <input id="usernameInput" autocomplete="username" required />
 
-        <button id="sendButton">Registrieren</button>
+            <h2>Passwort</h2>
+            <input id="passwordInput" type="password" autocomplete="new-password" required/>
 
-        <p class="error">Registrierung fehlgeschlagen</p>
+            <button type="submit">Registrieren</button>
+
+            <p class="error">Registrierung fehlgeschlagen</p>
+
+        </form>
 
     </body>
 

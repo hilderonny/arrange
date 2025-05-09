@@ -7,7 +7,7 @@
 
             const errorParagraph = document.querySelector('p.error')
 
-            async function register() {
+            async function login() {
                 errorParagraph.style.display = 'none'
                 const username = document.getElementById('usernameInput').value
                 const password = document.getElementById('passwordInput').value
@@ -24,25 +24,29 @@
                 }
             }
 
-            document.getElementById('sendButton').addEventListener('click', register)
+            document.getElementById('loginForm').addEventListener('submit', login)
 
         </script>
 
     </head>
     
     <body class="form">
+
+        <form id="loginForm" autocomplete="on">
         
-        <h1>Anmeldung</h1>
+            <h1>Anmeldung</h1>
 
-        <h2>Benutzername</h2>
-        <input id="usernameInput" name="username" autocomplete="username" />
+            <h2>Benutzername</h2>
+            <input id="usernameInput" name="username" autocomplete="username" required />
+    
+            <h2>Passwort</h2>
+            <input id="passwordInput" type="password" autocomplete="current-password" required />
+    
+            <button type="submit">Anmelden</button>
+    
+            <p class="error">Anmeldung fehlgeschlagen</p>
 
-        <h2>Passwort</h2>
-        <input id="passwordInput" name="password" autocomplete="current-password" type="password"/>
-
-        <button id="sendButton">Anmelden</button>
-
-        <p class="error">Anmeldung fehlgeschlagen</p>
+        </form>
 
     </body>
 
