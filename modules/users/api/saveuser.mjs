@@ -5,7 +5,7 @@ export default function (arrange) {
     // Benutzer speichern oder anlegen, es wird immer der vollständige Benutzerdatensatz erwartet
     arrange.webServer.post('/api/users/saveuser', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(403)
         // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
         // Benutzerdatensatz vorbereiten, immer from scratch

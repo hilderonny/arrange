@@ -3,7 +3,7 @@ export default (arrange) => {
     // App löschen
     arrange.webServer.delete('/api/home/deleteapp', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('HOME_APPMANAGEMENT')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('HOME_APPMANAGEMENT')) return response.sendStatus(403)
         // App-ID aus Request holen
         const appId = request.body.id
         if (appId) {

@@ -3,7 +3,7 @@ export default function (arrange) {
     // Berechtigung speichern, es wird immer der vollständige Bertechtigungsdatensatz erwartet
     arrange.webServer.post('/api/users/savepermission', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(403)
         // Id muss übergeben worden sein
         const permissionId = request.body.id
         if (!permissionId) return response.sendStatus(404)

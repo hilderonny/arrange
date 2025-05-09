@@ -5,7 +5,7 @@ export default function (arrange) {
     // App speichern oder anlegen, es wird immer der vollständige Datensatz erwartet
     arrange.webServer.post('/api/home/saveapp', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('HOME_APPMANAGEMENT')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('HOME_APPMANAGEMENT')) return response.sendStatus(403)
         // App-Tabelle öffnen
         const appsTable = arrange.database['home/apps']
         // Appdatensatz vorbereiten, immer from scratch

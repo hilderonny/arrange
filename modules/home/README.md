@@ -48,7 +48,7 @@ arrange.database['home/apps'] = {
 
 ## API GET `/api/home/applistforuser`
 
-Liefert Liste aller in `arrange.apps` registrierten Apps zurück, auf die der Benutzer Zugriff hat.
+Liefert Liste aller registrierten Apps zurück, auf die der Benutzer Zugriff hat.
 Wird für den Aufbau der Navigation und des Home-Screens verwendet.
 
 ```js

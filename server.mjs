@@ -8,6 +8,7 @@ start(
     process.env.ARRANGE_TOKEN_SECRET,
     [
         './modules/home',
-        './modules/users'
+        './modules/users',
+        './modules/todo'
     ]
 )

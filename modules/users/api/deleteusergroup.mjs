@@ -3,7 +3,7 @@ export default (arrange) => {
     // Benutzergruippe löschen
     arrange.webServer.delete('/api/users/deleteusergroup', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(403)
         // Benutzergruppen-ID aus Request holen
         const usergroupId = request.body.id
         if (usergroupId) {

@@ -342,14 +342,14 @@ Das Client-Skript muss sich dann darum kümmern, den Benutzer auf die `/login` S
 ```js
 arrange.webServer.get('/api/example', (request, response) => {
     if (!request.user) {
-        response.sendStatus(401)
+        response.sendStatus(403)
         return
     }
     // Oder kürzer
-    if (!request.user) return response.sendStatus(401)
+    if (!request.user) return response.sendStatus(403)
     // Berechtigung prüfen
     if (!request.user.hasPermission('USERS_ADMINISTRATION_USER')) {
-        return response.sendStatus(401)
+        return response.sendStatus(403)
     }
 })
 ```
@@ -362,9 +362,5 @@ if (response.status === 401) {
 
     // Umleitung zur Login-Seite
     location.replace('/login')
-
-    // Oder Anzeige der Login-Webkomponente
-    const loginModule = await import('/modules/users/components/login.mjs')
-    loginModule.showLoginForm()
     
 }

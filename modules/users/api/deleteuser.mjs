@@ -3,7 +3,7 @@ export default (arrange) => {
     // Benutzer löschen
     arrange.webServer.delete('/api/users/deleteuser', async(request, response) => {
         // Benutzerberechtigung prüfen
-        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(401)
+        if (!request.user || !request.user.hasPermission('USERS_ADMINISTRATION_USER')) return response.sendStatus(403)
         // Benutzer-ID aus Request holen
         const userId = request.body.id
         if (userId) {
