@@ -12,7 +12,6 @@
                 "ARRANGE_PUBLIC_CERTIFICATE_FILE": "./pub.cert",
                 "ARRANGE_PRIVATE_KEY_FILE": "./priv.key",
                 "ARRANGE_HTTPS_PORT": "443",
-                "ARRANGE_MODULES_PATH": "./modules/",
                 "ARRANGE_TOKEN_SECRET": "hubbelebubbele"
             },
             "program": "${workspaceFolder}/server.mjs",
