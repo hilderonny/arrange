@@ -7,7 +7,8 @@
 
             const errorParagraph = document.querySelector('p.error')
 
-            async function login() {
+            async function login(event) {
+                event.preventDefault()
                 errorParagraph.style.display = 'none'
                 const username = document.getElementById('usernameInput').value
                 const password = document.getElementById('passwordInput').value
