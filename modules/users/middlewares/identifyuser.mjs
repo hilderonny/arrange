@@ -8,14 +8,14 @@
  */
 import jsonwebtoken from 'jsonwebtoken'
 
-function hasUserPermission(arrange, user_id, permission_id) {
+function hasUserPermission(arrange, user_id, permission_ids) {
     const usersTable = arrange.database['users/users']
-    const user = usersTable[user_id]
+    const user = usersTable.get(user_id)
     if (!user || !user.usergroupids) return false
     const usergroupsTable = arrange.database['users/usergroups']
     for (const usergroupId of user.usergroupids) {
-        const usergroup = usergroupsTable[usergroupId]
-        if (usergroup && usergroup.permissionids && usergroup.permissionids.indexOf(permission_id) >= 0) return true // Berechtigung gefunden
+        const usergroup = usergroupsTable.get(usergroupId)
+        if (usergroup && usergroup.permissionids && usergroup.permissionids.some(permissionId => permission_ids.includes(permissionId))) return true // Mindestens eine der Berechtigungen gefunden
     }
     // Berechtigung nirgends gefunden
     return false
@@ -30,7 +30,7 @@ export default (arrange) => {
                     const userId = decodedToken.userid
                     request.user = {
                         id: userId,
-                        hasPermission: (permission_id) => hasUserPermission(arrange, userId, permission_id)
+                        hasPermission: (permission_ids) => hasUserPermission(arrange, userId, permission_ids)
                     }
                 }
                 next()

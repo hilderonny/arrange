@@ -4,6 +4,8 @@
  * Funktionen zur Erstellung von Listen-und Detailkarten
  */
 
+// TODO: in CardHelper in Listen irgendwie Icons angeben, evtl. über metadata.defaultIcon
+
 /**
  * Lädt Objektlisten von einer GET-API und gibt diese als JSON-Array zurück.
  * 

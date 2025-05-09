@@ -12,6 +12,7 @@ export default (arrange) => {
         // Benutzer generieren
         const userId = randomUUID()
         const user = {
+            id: userId,
             name: username, 
             password: hashedPassword, 
             usergroupids: []
@@ -19,18 +20,18 @@ export default (arrange) => {
         // Benutzertabelle öffnen
         const usersTable = arrange.database['users/users']
         // Prüfen, ob es den Benutzer mit dem gegebenen Benutzernamen schon gibt
-        const existingUser = usersTable.find(u => u.name === username)
+        const existingUser = usersTable.find(user => user.name === username)
         if (existingUser) {
             // Benutzer existiert bereits
             return response.sendStatus(409)
         }
         // Wenn es noch keinen Benutzer in der Datenbank gibt, dann wird dieser erste Benutzer der Administratoren-Gruppe zugeordnet
-        const isFirstUser = usersTable.size() < 1
+        const isFirstUser = usersTable.length < 1
         if (isFirstUser) {
             user.usergroupids.push('USERGROUP_ADMIN')
         }
         // Benutzer zu Benutzertabelle hinzufügen und speichern
-        usersTable[userId] = user
+        usersTable.push(user)
         usersTable.save()
         // JSON Web Token generieren und in Cookie speichern
         const token = jsonwebtoken.sign({ userid: userId }, arrange.tokenSecret)

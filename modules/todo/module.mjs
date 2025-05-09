@@ -4,11 +4,11 @@ import fs from 'node:fs'
 async function init(arrange) {
     // Berechtigung registrieren
     const permissionsTable = arrange.database['users/permissions']
-    if (!permissionsTable['TODO_TODO']) permissionsTable['TODO_TODO'] = { name: 'Aufgaben' }
+    if (!permissionsTable.get('TODO_TODO')) permissionsTable.push({ id: 'TODO_TODO', name: 'Aufgaben' })
     permissionsTable.save()
     // Apps registrieren
     const appTable = arrange.database['home/apps']
-    if (!appTable['TODO_TODO']) appTable['TODO_TODO'] = { name: 'Aufgaben', icon: '/modules/todo/images/to-do-list.png', url: '/modules/todo/todolist.html', index: 11000, permissionid: 'TODO_TODO' }
+    if (!appTable.get('TODO_TODO')) appTable.push({ id: 'TODO_TODO', name: 'Aufgaben', icon: '/modules/todo/images/to-do-list.png', url: '/modules/todo/todolist.html', index: 11000, permissionid: 'TODO_TODO' })
     appTable.save()
 }
 
