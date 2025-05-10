@@ -44,6 +44,29 @@ function createListApi(arrange, table_name, api_url, required_permissions) {
 
 }
 
+// TODO: createListForPermissionApi dokumentieren
+function createListForPermissionApi(arrange, table_name, api_url) {
+
+    arrange.log('[APIHELPER] Erstelle List-For-Permission-API %s.', api_url)
+    
+    // Liste von Apps für Navigation
+    arrange.webServer.get(api_url, async(request, response) => {
+        const table = arrange.database[table_name]
+        // Tabelle filtern und nur die zurück geben, bei denen entweder keine permissionids angegeben sind,
+        // oder bei denen der angemeldete Benutzer über diese Berechtigungen verfügt
+        const filteredTable = table.filter(record => {
+            if (!record.permissionid) return true // Datensätze ohne notwendige Berechtigungen sind für alle (auch ohne Anmeldung) zu sehen
+            if (!request.user) return false // Datensätze, die Berechtigungen haben, erfordern einen angemeldeten Benutzer
+            return request.user.hasPermission([record.permissionid])
+        })
+        // Rückgabeliste erstellen, Passwörter herausfiltern
+        const tableToReturn = JSON.parse(JSON.stringify(filteredTable))
+        tableToReturn.forEach(record => { delete record.password })
+        response.send(tableToReturn)
+    })
+
+}
+
 // TODO: createSaveApi dokumentieren
 function createSaveApi(arrange, table_name, api_url, required_permissions) {
 
@@ -103,4 +126,4 @@ async function loadApis(arrange, api_directory) {
     
 }
 
-export { createDeleteApi, createListApi, createSaveApi, loadApis }
+export { createDeleteApi, createListApi, createListForPermissionApi, createSaveApi, loadApis }

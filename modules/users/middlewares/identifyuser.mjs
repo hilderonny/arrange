@@ -8,6 +8,7 @@
  */
 import jsonwebtoken from 'jsonwebtoken'
 
+// TODO: hasUserPermission dokumentieren
 function hasUserPermission(arrange, user_id, permission_ids) {
     const usersTable = arrange.database['users/users']
     const user = usersTable.get(user_id)
@@ -21,6 +22,7 @@ function hasUserPermission(arrange, user_id, permission_ids) {
     return false
 }
 
+// TODO: identifyuser dokumentieren
 export default (arrange) => {
     return (request, _, next) => {
         const token = request.cookies['users-token']

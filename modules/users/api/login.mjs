@@ -18,7 +18,7 @@ export default (arrange) => {
             return response.sendStatus(403)
         }
         // JSON Web Token generieren und in Cookie speichern
-        const token = jsonwebtoken.sign({ userid: existingUser[0] }, arrange.tokenSecret)
+        const token = jsonwebtoken.sign({ userid: existingUser.id }, arrange.tokenSecret)
         response.cookie('users-token', token, { maxAge: 24*60*60*1000 })
         response.sendStatus(200)
     })

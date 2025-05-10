@@ -1,5 +1,5 @@
 import express from 'express'
-import { createDeleteApi, createListApi, createSaveApi, loadApis } from '../../helpers/apihelper.mjs'
+import { createDeleteApi, createListApi, createListForPermissionApi, createSaveApi } from '../../helpers/apihelper.mjs'
 
 async function init(arrange) {
     // Apps registrieren
@@ -17,10 +17,10 @@ async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/` veröffentlichen
     arrange.webServer.use('/', express.static(`${import.meta.dirname}/public`))
     // Alle APIs erstellen
+    createListForPermissionApi(arrange, 'home/apps', '/api/home/applistforuser')
     createListApi(arrange, 'home/apps', '/api/home/listapps', [ 'HOME_APPMANAGEMENT' ])
     createSaveApi(arrange, 'home/apps', '/api/home/saveapp', [ 'HOME_APPMANAGEMENT' ])
     createDeleteApi(arrange, 'home/apps', '/api/home/deleteapp', [ 'HOME_APPMANAGEMENT' ])
-    await loadApis(arrange, './modules/home/api')
 }
  
 export { init, publishRoutes }
