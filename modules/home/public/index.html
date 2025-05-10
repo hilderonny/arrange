@@ -31,14 +31,15 @@
                     aTag.appId = app.id // Für Referenzen
                     aTag.target = 'content'
                     aTag.innerHTML = app.name
-                    if (app.isdefault) {
-                        aTag.classList.add('selected')
-                    }
                     aTag.addEventListener('click', () => {
                         // Selektion in Navigation durchführen
                         selectApp(app.id)
                         // Den Rest macht das a-Tag selbst
                     })
+                    if (app.isdefault) {
+                        aTag.classList.add('selected')
+                        aTag.click()
+                    }
                     linksElement.appendChild(aTag)
                 }
 
