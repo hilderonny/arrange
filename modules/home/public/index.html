@@ -2,49 +2,50 @@
 <html>
     <head>
         
-        <title>Arrange</title>
+        <title>arrange</title>
         <link rel="icon" type="image/png" href="/images/grid.png">
         <link rel="stylesheet" href="styles/base.css">
 
         <script type="module">
 
+            const linksElement = document.querySelector('body > div.navigation > div.links')
+
+            function selectApp(app_id) {
+                for (const aTag of linksElement.querySelectorAll('a')) {
+                    if (aTag.appId === app_id) {
+                        aTag.classList.add('selected')
+                    } else {
+                        aTag.classList.remove('selected')
+                    }
+                }
+            }
+
             (async () => {
 
                 const applist = await (await fetch('/api/home/applistforuser')).json()
 
-                const linksElement = document.querySelector('body > div.navigation > div.links')
-
                 for (const app of applist) {
-                    // Resultat eines Eintrags: <input type="radio" id="navigation-link-home-home" checked="checked" name="link" onclick="self.frames['content'].location.href='home.html'"><label for="navigation-link-home-home">Home</label>
-                    const inputElement = document.createElement('input')
-                    const inputElementId = 'navigation-link-' + app.id
-                    inputElement.setAttribute('type', 'radio')
-                    inputElement.setAttribute('id', inputElementId)
-                    inputElement.setAttribute('name', 'link')
-                    inputElement.addEventListener('click', () => {
-                        self.frames['content'].location.href = app.url
-                    })
+                    const aTag = document.createElement('a')
+                    aTag.style.backgroundImage = `url(${app.icon})`
+                    aTag.href = app.url
+                    aTag.appId = app.id // Für Referenzen
+                    aTag.target = 'content'
+                    aTag.innerHTML = app.name
                     if (app.isdefault) {
-                        inputElement.checked = true
-                        self.frames['content'].location.href = app.url
+                        aTag.classList.add('selected')
                     }
-                    linksElement.appendChild(inputElement)
-
-                    const labelElement = document.createElement('label')
-                    labelElement.setAttribute('for', inputElementId)
-                    labelElement.style.backgroundImage =  `url(${app.icon})`
-                    labelElement.innerHTML = app.name
-                    linksElement.appendChild(labelElement)
+                    aTag.addEventListener('click', () => {
+                        // Selektion in Navigation durchführen
+                        selectApp(app.id)
+                        // Den Rest macht das a-Tag selbst
+                    })
+                    linksElement.appendChild(aTag)
                 }
 
                 // Auf Selektionsanweisungen aus dem iFrame reagieren
                 window.addEventListener('message', (event) => {
                     if (event.data.action === 'selectApp') {
-                        const inputElementSelector = '#navigation-link-' + event.data.appid
-                        const inputElement = linksElement.querySelector(inputElementSelector)
-                        if (inputElement) {
-                            inputElement.checked = true
-                        }
+                        selectApp(event.data.appid)
                     }
                 })
 

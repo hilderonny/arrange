@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
+
+        <title>Home - arrange</title>
+        <link rel="icon" type="image/png" href="/images/house.png">
         <link rel="stylesheet" href="/styles/base.css">
         <script type="module">
 
@@ -16,15 +19,16 @@
                 const applist = await (await fetch('/api/home/applistforuser')).json()
                 const appsElement = document.querySelector('body > div.apps')
                 for (const app of applist) {
-                    const divElement = document.createElement('div')
-                    divElement.innerHTML = `<img src="${app.icon}"/><p>${app.name}</p>`
-                    divElement.addEventListener('click', () => {
+                    const aTag = document.createElement('a')
+                    aTag.style.backgroundImage = `url(${app.icon})`
+                    aTag.href = app.url
+                    aTag.innerHTML = app.name
+                    aTag.addEventListener('click', () => {
                         // Selektion in Navigation durchführen
                         parent.postMessage({ action: 'selectApp', appid: app.id })
-                        // App-Seite laden
-                        location.href = app.url
+                        // Den Rest macht das a-Tag selbst
                     })
-                    appsElement.appendChild(divElement)
+                    appsElement.appendChild(aTag)
                 }
 
             })()
