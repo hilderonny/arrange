@@ -1,5 +1,4 @@
 import express from 'express'
-import fs from 'node:fs'
 
 async function init(arrange) {
     // Berechtigung registrieren
@@ -15,14 +14,8 @@ async function init(arrange) {
 async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/todo` veröffentlichen
     arrange.webServer.use('/modules/todo', express.static(`${import.meta.dirname}/public`))
-    // Alle APIs laden
-    for (const fileName of fs.readdirSync('./modules/todo/api')) {
-        if (fileName.endsWith('.mjs')) {
-            arrange.log('[MODULE TODO] Lade API %s.', fileName)
-            const api = await import(`./api/${fileName}`)
-            api.default(arrange)
-        }
-    }
+    // Alle APIs erstellen
+    // TODO: TODO-APIs erstellen
 }
 
 export { init, publishRoutes }
