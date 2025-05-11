@@ -7,7 +7,7 @@ async function init(arrange) {
     permissionsTable.save()
     // Apps registrieren
     const appTable = arrange.database['home/apps']
-    if (!appTable.get('TODO_TODO')) appTable.push({ id: 'TODO_TODO', name: 'Aufgaben', icon: '/modules/todo/images/to-do-list.png', url: '/modules/todo/todolist.html', index: 11000, permissionid: 'TODO_TODO' })
+    if (!appTable.get('TODO_TODO')) appTable.push({ id: 'TODO_TODO', name: 'Aufgaben', icon: '/modules/todo/images/favicon_192x192.png', url: '/modules/todo/index.html', index: 11000, permissionid: 'TODO_TODO' })
     appTable.save()
 }
 
