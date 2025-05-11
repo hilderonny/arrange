@@ -1,4 +1,5 @@
 import express from 'express'
+import { loadApis } from '../../helpers/apihelper.mjs'
 
 async function init(arrange) {
     // Berechtigung registrieren
@@ -15,7 +16,7 @@ async function publishRoutes(arrange) {
     // HTML-Seiten aus Unterverzeichnis `./public` an URL `/modules/todo` veröffentlichen
     arrange.webServer.use('/modules/todo', express.static(`${import.meta.dirname}/public`))
     // Alle APIs erstellen
-    // TODO: TODO-APIs erstellen
+    await loadApis(arrange, './modules/todo/api')
 }
 
 export { init, publishRoutes }

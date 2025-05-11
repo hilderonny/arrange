@@ -8,8 +8,8 @@ export default {
     },
     template: `
         <task-checklistitem>
-            <input type="checkbox" v-model="item.c" @click="$emit('checkboxclick')" />
-            <label v-html="marked(item.t)"></label>
+            <input type="checkbox" v-model="item.checked" @click="$emit('checkboxclick')" />
+            <label v-html="marked(item.title)"></label>
         </task-checklistitem>
     `
 }

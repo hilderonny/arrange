@@ -32,13 +32,13 @@
     <kanban-board v-if="loaded">
       <lane v-for="category in taskcategories">
         <lane-header :style="{ 'background-color': category.color }">{{category.label}}</lane-header>
-        <task v-for="task in tasksforcategory(category)" :task="task" @checkboxclick="completetask(task)" @taskclick="selectedtask = task;" @checklistitemclick="save(task)" @checklisttoggleclick="save(task)"></task>
+        <task v-for="task in tasksforcategory(category)" :task="task" @checkboxclick="completetask(task)" @taskclick="selectedtask = task;" @checklistitemclick="save()" @checklisttoggleclick="save()"></task>
         <add-task-button @click="addtask(category)">+</add-task-button>
       </lane>
     </kanban-board>
     
     <!-- Player -->
-    <detail-dialog v-if="showplayerdetails" title="Spieler bearbeiten" @closeclick="saveplayer(); showplayerdetails = false;">
+    <detail-dialog v-if="showplayerdetails" title="Spieler bearbeiten" @closeclick="save(); showplayerdetails = false;">
       <template #header>
         <labelled-input label="Name" :value="player.name" @input="value => player.name = value"></labelled-input>
       </template>
@@ -48,16 +48,16 @@
     </detail-dialog>
 
     <!-- Task -->
-    <detail-dialog v-if="selectedtask" title="To-Do bearbeiten" @closeclick="save(selectedtask); selectedtask = undefined;">
+    <detail-dialog v-if="selectedtask" title="Aufgabe bearbeiten" @closeclick="save(); selectedtask = undefined;">
       <template #header>
-        <labelled-input label="Titel" placeholder="Überschrift hinzufügen" :value="selectedtask.t" @input="value => selectedtask.t = value"></labelled-input>
-        <labelled-input label="Notizen" rows="2" placeholder="Notizen hinzufügen" :value="selectedtask.n" @input="value => selectedtask.n = value"></labelled-input>
+        <labelled-input label="Titel" placeholder="Überschrift hinzufügen" :value="selectedtask.title" @input="value => selectedtask.title = value"></labelled-input>
+        <labelled-input label="Notizen" rows="2" placeholder="Notizen hinzufügen" :value="selectedtask.notes" @input="value => selectedtask.notes = value"></labelled-input>
       </template>
       <template #content>
         <label>Checkliste</label>
         <checklist>
-          <template v-for="checklistitem in selectedtask.c">
-            <input type="text" v-model="checklistitem.t" @change="checkchecklistitemcontent(checklistitem)" />
+          <template v-for="checklistitem in selectedtask.checklist">
+            <input type="text" v-model="checklistitem.title" @change="checkchecklistitemcontent(checklistitem)" />
           </template>
           <input type="text" ref="newchecklistitem" placeholder="+ Neues Checklistenelement" @focus="addchecklistitem" />
         </checklist>

@@ -18,52 +18,95 @@ Abgeschlossene ToDos gehen für immer verloren.
 |Feldname|Datentyp|Label|Beschreibung|
 |---|---|---|---|
 |`userid`|text|Id des Benutzers, dem die ToDos gehören. Für jeden Benutzer gibt es einen Eintrag.|
+|`experience`|int|Erfahrungspunkte|
+|`coins`|int|Münzen|
+|`todos`|object[]|Liste mit Aufgaben|
 
-TODO: Datenbanktabelle beschreiben
+Für jeden Benutzer gibt es genau einen Eintrag in der Datenbanktabelle,
+welcher alle seine Aufgaben enthält.
 
 ```js
-arrange.database['todo/todos'] = {
-    'user_id' : {
+arrange.database['todo/todos'] = [
+    {
+        userId : 'user_0815', // Id des Benutzers
+        experience: 123, // Erfahrungspunkte
+        coins: 234 // Münzen
+        tasks: [
+            {
+                title: 'Wohnung putzen', // Überschrift
+                notes: 'Ich sollte mal wieder sauber machen', // Notizen
+                checklist: [ // Unterliste mit Checkboxen
+                    {
+                        title: 'Im Wohnzimmer Staub saugen',
+                        checked: true // Bereits erledigt
+                    }
+                ],
+                ischecklistopen: true, // Dient zur Anzeige, dass die Checkliste aufgeklappt sein soll
+                category: 'rot' // Kategorie, unter der die Aufgabe angezeigt wird
+            }
+        ]
     }
-}
+]
 ```
 
 ## API POST `/api/todo/savetodos`
 
-Speichert die Aufgaben eines Benutzers.
+Speichert die Aufgaben und Spielerinformationen eines Benutzers.
 Erfordert Berechtigung `TODO_TODO`.
-
-TODO API savetodos beschreiben
+Infos müssen vollständig vorliegen.
 
 ```js
-const todoToSave = {
-    id: 'todo-id', 
-    content: 'Beispiel präsentieren',
-    iscompleted: true
+const playerData = {
+    experience: 123,
+    coins: 234
+    tasks: [
+        {
+            title: 'Wohnung putzen',
+            notes: 'Ich sollte mal wieder sauber machen',
+            checklist: [
+                {
+                    title: 'Im Wohnzimmer Staub saugen',
+                    checked: true
+                }
+            ],
+            ischecklistopen: true,
+            category: 'rot'
+        }
+    ]
 }
 const response = await fetch('/api/todo/savetodos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(todoToSave)
+    body: JSON.stringify(playerData)
 })
-// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt oder die Aufgabe existiert, gehört aber nicht dem Benutzer
+// Berechtigung des angemeldeten Benutzers zur Verwendung der API fehlt
 response.status === 403
-// Aufgabe erfolgreich gespeichert bzw. angelegt
+// Aufgaben erfolgreich gespeichert
 response.status === 200
-response.json() = {
-    id: 'todo-id', 
-    content: 'Beispiel präsentieren',
-    iscompleted: true
-}
 ```
 
 ## API GET `/api/todo/todos`
 
-TODO: API todos beschreiben
-
-Liefert Liste aller ToDo-Listen samt deren Aufgaben zurück, auf die der Benutzer Zugriff hat.
+Liefert Spielerinformationen und Liste aller Aufgaben für den angemeldeten Benutzer zurück.
 
 ```js
 response = {
+    username: 'Benutzername', // Ist der Name des angemeldeten Benutzers
+    experience: 123,
+    coins: 234
+    tasks: [
+        {
+            title: 'Wohnung putzen',
+            notes: 'Ich sollte mal wieder sauber machen',
+            checklist: [
+                {
+                    title: 'Im Wohnzimmer Staub saugen',
+                    checked: true
+                }
+            ],
+            ischecklistopen: true,
+            category: 'rot'
+        }
+    ]
 }
 ```

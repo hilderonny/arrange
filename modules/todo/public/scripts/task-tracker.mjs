@@ -23,8 +23,8 @@ const app = {
       showplayerdetails: false,
       selectedtask: undefined,
       player: undefined,
-      taskidtoselect: undefined,
-      tasks: [],
+      tasks: undefined,
+      // TODO: taskcategories editierbar machen
       taskcategories: [
         { label: "Rot", value: "rot", color: '#ff3b30' },
         { label: "Gelb", value: "gelb", color: '#ffcc00' },
@@ -40,43 +40,41 @@ const app = {
   },
   async mounted() {
     // Vue ist fertig geladen
-    await this.loadplayer();
-    await this.loadtasks();
+    await this.loadPlayerData();
     this.loaded = true;
   },
   methods: {
     ...experiencehelper,
     addchecklistitem() {
-      this.selectedtask.c.push({ c: false, t: '' });
+      this.selectedtask.checklist.push({ checked: false, title: '' });
       Vue.nextTick(() => {
         this.$refs.newchecklistitem.previousElementSibling.focus();
       });
     },
     async addtask(category) {
-      /**
-       * t: title
-       * n: notes
-       * c: checklist
-       * c.c: checked
-       * c.t: title
-       */
-      const newtask = { i: 'task-' + Date.now(), c: [], t: '', n: '', co: false, category: category ? category.value : 'gelb' };
-      this.taskidtoselect = newtask.i;
+      const newtask = { 
+        checklist: [], 
+        title: '', 
+        notes: '', 
+        ischecklistopen: false, 
+        category: category ? category.value : 'gelb'
+      };
+      this.tasktoselect = newtask;
       this.tasks.push(newtask)
       this.selectedtask = newtask
       await this.save()
     },
     checkchecklistitemcontent(checklistitem) {
-      if (checklistitem.t.length < 1) {
-        this.selectedtask.c.splice(this.selectedtask.c.indexOf(checklistitem), 1);
+      if (checklistitem.title.length < 1) {
+        this.selectedtask.c.splice(this.selectedtask.checklist.indexOf(checklistitem), 1);
       }
     },
     async completetask(task) {
-      this.player.experience += 10 + task.c.filter(c => !!c.c).length; // 10 je Task und 1 je abgeschlossenem ChecklistItem
-      this.player.coins += 5 + task.c.filter(c => !!c.c).length; // 5 je Task und 1 je abgeschlossenem ChecklistItem
+      const doneCount = task.checklist.filter(item => !!item.checked).length
+      this.player.experience += 10 + doneCount; // 10 je Task und 1 je abgeschlossenem ChecklistItem
+      this.player.coins += 5 + doneCount; // 5 je Task und 1 je abgeschlossenem ChecklistItem
       this.tasks.splice(this.tasks.findIndex(t => t === task), 1)
       await this.save()
-      await this.saveplayer()
     },
     async deleteselectedtask() {
       if (!window.confirm('Wirklich löschen?')) return
@@ -90,31 +88,19 @@ const app = {
         this.selectedtask = undefined
       }
     },
-    async loadplayer() {
-      this.player = JSON.parse(localStorage.getItem('player') || '{ "name": "Player 1", "experience": 0, "coins": 0 }')
-    },
-    async loadtasks() {
-      this.tasks = JSON.parse(localStorage.getItem('tasks') || '[]')
-      for (const task of this.tasks) {
-        if (this.taskidtoselect && task.i === this.taskidtoselect) {
-          this.selectedtask = task;
-          this.taskidtoselect = undefined;
-        }
-      }
-      this.finishedloading = true;
+    async loadPlayerData() {
+      const response = await fetch('/api/todo/todos')
+      this.player = await response.json()
+      this.tasks = this.player.tasks
+      this.finishedloading = true
     },
     async save() {
-      localStorage.setItem('tasks', JSON.stringify(this.tasks))
-    },
-    async saveplayer() {
-      // Nur das in die Datenbank schreiben, was auch wirklich notwendig ist
-      // Damit kann das player Objekt lokal noch erweitert werden, ohne dass die Daten in der DB landen
-      const playertosave = {
-        name: this.player.name,
-        experience: this.player.experience,
-        coins: this.player.coins,
-      };
-      localStorage.setItem('player', JSON.stringify(playertosave))
+      // An Server senden
+      await fetch('/api/todo/savetodos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.player)
+      })
     },
     tasksforcategory(category) {
       return this.tasks.filter(t => t.category === category.value);

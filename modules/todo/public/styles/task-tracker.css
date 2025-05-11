@@ -18,7 +18,7 @@ body {
     position: relative;
 }
 
-.loading { animation:loadingspin 1s linear infinite; background: no-repeat center center black; background-image: url(/images/preloader_ring.png); height: 4000px; left: calc(50% - 2000px); position: fixed; top: calc(50% - 2000px); width: 4000px; z-index: 9999; }
+.loading { animation:loadingspin 1s linear infinite; background: no-repeat center center black; background-image: url(../images/preloader_ring.png); height: 4000px; left: calc(50% - 2000px); position: fixed; top: calc(50% - 2000px); width: 4000px; z-index: 9999; }
 
 a { color: #2995cd; text-decoration: none; }
 
@@ -357,7 +357,7 @@ player-widget playerinfo playerdetails playerlevel {
 
 player-widget playerinfo playerdetails playercoins {
     background: no-repeat left top;
-    background-image: url(/images/coin.png);
+    background-image: url(../images/coin.png);
     color: white;
     font-weight: bold;
     padding-left: 20px;

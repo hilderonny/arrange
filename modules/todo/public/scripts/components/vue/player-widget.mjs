@@ -16,7 +16,7 @@ export default {
         <player-widget>
             <avatar><img src="images/playerone.png" /></avatar>
             <playerinfo>
-                <playername @click="$emit('playernameclick')">{{player.name}}</playername>
+                <playername @click="$emit('playernameclick')">{{player.username}}</playername>
                 <playerdetails>
                     <playerlevel>Level {{levelforexperience(player.experience)}}</playerlevel>
                     <playercoins>{{player.coins}}</playercoins>
