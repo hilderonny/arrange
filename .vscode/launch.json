@@ -6,12 +6,29 @@
     "configurations": [
         {
             "console": "integratedTerminal",
-            "name": "Launch Program",
+            "name": "HTTP 80",
             "env": {
                 "ARRANGE_DATABASE_DIRECTORY": "./database/",
+                "ARRANGE_PORT": "80",
+                "ARRANGE_TOKEN_SECRET": "hubbelebubbele"
+            },
+            "program": "${workspaceFolder}/server.mjs",
+            "runtimeExecutable": "node",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "console": "integratedTerminal",
+            "name": "HTTPS 443",
+            "env": {
+                "ARRANGE_DATABASE_DIRECTORY": "./database/",
+                "ARRANGE_USE_SSL": "true",
                 "ARRANGE_PUBLIC_CERTIFICATE_FILE": "./pub.cert",
                 "ARRANGE_PRIVATE_KEY_FILE": "./priv.key",
-                "ARRANGE_HTTPS_PORT": "443",
+                "ARRANGE_PORT": "443",
                 "ARRANGE_TOKEN_SECRET": "hubbelebubbele"
             },
             "program": "${workspaceFolder}/server.mjs",

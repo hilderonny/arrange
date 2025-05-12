@@ -1,6 +1,7 @@
 import express from 'express'
 import { loadDatabase } from './database/database.mjs'
 import { loadModules } from './helpers/modulehelper.mjs'
+import http from 'http'
 import https from 'https'
 import fs from 'fs'
 import * as logHelper from './helpers/loghelper.mjs'
@@ -11,14 +12,15 @@ import cookieParser from 'cookie-parser'
  * Erstellt und starten eine arrange Instanz
  * 
  * @param {string} database_directory Pfad zum Verzeichnis, in dem alle Datenbandateien liegen
+ * @param {string} use_ssl Verwendet SSL, wenn `true` angegeben ist
  * @param {string} private_key_file Pfad zur privaten SSL Schlüsseldatei
  * @param {string} public_certificate_file Pfad zum öffentlichen SSL Zertifikat
- * @param {int} https_port Port, an dem arrange als Webanwendung lauschen soll
+ * @param {int} port Port, an dem arrange als Webanwendung lauschen soll
  * @param {string} token_secret Schlüssel, der für JSON WebTokens verwendet wird
  * @param {string[]} modules_to_load Liste von Modulverzeichnissen, die geladen werden sollen
  * @returns arrange-Objekt
  */
-async function start(database_directory, private_key_file, public_certificate_file, https_port, token_secret, modules_to_load) {
+async function start(database_directory, use_ssl, private_key_file, public_certificate_file, port, token_secret, modules_to_load) {
 
     logHelper.log('[ARRANGE] Arrange wird gestartet.')
 
@@ -48,14 +50,13 @@ async function start(database_directory, private_key_file, public_certificate_fi
     await loadModules(modules_to_load, arrange)
 
     // HTTPS Server initialisieren und starten
-    const httpsOptions = {
+    const httpOrHttpsServer = use_ssl === 'true' ? https.createServer({
         key: fs.readFileSync(private_key_file),
         cert: fs.readFileSync(public_certificate_file)
-    }
-    const httpsServer = https.createServer(httpsOptions, webServer)
+    }, webServer) : http.createServer(webServer)
     return new Promise(resolve => {
-        httpsServer.listen(https_port, () => {
-            logHelper.log('[ARRANGE] Arrange läuft unter https://127.0.0.1:%s.', https_port)
+        httpOrHttpsServer.listen(port, () => {
+            logHelper.log('[ARRANGE] Arrange läuft unter %s://127.0.0.1:%s.', use_ssl === 'true' ? 'https' : 'http', port)
             // Bei Rückgabe das arrange Objekt mitgeben, damit Module registriert werden können
             resolve(arrange)
         })

@@ -1,11 +1,22 @@
 # arrange
 
 
-## Installation
+## Grundinstallation mit Home und Benutzervweraltung
 
-1. NodeJS installieren
-2. Repository klonen
-3. Terminal öffnen, `npm install` aufrufen
+Zuerst mus NodeJS installiert sein.
+
+```sh
+git clone https://github.com/hilderonny/arrange-home
+
+git clone https://github.com/hilderonny/arrange-users
+cd arrange-users
+npm install
+cd ..
+
+git clone https://github.com/hilderonny/arrange
+cd arrange
+npm install
+```
 
 
 ## Konfiguration
@@ -17,11 +28,15 @@ import { start } from './arrange.mjs'
 
 start(
     process.env.ARRANGE_DATABASE_DIRECTORY, // Pfad zum Verzeichnis, in dem alle Datenbandateien liegen. Z.B. "./database/"
-    process.env.ARRANGE_PRIVATE_KEY_FILE, // Pfad zur privaten SSL Schlüsseldatei. Z.B. "./priv.key"
-    process.env.ARRANGE_PUBLIC_CERTIFICATE_FILE, // Pfad zum öffentlichen SSL Zertifikat. Z.B. "./pub.cert"
-    process.env.ARRANGE_HTTPS_PORT, // Port, an dem Arrange als Webanwendung lauschen soll. Z.B. "443"
+    process.env.ARRANGE_USE_SSL, // Wenn "true", wird ein HTTPS-Server mit den Zertifikats- und Schlüsseldateien gestartet, ansonsten ein einfacher HTTP-Server
+    process.env.ARRANGE_PRIVATE_KEY_FILE, // Pfad zur privaten SSL Schlüsseldatei. Z.B. "./priv.key". Nur notwendig für ARRANGE_USE_SSL
+    process.env.ARRANGE_PUBLIC_CERTIFICATE_FILE, // Pfad zum öffentlichen SSL Zertifikat. Z.B. "./pub.cert". Nur notwendig für ARRANGE_USE_SSL
+    process.env.ARRANGE_PORT, // Port, an dem Arrange als Webanwendung lauschen soll. Z.B. "80" oder "443"
     process.env.ARRANGE_TOKEN_SECRET, // Schlüssel, der für JSON WebTokens verwendet wird. Z.B. "irgendwas"
-    [ './modules/home', './modules/users' ] // Liste von Modulverzeichnissen, die geladen werden sollen
+    [ // Liste von Modul, die geladen werden sollen
+        '../arrange-home/module.mjs',
+        '../arrange-users/module.mjs'
+    ]
 )
 ```
 
@@ -32,24 +47,24 @@ Alle Pfadangaben sind entweder relativ zu `server.mjs` oder absolut anzugeben.
 Windows Kommandozeile (fehlende Leerzeichen vor `&&` beachten!)
 
 ```cmd
-SET ARRANGE_DATABASE_DIRECTORY=./database/&& SET ARRANGE_PUBLIC_CERTIFICATE_FILE=./pub.cert&& SET ARRANGE_PRIVATE_KEY_FILE=./priv.key&& SET ARRANGE_HTTPS_PORT=443&& SET ARRANGE_TOKEN_SECRET=hubbelebubbele&& node server.mjs
+REM Mit SSL
+SET ARRANGE_DATABASE_DIRECTORY=./database/&& SET ARRANGE_USE_SSL=true&& SET ARRANGE_PUBLIC_CERTIFICATE_FILE=./pub.cert&& SET ARRANGE_PRIVATE_KEY_FILE=./priv.key&& SET ARRANGE_PORT=443&& SET ARRANGE_TOKEN_SECRET=hubbelebubbele&& node server.mjs
+
+REM Ohne SSL
+SET ARRANGE_DATABASE_DIRECTORY=./database/&& SET ARRANGE_HTTP_PORT=80&& SET ARRANGE_TOKEN_SECRET=hubbelebubbele&& node server.mjs
 ```
 
 Powershell
 
 ```ps
-$env:ARRANGE_DATABASE_DIRECTORY="./database/"; $env:ARRANGE_PUBLIC_CERTIFICATE_FILE="./pub.cert"; $env:ARRANGE_PRIVATE_KEY_FILE="./priv.key"; $env:ARRANGE_HTTPS_PORT="443"; $env:ARRANGE_TOKEN_SECRET="hubbelebubbele"; node server.mjs
+# Mit SSL
+$env:ARRANGE_DATABASE_DIRECTORY="./database/"; $env:ARRANGE_USE_SSL="true"; $env:ARRANGE_PUBLIC_CERTIFICATE_FILE="./pub.cert"; $env:ARRANGE_PRIVATE_KEY_FILE="./priv.key"; $env:ARRANGE_PORT="443"; $env:ARRANGE_TOKEN_SECRET="hubbelebubbele"; node server.mjs
+
+# Ohne SSL
+$env:ARRANGE_DATABASE_DIRECTORY="./database/"; $env:ARRANGE_PORT="80"; $env:ARRANGE_TOKEN_SECRET="hubbelebubbele"; node server.mjs
 ```
 
-## Installation unter Ubuntu
-
-Zuvor muss NodeJS installiert worden sein.
-
-```sh
-git clone https://github.com/hilderonny/arrange.git
-cd arrange
-npm install
-```
+## Installation als Dienst unter Ubuntu
 
 Datei `/etc/systemd/system/arrange.service` mit folgendem Inhalt erstellen:
 
@@ -66,9 +81,10 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=arrange
 Environment="ARRANGE_DATABASE_DIRECTORY=./database/"
+Environment="ARRANGE_USE_SSL=true"
 Environment="ARRANGE_PUBLIC_CERTIFICATE_FILE=./pub.cert"
 Environment="ARRANGE_PRIVATE_KEY_FILE=./priv.key"
-Environment="ARRANGE_HTTPS_PORT=443"
+Environment="ARRANGE_PORT=443"
 Environment="ARRANGE_TOKEN_SECRET=hubbelebubbele"
 
 [Install]
