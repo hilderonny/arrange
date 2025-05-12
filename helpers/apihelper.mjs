@@ -119,7 +119,7 @@ async function loadApis(arrange, api_directory) {
         for (const fileName of fs.readdirSync(api_directory)) {
             if (fileName.endsWith('.mjs')) {
                 arrange.log('[APIHELPER] Lade API %s.', fileName)
-                const api = await import(`../${api_directory}/${fileName}`)
+                const api = await import(`file://${api_directory}/${fileName}`)
                 api.default(arrange)
             }
         }

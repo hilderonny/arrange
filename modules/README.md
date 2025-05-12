@@ -3,25 +3,30 @@
 Arrange ist eine einfache Plattform, die alle Funktionen über Module bereit stellt.
 Module enthalten Apps, APIs, Express Middlewares und Daten.
 
-Beim Start sucht Arrange im `/modules` Verzeichnis nach Unterverzeichnissen, die Module darstellen.
-Die Namen der Unterverzeichnisse sind dabei egal.
+Die Module sind in separate Repositories ausgelagert.
 
-In diesem Verzeichnis muss sich eine Datei `module.mjs` befinden.
-Diese wird als Einstiegspunkt für das Modul betrachtet und sollte folgende Funktionen veröffentlichen (alle optional).
+- [Home](https://github.com/hilderonny/arrange-home)
+- [Benutzerverwaltung](https://github.com/hilderonny/arrange-users)
+- [Aufgaben](https://github.com/hilderonny/arrange-todo)
 
+## Einbindung in Server
 
-## Aufbau Modulverzeichnis
+```js
+import { start } from './arrange.mjs'
 
+start(
+    process.env.ARRANGE_DATABASE_DIRECTORY,
+    process.env.ARRANGE_PRIVATE_KEY_FILE,
+    process.env.ARRANGE_PUBLIC_CERTIFICATE_FILE,
+    process.env.ARRANGE_HTTPS_PORT,
+    process.env.ARRANGE_TOKEN_SECRET,
+    [
+        '../arrange_home/module.mjs',
+        '../arrange_users/module.mjs',
+        '../arrange_todo/module.mjs'
+    ]
+)
 ```
-/Modulverzeichnis
-├── api
-├── middlewares
-├── module.mjs
-├── public
-│   └── components
-└── README.md
-```
-
 
 ## Datei `module.mjs`
 
@@ -58,7 +63,13 @@ async function publishRoutes(arrange) {
       }
    })
    // Statisches HTML an Sub-URL
-   arrange.webServer.use(suburl, express.static(folderWithStaticFiles))
+   arrange.webServer.use(suburl, arrange.express.static(folderWithStaticFiles))
+   // API Typspezifisch einbinden
+    arrange.apiHelper.createListApi(arrange, 'users/users', '/api/users/listusers', [ 'USERS_ADMINISTRATION_USER' ])
+    arrange.apiHelper.createSaveApi(arrange, 'users/permissions', '/api/users/savepermission', [ 'USERS_ADMINISTRATION_USER' ])
+    arrange.apiHelper.createDeleteApi(arrange, 'users/users', '/api/users/deleteuser', [ 'USERS_ADMINISTRATION_USER' ])
+    // Alle APIs aus Unterverzeichnis einbinden
+    await arrange.apiHelper.loadApis(arrange, path.resolve(import.meta.dirname, './api'))
 }
 
 export { init, publishMiddlewares, publishRoutes }
@@ -82,6 +93,8 @@ arrange = {
    log() // Funktion zur Logausgabe
    logError() // Fehler protokollieren
    logWarning() // Warnung protokollieren
+   apiHelper // Hilfsfunktionen zur API-Erstellung
+   express // Express Klasse für statische Routen
 }
 ```
 
@@ -98,8 +111,20 @@ request = {
 }
 ```
 
+## Aufbau Modulverzeichnis
 
-## Verzeichnis `api`
+```
+/Modulverzeichnis
+├── api
+├── middlewares
+├── module.mjs
+├── public
+│   └── components
+└── README.md
+```
+
+
+### Verzeichnis `api`
 
 Hier kann das Modul APIs, die an bestimmten Sub-URLs verfügbar sein sollen, definieren.
 Diese werden dann in `module.mjs` innerhalb von `publishRoutes()` veröffentlicht.
@@ -107,7 +132,7 @@ Diese werden dann in `module.mjs` innerhalb von `publishRoutes()` veröffentlich
 Prinzipiell sollten die Sub-URLs dem Schema `/api/MODULNAME/APINAME/FUNKTIONSNAME` folgen.
 
 
-## Verzeichnis `middlewares`
+### Verzeichnis `middlewares`
 
 Die hier enthaltenen `.mjs` - Dateien werden vom Modul als Express-Middlewares eingebunden, die Einfluss auf Requests und Responses nehmen können.
 Die Veröffentlichung erfolgt in `module.mjs` innerhalb von `publishMiddlewares()`

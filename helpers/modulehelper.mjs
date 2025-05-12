@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import { log } from './loghelper.mjs'
+import path from 'node:path'
 
 /**
  * Lädt alle angegebenen Module und initialisiert diese
@@ -11,12 +12,11 @@ async function loadModules(modules_to_load, arrange) {
 
     const allModules = []
 
-    // In allen Verzeichnissen nach 'module.mjs' suchen und Modul laden
     for (const modulePath of modules_to_load) {
-        const moduleFilePath = `${modulePath}/module.mjs`
-        if (fs.existsSync(moduleFilePath)) {
-            log('[MODULES] Lade Modul %s.', moduleFilePath)
-            const module = await import(`../${moduleFilePath}`)
+        console.log(modulePath, path.resolve(modulePath))
+        if (fs.existsSync(modulePath)) {
+            log('[MODULES] Lade Modul %s.', modulePath)
+            const module = await import(`../${modulePath}`)
             allModules.push(module)
         }
     }

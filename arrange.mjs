@@ -4,6 +4,7 @@ import { loadModules } from './helpers/modulehelper.mjs'
 import https from 'https'
 import fs from 'fs'
 import * as logHelper from './helpers/loghelper.mjs'
+import * as apiHelper from './helpers/apihelper.mjs'
 import cookieParser from 'cookie-parser'
 
 /**
@@ -38,7 +39,9 @@ async function start(database_directory, private_key_file, public_certificate_fi
         metadata: {},
         log: logHelper.log,
         logError: logHelper.error,
-        logWarning: logHelper.warn
+        logWarning: logHelper.warn,
+        apiHelper: apiHelper,
+        express: express
     }
 
     // Module laden

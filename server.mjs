@@ -7,8 +7,8 @@ start(
     process.env.ARRANGE_HTTPS_PORT,
     process.env.ARRANGE_TOKEN_SECRET,
     [
-        './modules/home',
-        './modules/users',
-        './modules/todo'
+        '../arrange-home/module.mjs',
+        '../arrange-users/module.mjs',
+        '../arrange-todo/module.mjs'
     ]
 )
