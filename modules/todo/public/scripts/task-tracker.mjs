@@ -98,11 +98,14 @@ const app = {
       this.finishedloading = true
     },
     async save() {
+      const playerData = JSON.stringify(this.player)
+      // Zur Sicherheit im localStorage speichern, falls der Server ausfällt oder so
+      localStorage.setItem('playerdata', playerData)
       // An Server senden
       await fetch('/api/todo/savetodos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.player)
+          body: playerData
       })
     },
     tasksforcategory(category) {
