@@ -1,3 +1,4 @@
+import ColoredInput from './components/vue/colored-input.mjs';
 import DetailDialog from './components/vue/detail-dialog.mjs';
 import FilterButton from './components/vue/filter-button.mjs';
 import LabelledInput from './components/vue/labelled-input.mjs';
@@ -8,6 +9,7 @@ import experiencehelper from './utils/experiencehelper.mjs';
 
 const app = {
   components: {
+    ColoredInput,
     DetailDialog,
     FilterButton,
     LabelledInput,
@@ -24,18 +26,6 @@ const app = {
       selectedtask: undefined,
       player: undefined,
       tasks: undefined,
-      // TODO: taskcategories editierbar machen
-      taskcategories: [
-        { label: "Rot", value: "rot", color: '#ff3b30' },
-        { label: "Gelb", value: "gelb", color: '#ffcc00' },
-        { label: "Grün", value: "gruen", color: '#4cda63' },
-        { label: "Lila", value: "lila", color: '#b425d8' },
-        { label: "Grau", value: "grau", color: '#8f8e93' },
-        { label: "Hellblau", value: "hellblau", color: '#5ac9fa' },
-        { label: "Orange", value: "orange", color: '#ff9601' },
-        { label: "Rosa", value: "rosa", color: '#ff6684' },
-        { label: "Blau", value: "blau", color: '#017aff' },
-      ],
     }
   },
   async mounted() {
@@ -91,6 +81,19 @@ const app = {
     async loadPlayerData() {
       const response = await fetch('/api/todo/todos')
       this.player = await response.json()
+      if (!this.player.categories) {
+        this.player.categories = [
+          { label: "Rot", value: "rot", color: '#ff3b30' },
+          { label: "Gelb", value: "gelb", color: '#ffcc00' },
+          { label: "Grün", value: "gruen", color: '#4cda63' },
+          { label: "Lila", value: "lila", color: '#b425d8' },
+          { label: "Grau", value: "grau", color: '#8f8e93' },
+          { label: "Hellblau", value: "hellblau", color: '#5ac9fa' },
+          { label: "Orange", value: "orange", color: '#ff9601' },
+          { label: "Rosa", value: "rosa", color: '#ff6684' },
+          { label: "Blau", value: "blau", color: '#017aff' },
+        ]
+      }
       this.tasks = this.player.tasks
       this.finishedloading = true
     },

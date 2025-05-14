@@ -24,23 +24,29 @@
       </playerbar>
 
       <toolbar v-if="loaded">
+        <button @click="addtask(player.categories[0])">+</button>
         <button onclick="location.reload();">↻</button>
       </toolbar>
       
     </topbar>
 
     <kanban-board v-if="loaded">
-      <lane v-for="category in taskcategories">
-        <lane-header :style="{ 'background-color': category.color }">{{category.label}}</lane-header>
-        <task v-for="task in tasksforcategory(category)" :task="task" @checkboxclick="completetask(task)" @taskclick="selectedtask = task;" @checklistitemclick="save()" @checklisttoggleclick="save()"></task>
-        <add-task-button @click="addtask(category)">+</add-task-button>
-      </lane>
+      <template v-for="category in player.categories">
+        <template v-if="tasksforcategory(category).length > 0">
+          <lane>
+            <lane-header :style="{ 'background-color': category.color }">{{category.label}}</lane-header>
+            <task v-for="task in tasksforcategory(category)" :task="task" @checkboxclick="completetask(task)" @taskclick="selectedtask = task;" @checklistitemclick="save()" @checklisttoggleclick="save()"></task>
+            <add-task-button @click="addtask(category)">+</add-task-button>
+          </lane>
+        </template>
+      </template>
     </kanban-board>
     
     <!-- Player -->
     <detail-dialog v-if="showplayerdetails" title="Spieler bearbeiten" @closeclick="save(); showplayerdetails = false;">
-      <template #header>
-        <labelled-input label="Name" :value="player.name" @input="value => player.name = value"></labelled-input>
+      <template #content>
+        <label>Kategorienamen</label>
+        <colored-input v-for="category in player.categories" :color="category.color" :value="category.label" @input="value => category.label = value"></colored-input>
       </template>
       <template #footer>
         <button @click="logout(); showplayerdetails = false;">Abmelden</button>
@@ -61,7 +67,7 @@
           </template>
           <input type="text" ref="newchecklistitem" placeholder="+ Neues Checklistenelement" @focus="addchecklistitem" />
         </checklist>
-        <labelled-select label="Kategorie" :options="taskcategories" :cls="selectedtask.category || 'gelb'" :value="selectedtask.category || 'gelb'" @input="value => selectedtask.category = value"></labelled-select>
+        <labelled-select label="Kategorie" :options="player.categories" :cls="selectedtask.category || 'gelb'" :value="selectedtask.category || 'gelb'" @input="value => selectedtask.category = value"></labelled-select>
       </template>
       <template #footer>
         <button class="delete" @click="deleteselectedtask">Diese To-Do löschen</button>

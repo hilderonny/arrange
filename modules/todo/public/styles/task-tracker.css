@@ -47,6 +47,22 @@ checklist > input:last-child {
     border-bottom-width: 1px;
 }
 
+colored-input > input {
+    border: none;
+    border-radius: 2px;
+    display: block;
+    font-size: 14px;
+    line-height: 24px;
+    margin-bottom: 16px;
+    padding: 4px 12px;
+    width: 100%;
+}
+
+colored-input > input:focus {
+    box-shadow: 0 0 0 1px #1a181d;
+    outline: none;
+}
+
 detail-dialog {
     background-color: white;
     border-radius: 8px;
