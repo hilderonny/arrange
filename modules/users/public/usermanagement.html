@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>Benutzerverwaltung - arrange</title>
+        <link rel="icon" type="image/png" href="./images/group.png">
+        <link rel="stylesheet" href="/styles/base.css">
+        <script type="module">
+
+            import { createListCard, createListAndDetailsCards } from '/js/cardhelper.mjs'
+
+            /********** Features **********/
+
+            let featuresCard
+            const featuresData = [
+                { handler: createUsersCard, id: 'users', label: 'Benutzer', icon: './images/user.png' },
+                { handler: createUsergroupsCard, id: 'usergroups', label: 'Benutzergruppen', icon: './images/group.png' },
+                { handler: createPermissionsCard, id: 'permissions', label: 'Berechtigungen', icon: './images/unlock.png' }
+            ]
+            const featuresMetadata = {
+                listTitle: 'Benutzerverwaltung',
+                identifierPropertyName: 'id',
+                titlePropertyName: 'label',
+                iconPropertyName: 'icon'
+            }
+            const featuresSelectHandler = async (selected_object) => {
+                // Alle weiteren geöffneten Karten schließen
+                while (featuresCard.nextSibling) {
+                    featuresCard.nextSibling.remove()
+                }
+                // Selektierte Karte anhand seines Handlers einbinden
+                const selectedCard = await selected_object.handler()
+                featuresCard.parentNode.appendChild(selectedCard)
+            }
+            featuresCard = createListCard(featuresData, featuresMetadata, featuresSelectHandler, undefined)
+            document.body.appendChild(featuresCard)
+
+            /********** Benutzer **********/
+
+            async function createUsersCard() {
+                // Metadaten vorbereiten
+                const usergroupsReponse = await fetch('/api/users/listusergroups')
+                if (usergroupsReponse.status !== 200) return
+                const usergroups = await usergroupsReponse.json()
+                // In Metadatenstruktur mappen
+                const usergroupsMetadata = usergroups.map(usergroup => {
+                    return {
+                        value: usergroup.id,
+                        label: usergroup.name
+                    }
+                })
+                const usersMetadata = {
+                    listTitle: 'Benutzer',
+                    identifierPropertyName: 'id',
+                    titlePropertyName: 'name',
+                    iconPropertyName: 'icon',
+                    listApi: '/api/users/listusers',
+                    saveApi: '/api/users/saveuser',
+                    deleteApi: '/api/users/deleteuser',
+                    canCreate: true,
+                    fields: [
+                        { property: 'id', label: 'Id', type: 'text', readonly: true },
+                        { property: 'name', label: 'Benutzername', type: 'text' },
+                        { property: 'password', label: 'Neues Passwort', type: 'password' },
+                        { property: 'usergroupids', label: 'Benutzergruppen', type: 'multiselect', options: usergroupsMetadata }
+                    ]
+                }
+                const usersListCard = await createListAndDetailsCards(usersMetadata)
+                return usersListCard
+            }
+        
+            /********** Benutzergruppen **********/
+
+            async function createUsergroupsCard() {
+                // Metadaten vorbereiten
+                const permissionsReponse = await fetch('/api/users/listpermissions')
+                if (permissionsReponse.status !== 200) return
+                const permissions = await permissionsReponse.json()
+                // In Metadatenstruktur mappen
+                const permissionsMetadata = permissions.map(permission => {
+                    return {
+                        value: permission.id,
+                        label: permission.name
+                    }
+                })
+                const usergroupsMetadata = {
+                    listTitle: 'Benutzergruppen',
+                    identifierPropertyName: 'id',
+                    titlePropertyName: 'name',
+                    iconPropertyName: 'icon',
+                    listApi: '/api/users/listusergroups',
+                    saveApi: '/api/users/saveusergroup',
+                    deleteApi: '/api/users/deleteusergroup',
+                    canCreate: true,
+                    fields: [
+                        { property: 'id', label: 'Id', type: 'text', readonly: true },
+                        { property: 'name', label: 'Name', type: 'text' },
+                        { property: 'permissionids', label: 'Berechtigungen', type: 'multiselect', options: permissionsMetadata }
+                    ]
+                }
+                const usergroupsListCard = await createListAndDetailsCards(usergroupsMetadata)
+                return usergroupsListCard
+            }
+        
+            /********** Berechtigungen **********/
+
+            async function createPermissionsCard() {
+                // Metadaten vorbereiten
+                // Berechtigungen können nicht gelöscht werden, da sie üblicherweise von Modulen erstellt und benötigt werden
+                const permissionsMetadata = {
+                    listTitle: 'Berechtigungen',
+                    identifierPropertyName: 'id',
+                    titlePropertyName: 'name',
+                    iconPropertyName: 'icon',
+                    listApi: '/api/users/listpermissions',
+                    saveApi: '/api/users/savepermission',
+                    canCreate: false,
+                    fields: [
+                        { property: 'id', label: 'Id', type: 'text', readonly: true },
+                        { property: 'name', label: 'Name', type: 'text' }
+                    ]
+                }
+                const permissionsListCard = await createListAndDetailsCards(permissionsMetadata)
+                return permissionsListCard
+            }
+
+        </script>
+
+    </head>
+
+    <body class="cards"></body>
+
+</html>

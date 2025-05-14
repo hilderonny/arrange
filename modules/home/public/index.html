@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <title>arrange</title>
+        <link rel="icon" type="image/png" href="/images/grid.png">
+        <link rel="stylesheet" href="styles/base.css">
+
+        <script type="module">
+
+            const linksElement = document.querySelector('body > div.navigation > div.links')
+
+            function selectApp(app_id) {
+                for (const aTag of linksElement.querySelectorAll('a')) {
+                    if (aTag.appId === app_id) {
+                        aTag.classList.add('selected')
+                    } else {
+                        aTag.classList.remove('selected')
+                    }
+                }
+            }
+
+            (async () => {
+
+                const applist = await (await fetch('/api/home/applistforuser')).json()
+
+                for (const app of applist) {
+                    const aTag = document.createElement('a')
+                    aTag.style.backgroundImage = `url(${app.icon})`
+                    aTag.href = app.url
+                    aTag.appId = app.id // Für Referenzen
+                    aTag.target = 'content'
+                    aTag.innerHTML = app.name
+                    aTag.addEventListener('click', () => {
+                        // Selektion in Navigation durchführen
+                        selectApp(app.id)
+                        // Den Rest macht das a-Tag selbst
+                    })
+                    if (app.isdefault) {
+                        aTag.classList.add('selected')
+                        aTag.click()
+                    }
+                    linksElement.appendChild(aTag)
+                }
+
+                // Auf Selektionsanweisungen aus dem iFrame reagieren
+                window.addEventListener('message', (event) => {
+                    if (event.data.action === 'selectApp') {
+                        selectApp(event.data.appid)
+                    }
+                })
+
+            })()
+
+        </script>
+
+    </head>
+    <body class="root">
+
+        <div class="navigation">
+
+            <div class="header">
+                <div class="title">Arrange</div>
+                <div class="subtitle">&copy; 2025 Ronny Hildebrandt</div>
+            </div>
+
+            <div class="links">
+            </div>
+
+        </div>
+
+        <iframe name="content"></iframe>
+            
+    </body>
+</html>

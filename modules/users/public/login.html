@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link rel="stylesheet" href="/styles/base.css">
+        <script type="module">
+
+            const errorParagraph = document.querySelector('p.error')
+
+            async function login(event) {
+                event.preventDefault()
+                errorParagraph.style.display = 'none'
+                const username = document.getElementById('usernameInput').value
+                const password = document.getElementById('passwordInput').value
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                })
+                if (response.status === 200) {
+                    // Anmeldung hat geklappt, Umleitung zur Startseite, damit Menü neu aufgebaut werden kann
+                    parent.location.href = '/'
+                } else {
+                    errorParagraph.style.display = 'block'
+                }
+            }
+
+            document.getElementById('loginForm').addEventListener('submit', login)
+
+        </script>
+
+    </head>
+    
+    <body class="form">
+
+        <form id="loginForm" autocomplete="on">
+        
+            <h1>Anmeldung</h1>
+
+            <h2>Benutzername</h2>
+            <input id="usernameInput" name="username" autocomplete="username" required />
+    
+            <h2>Passwort</h2>
+            <input id="passwordInput" type="password" autocomplete="current-password" required />
+    
+            <button type="submit">Anmelden</button>
+    
+            <p class="error">Anmeldung fehlgeschlagen</p>
+
+        </form>
+
+    </body>
+
+</html>

@@ -8,8 +8,8 @@ start(
     process.env.ARRANGE_PORT,
     process.env.ARRANGE_TOKEN_SECRET,
     [
-        '../arrange-home/module.mjs',
-        '../arrange-users/module.mjs',
-        '../arrange-todo/module.mjs'
+        './modules/home/module.mjs',
+        './modules/users/module.mjs',
+        './modules/todo/module.mjs'
     ]
 )

@@ -1,0 +1,15 @@
+{
+    "short_name": "Aufgaben",
+    "name": "Aufgaben - arrange",
+    "icons": [
+        {
+            "src": "images/favicon_192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        }
+    ],
+    "start_url": "index.html",
+    "background_color": "#36205d",
+    "display": "standalone",
+    "theme_color": "#36205d"
+}

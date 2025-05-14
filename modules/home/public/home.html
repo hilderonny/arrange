@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>Home - arrange</title>
+        <link rel="icon" type="image/png" href="/images/house.png">
+        <link rel="stylesheet" href="/styles/base.css">
+        <script type="module">
+
+            (async () => {
+
+                // Toolbar abhängig von Anmeldestatus aufbauen
+                const token = document.cookie.split(';').find(c => c.trim().startsWith('users-token='))
+                document.getElementById('loginLink').style.display = token ? 'none' : 'initial'
+                document.getElementById('registerLink').style.display = token ? 'none' : 'initial'
+                document.getElementById('logoutLink').style.display = token ? 'initial' : 'none'
+
+                // Appliste aufbauen
+                const applist = await (await fetch('/api/home/applistforuser')).json()
+                const appsElement = document.querySelector('body > div.apps')
+                for (const app of applist) {
+                    const aTag = document.createElement('a')
+                    aTag.style.backgroundImage = `url(${app.icon})`
+                    aTag.href = app.url
+                    aTag.innerHTML = app.name
+                    aTag.addEventListener('click', () => {
+                        // Selektion in Navigation durchführen
+                        parent.postMessage({ action: 'selectApp', appid: app.id })
+                        // Den Rest macht das a-Tag selbst
+                    })
+                    appsElement.appendChild(aTag)
+                }
+
+            })()
+
+        </script>
+
+    </head>
+    <body class="icongrid">
+
+        <h1>Home</h1>
+
+        <div class="apps"></div>
+
+        <div class="toolbar">
+            <a id="loginLink" href="/modules/users/login.html">Anmelden</a>
+            <a id="registerLink" href="/modules/users/register.html">Registrieren</a>
+            <a id="logoutLink" href="/modules/users/logout.html">Abmelden</a>
+        </div>
+            
+    </body>
+</html>

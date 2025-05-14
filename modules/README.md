@@ -3,12 +3,6 @@
 Arrange ist eine einfache Plattform, die alle Funktionen über Module bereit stellt.
 Module enthalten Apps, APIs, Express Middlewares und Daten.
 
-Die Module sind in separate Repositories ausgelagert.
-
-- [Home](https://github.com/hilderonny/arrange-home)
-- [Benutzerverwaltung](https://github.com/hilderonny/arrange-users)
-- [Aufgaben](https://github.com/hilderonny/arrange-todo)
-
 ## Einbindung in Server
 
 ```js

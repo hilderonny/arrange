@@ -1,0 +1,80 @@
+* { margin: 0; padding: 0; font-family: sans-serif; font-size: 12pt; color: #1e2f55; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/********** Modulseiten, die Karten verwenden **********/
+body.cards {
+    padding: 0; 
+    display: flex; 
+    flex-direction: row;
+
+    h1 { font-size: 16pt; margin-bottom: 12px; }
+    h2 { margin: 16px 0; }
+
+    label { color: #627088; }
+    input { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
+    input[type="checkbox"] { display: block; width: auto; }
+    input[type="number"] { text-align: right; }
+    input:read-only { background-color: #fafafa; color: #606060; }
+    input.iconurl { padding-left: 44px; background-size: 32px; background-repeat: no-repeat; background-position: 2px center; background-repeat: no-repeat; }
+    select { padding: 8px; width: 100%; border: 1px solid #e5e8ec; margin-bottom: 12px; }
+    button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; display: inline-block; }
+    .delete { background-color: red; color: white; }
+
+    .card { display: flex; flex-direction: column; border-right: 2px solid #e5e8ec; width: 318px; overflow: auto; padding: 16px }
+
+    .toolbar { margin-bottom: 8px; }
+    .toolbar button { margin-right: 8px; }
+
+    .links { flex: 1; overflow: auto; }
+    .links input { display: none; }
+    .links label { color: #627088; display: block; padding: 11px 13px 11px 32px; text-decoration: none; border-radius: 4px; user-select: none; background: no-repeat 9px center; background-size: 16px; position: relative; }
+    .links label:hover { background-color: #e5e8ec; cursor: pointer; }
+    .links input:checked+label { color: #0445ae; background-color: #e5e8ec; }
+}
+
+/********** Formulare, Anmeldeseiten **********/
+body.form {
+    padding: 32px 16px 32px 32px;
+
+    h1 { font-size: 24pt; margin-bottom: 24px; }
+    h2 { font-weight: normal; margin: 16px 0 8px 0; }
+
+    p.error { display: none; color: red; margin-top: 16px; }
+
+    input { padding: 8px; width: 200px; }
+    button { background: #f1f2f4; border: none; border-radius: 3px; padding: 8px; cursor: pointer; margin-top: 16px; display: block; }
+}
+
+/********** Seite mit Icons und Labels in Gitterform **********/
+body.icongrid {
+    padding: 32px 16px 32px 32px;
+    display: flex;
+    flex-direction: column;
+
+    h1 { font-size: 24pt; margin-bottom: 24px; }
+
+    div.toolbar { position: absolute; right: 10px; top: 10px; }
+    div.toolbar > a { display: none; }
+
+    .apps { align-self: center; }
+    .apps > a { display: inline-block; border-radius: 5px; padding: 5px; cursor: pointer; margin: 8px; text-align: center; background-size: 100px; background-position: top center; min-width: 100px; min-height: 100px; padding-top: 105px; text-decoration: none; color: black; background-repeat: no-repeat; }
+    .apps > a:hover { background-color: aliceblue; }
+    .apps > div > img { height: 100px; margin: auto; display: block; }
+    .apps > div > p { text-align: center; }
+}
+
+/********** Basisseite, die alles umfasst **********/
+body.root {
+    display: flex;
+
+    iframe { flex: 1; border: none; }
+    .navigation { display: flex; flex-direction: column; background-color: #eff1f3; padding: 16px; }
+    .navigation .header { margin-bottom: 16px; background: url(/images/grid.png) no-repeat left center; background-size: contain; padding-left: 40px; height: 32px; }
+    .navigation .header .title { font-weight: bold; }
+    .navigation .header .subtitle { font-weight: bold; font-size: 9pt; color: #69768e; margin-bottom: 6px; }
+    .navigation .links { flex: 1; overflow: auto; }
+    .navigation .links a { color: #627088; display: block; padding: 9px 11px 9px 30px; text-decoration: none; border-radius: 4px; user-select: none; background: no-repeat 9px center; background-size: 16px; }
+    .navigation .links a:hover { background-color: #e5e8ec; cursor: pointer; }
+    .navigation .links a.selected { color: #0445ae; background-color: #e5e8ec; }
+    .navigation .footer .version { text-align: center; color: #bbbbbb; font-size: 9pt; margin-top:16px; }
+}
