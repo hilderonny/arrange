@@ -1,7 +1,23 @@
 import { createHash, randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 
-// TODO: createDeleteApi dokumentieren
+/**
+ * Erstellt eine API, über die Objekte in der angegebenen Tabelle gelöscht werden können
+ * Beispielaufruf:
+ * ```
+ * const appToDelete = { id: 'HOME_HOME' }
+ * const response = await fetch('/api/home/deleteapp', {
+ *     method: 'DELETE',
+ *     headers: { 'Content-Type': 'application/json' },
+ *     body: JSON.stringify(appToDelete)
+ * })
+ * ```
+ * 
+ * @param {object} arrange Verweis auf arrange Instanz
+ * @param {string} table_name Tabellenname
+ * @param {string} api_url URL, an dem die API lauschen soll
+ * @param {string[]} required_permissions Liste von Berechtigungen. Mindestens eine davon muss der Benutzer haben, um die API benutzen zu dürfen.
+ */
 function createDeleteApi(arrange, table_name, api_url, required_permissions) {
 
     arrange.log('[APIHELPER] Erstelle Delete-API %s.', api_url)
@@ -24,7 +40,20 @@ function createDeleteApi(arrange, table_name, api_url, required_permissions) {
 
 }
 
-// TODO: createListApi dokumentieren
+/**
+ * Erstellt eine API, über die alle Objekte der gegebenen Tabelle aufgelistet werden können.
+ * Beispielaufruf:
+ * ```
+ * const response = await fetch('/api/users/listpermissions')
+ * response.json() = [
+ *     { id: 'permissionId', name: 'Berechtigungsbezeichnung' }
+ * ]
+ * ```
+ * @param {object} arrange Verweis auf arrange Instanz
+ * @param {string} table_name Tabellenname
+ * @param {string} api_url URL, an dem die API lauschen soll
+ * @param {string[]} required_permissions Liste von Berechtigungen. Mindestens eine davon muss der Benutzer haben, um die API benutzen zu dürfen.
+ */
 function createListApi(arrange, table_name, api_url, required_permissions) {
 
     arrange.log('[APIHELPER] Erstelle List-API %s.', api_url)
@@ -44,7 +73,21 @@ function createListApi(arrange, table_name, api_url, required_permissions) {
 
 }
 
-// TODO: createListForPermissionApi dokumentieren
+/**
+ * Erstellt eine API, die Objekte einer bestimmten Tabelle nur dann auflistet, wenn der angemeldete Benutzer die Berechtigung für den
+ * jeweiligen Datensatz hat. Dazu muss jeder Datensatz ein Feld `permissionid` haben, in dem die Id der notwendigen Berechtigung enthalten ist.
+ * Beispielaufruf:
+ * ```
+ * const response = await fetch('/api/home/listapps')
+ * response.json() = [
+ *     { id: 'HOME_HOME', name: 'Benutzerverwaltung', icon: '/modules/users/images/group.png', url: '/modules/users/uermanagement.html', index: 100, isdefault: true, permissionid: 'USERS_ADMINISTRATION_USER' }
+ * ]
+ * ```
+ * 
+ * @param {object} arrange Verweis auf arrange Instanz
+ * @param {string} table_name Tabellenname
+ * @param {string} api_url URL, an dem die API lauschen soll
+ */
 function createListForPermissionApi(arrange, table_name, api_url) {
 
     arrange.log('[APIHELPER] Erstelle List-For-Permission-API %s.', api_url)
@@ -67,7 +110,28 @@ function createListForPermissionApi(arrange, table_name, api_url) {
 
 }
 
-// TODO: createSaveApi dokumentieren
+/**
+ * Erstellt eine API, mit welcher Objekte der angegebenen Tabelle gespeichert oder angelegt werden können.
+ * Wenn der Datensatz kein Feld `id` enthält, wird ein neuer Datensatz angelegt und eine Id generiert.
+ * Der Datensatz wird anschließend vollständig zurück gegeben, also auch mit generierter Id.
+ * Beispielaufruf:
+ * ```
+ * const usergroupToSave = {
+ *     id: 'usergroupId', 
+ *     name: 'Gruppenname',
+ *     permissionids: [ 'USERS_ADMINISTRATION_USER' ]
+ * }
+ * const response = await fetch('/api/users/saveusergroup', {
+ *     method: 'POST',
+ *     headers: { 'Content-Type': 'application/json' },
+ *     body: JSON.stringify(usergroupToSave)
+ * })
+ * ```
+ * @param {object} arrange Verweis auf arrange Instanz
+ * @param {string} table_name Tabellenname
+ * @param {string} api_url URL, an dem die API lauschen soll
+ * @param {string[]} required_permissions Liste von Berechtigungen. Mindestens eine davon muss der Benutzer haben, um die API benutzen zu dürfen.
+ */
 function createSaveApi(arrange, table_name, api_url, required_permissions) {
 
     arrange.log('[APIHELPER] Erstelle Save-API %s.', api_url)
@@ -113,7 +177,21 @@ function createSaveApi(arrange, table_name, api_url, required_permissions) {
 
 }
 
-// TODO: loadApis dokumentieren
+/**
+ * Lädt alle APIs in einem bestimmten Verzeichnis.
+ * Eine API muss sich in einer Date mit der Endung `mjs` befinden und einen default-Export bereitstellen.
+ * Beispielimplementierung:
+ * ```
+ * export default (arrange) => {
+ *     arrange.webServer.post('/api/users/login', async(request, response) => {
+ *         // Mach was
+ *         response.sendStatus(200)
+ *     })
+ * }
+ * ```
+ * @param {object} arrange Verweis auf arrange Instanz
+ * @param {string} api_directory Verzeichnis, in welchem sich die APIs befinden
+ */
 async function loadApis(arrange, api_directory) {
 
         for (const fileName of fs.readdirSync(api_directory)) {
