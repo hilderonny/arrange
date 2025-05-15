@@ -38,7 +38,7 @@ const app = {
     addchecklistitem() {
       this.selectedtask.checklist.push({ checked: false, title: '' });
       Vue.nextTick(() => {
-        this.$refs.newchecklistitem.previousElementSibling.focus();
+        this.$refs.newchecklistitem.parentNode.previousElementSibling.querySelector('input').focus();
       });
     },
     async addtask(category) {
@@ -54,17 +54,15 @@ const app = {
       this.selectedtask = newtask
       await this.save()
     },
-    checkchecklistitemcontent(checklistitem) {
-      if (checklistitem.title.length < 1) {
-        this.selectedtask.c.splice(this.selectedtask.checklist.indexOf(checklistitem), 1);
-      }
-    },
     async completetask(task) {
       const doneCount = task.checklist.filter(item => !!item.checked).length
       this.player.experience += 10 + doneCount; // 10 je Task und 1 je abgeschlossenem ChecklistItem
       this.player.coins += 5 + doneCount; // 5 je Task und 1 je abgeschlossenem ChecklistItem
       this.tasks.splice(this.tasks.findIndex(t => t === task), 1)
       await this.save()
+    },
+    deletechecklistitem(checklistitem) {
+      this.selectedtask.checklist.splice(this.selectedtask.checklist.indexOf(checklistitem), 1);
     },
     async deleteselectedtask() {
       if (!window.confirm('Wirklich löschen?')) return

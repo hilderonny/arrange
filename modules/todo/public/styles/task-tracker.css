@@ -25,9 +25,32 @@ a { color: #2995cd; text-decoration: none; }
 checklist {
     display: block;
     margin-bottom: 16px;
+    position: relative;
 }
 
-checklist > input {
+checklist > div {
+    position: relative;
+}
+
+checklist > div > button.delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 33px;
+    height: 33px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-weight: bold;
+    font-size: 22px;
+}
+
+checklist > div > button.delete:hover {
+    background-color: rgba(255, 0, 0, .1);
+}
+
+checklist > div > input {
     border: solid #e1e0e3;
     border-radius: 0;
     box-shadow: none;
@@ -39,11 +62,11 @@ checklist > input {
     width: 100%;
 }
 
-checklist > input:focus {
+checklist > div > input:focus {
     outline: none;
 }
 
-checklist > input:last-child {
+checklist > div > input:last-child {
     border-bottom-width: 1px;
 }
 

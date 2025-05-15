@@ -63,9 +63,14 @@
         <label>Checkliste</label>
         <checklist>
           <template v-for="checklistitem in selectedtask.checklist">
-            <input type="text" v-model="checklistitem.title" @change="checkchecklistitemcontent(checklistitem)" />
+            <div>
+              <input type="text" v-model="checklistitem.title" />
+              <button class="delete" @click="deletechecklistitem(checklistitem)">x</button>
+            </div>
           </template>
-          <input type="text" ref="newchecklistitem" placeholder="+ Neues Checklistenelement" @focus="addchecklistitem" />
+          <div>
+            <input type="text" ref="newchecklistitem" placeholder="+ Neues Checklistenelement" @focus="addchecklistitem" />
+          </div>
         </checklist>
         <labelled-select label="Kategorie" :options="player.categories" :cls="selectedtask.category || 'gelb'" :value="selectedtask.category || 'gelb'" @input="value => selectedtask.category = value"></labelled-select>
       </template>
