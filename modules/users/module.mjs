@@ -33,6 +33,7 @@ async function publishRoutes(arrange) {
     arrange.apiHelper.createSaveApi(arrange, 'users/usergroups', '/api/users/saveusergroup', [ 'USERS_ADMINISTRATION_USER' ])
     arrange.apiHelper.createDeleteApi(arrange, 'users/users', '/api/users/deleteuser', [ 'USERS_ADMINISTRATION_USER' ])
     arrange.apiHelper.createDeleteApi(arrange, 'users/usergroups', '/api/users/deleteusergroup', [ 'USERS_ADMINISTRATION_USER' ])
+    arrange.apiHelper.createDeleteApi(arrange, 'users/permissions', '/api/users/deletepermission', [ 'USERS_ADMINISTRATION_USER' ])
     await arrange.apiHelper.loadApis(arrange, path.resolve(import.meta.dirname, './api'))
 }
 
