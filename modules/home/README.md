@@ -177,7 +177,8 @@ const metadata = {
     listTitle: 'Benutzergruppen', // Titel für Listenkarte
     identifierPropertyName: 'id', // Feld mit Identifizierer, der für Vorselektionen genutzt wird. Üblicherweise `id`.
     titlePropertyName: 'name', // Feld, welches in der Liste und im Kopf der Detailansicht angezeigt wird
-    iconPropertyName: 'icon', // Feld mit Icon
+    iconPropertyName: 'icon', // Feld mit Icon, individuall für jeden Eintrag
+    icon: './images/user.png', // Icon-URL für Listen, die gleichartige Elemente enthalöten und dieselben Icons anzeigen sollen
     listApi: '/api/users/listusergroups', // API für Auflistung der Objekte
     saveApi: '/api/users/saveusergroup', // Optional. API zum Speichern und Neuanlegen eines Datensatzes
     deleteApi: '/api/users/deleteusergroup', // Optional. API zum Löschen eines Datensatzes
@@ -247,7 +248,8 @@ const data = [
 const metadata = {
     listTitle: 'Benutzergruppen', // Titel für Listenkarte
     titlePropertyName: 'name', // Feld, welches die Bezeichnung enthält
-    iconPropertyName: 'icon', // Feld mit Icon
+    iconPropertyName: 'icon', // Feld mit Icon, individuall für jeden Eintrag
+    icon: './images/user.png', // Icon-URL für Listen, die gleichartige Elemente enthalöten und dieselben Icons anzeigen sollen
 }
 // Selektions-Callback, bekommt ganzes Objekt als Parameter
 const selectHandler = async (selected_object) => {

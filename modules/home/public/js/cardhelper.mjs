@@ -36,6 +36,7 @@ async function createListAndDetailsCards(metadata) {
         identifierPropertyName: metadata.identifierPropertyName,
         titlePropertyName: metadata.titlePropertyName,
         iconPropertyName: metadata.iconPropertyName,
+        icon: metadata.icon,
         listApi: metadata.listApi
     }
     // Metadatenstruktur für Detailansicht
@@ -107,7 +108,7 @@ async function createListAndDetailsCards(metadata) {
  * der Inhalt der Liste neu aufgebaut werden kann.
  * 
  * @param {object[]} data Feld mit Datenobjekten
- * @param {{listTitle: string, titlePropertyName: string, iconPropertyName: string}} metadata Beschreibungsobjekt für Daten
+ * @param {{listTitle: string, titlePropertyName: string, iconPropertyName: string, icon: string}} metadata Beschreibungsobjekt für Daten
  * @param {(selected_object: object) => any} select_handler Callback, der beim Selektieren eines Listeneintrags aufgerufen wird
  * @param {() => any} new_handler Callback, der aufgerufen wird, wenn auf den Neu-Button geklickt wird. Der Neu-Button wird nur dann gerendert, wenn dieser Parameter angegeben ist.
  */
@@ -153,7 +154,7 @@ function createListCard(data, metadata, select_handler, new_handler) {
             }
             // Label with icon
             const label = createLabel(element[metadata.titlePropertyName], inputId)
-            const iconUrl = element[metadata.iconPropertyName]
+            const iconUrl = element[metadata.iconPropertyName] || metadata.icon
             if (iconUrl) label.style.backgroundImage = `url(${iconUrl})`
             linksDiv.appendChild(label)
             // Select-Handler anhängen, wenn angegeben
