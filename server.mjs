@@ -10,6 +10,7 @@ start(
     [
         './modules/home/module.mjs',
         './modules/users/module.mjs',
-        './modules/todo/module.mjs'
+        './modules/todo/module.mjs',
+        './modules/vr/module.mjs'
     ]
 )
