@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>Forensik - arrange</title>
+        <link rel="icon" type="image/png" href="./images/forensics.png">
+        <link rel="stylesheet" href="/styles/base.css">
+        <script type="module">
+
+            import { createListAndDetailsCards } from '/js/cardhelper.mjs'
+
+            const casesMetadata = {
+                listTitle: 'Vorgänge',
+                identifierPropertyName: 'id',
+                titlePropertyName: 'name',
+                icon: './images/forensics.png',
+                listApi: '/api/forensics/listcases',
+                listSortFunction: ((a, b) => a.name.localeCompare(b.name)),
+                saveApi: '/api/forensics/savecase',
+                deleteApi: '/api/forensics/deletecase',
+                canCreate: true,
+                fields: [
+                    { property: 'id', label: 'Id', type: 'text', readonly: true },
+                    { property: 'name', label: 'Vorgangsnummer', type: 'text' }
+                ]
+            }
+            const casesListCard = await createListAndDetailsCards(casesMetadata)
+            document.body.appendChild(casesListCard)
+
+        </script>
+
+    </head>
+
+    <body class="cards"></body>
+
+</html>
