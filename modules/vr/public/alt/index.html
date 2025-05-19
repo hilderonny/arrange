@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!--
+
+https://github.com/ngokevin/kframe#readme
+https://github.com/aframevr/aframe/blob/master/docs/components/oculus-go-controls.md
+https://github.com/fernandojsg/aframe-teleport-controls
+https://github.com/ngokevin/kframe/tree/master/components/log/
+
+Hier ganz unten sieht man, warum die normalen Planes nicht als Targets in Frage kommen:
+https://github.com/fernandojsg/aframe-teleport-controls/blob/master/index.js
+Diese Plane wird per ThreeJS rotiert, nicht durch das rotaion-Attribut
+
+
+-->
+<html>
+  <head>
+    <script src="https://aframe.io/aframe/dist/aframe-master.min.js"></script>
+    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+    <!--<script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script>-->
+    <script src="avt-log.js"></script>
+    
+    <script>
+      
+      function rotRadToDeg(radRot) {
+        return {
+          _x: THREE.Math.radToDeg(radRot._x),
+          _y: THREE.Math.radToDeg(radRot._y),
+          _z: THREE.Math.radToDeg(radRot._z)
+        };
+      }
+      
+      AFRAME.registerComponent('avt-controller', {
+        init: function () {
+          this.camera = document.getElementById('camera');
+          console.log(camera);
+          // var i = 0;
+          // setInterval(function() {
+          //   AFRAME.log(i + ": HLorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut l");
+          //   i++;
+          // }, 100);
+        },
+        tick: function() {
+          // https://stackoverflow.com/q/23002984
+          var controllerMesh = this.el.object3D;
+          var cameraMesh = this.camera.object3D;
+          var rotationOffset = controllerMesh.quaternion.clone().inverse();
+          var rotation = cameraMesh.quaternion.clone().multiply(rotationOffset);
+          // 0.1 rad sind etwa 5,7 Grad
+          // 0.4 rad sind etwa 23 Grad
+          var rotDeg = {
+            x: THREE.Math.radToDeg(rotation._x).toFixed(0),
+            y: THREE.Math.radToDeg(rotation._y).toFixed(0),
+            z: THREE.Math.radToDeg(rotation._z).toFixed(0)
+          };
+          // AFRAME.log(JSON.stringify(rotDeg));
+          var threshold = .3;
+          var pose = { isLeft: false, isRight: false };
+          if (Math.abs(rotation._x) < .1 && Math.abs(rotation._z) < .1) {
+            if (rotation._y > threshold) pose.isLeft = true;
+            if (rotation._y < -threshold) pose.isRight = true;
+          }
+          // AFRAME.log(JSON.stringify(pose));
+          // AFRAME.log(JSON.stringify({
+          //   xa: THREE.Math.radToDeg(controllerMesh.rotation._x).toFixed(0),
+          //   ya: THREE.Math.radToDeg(controllerMesh.rotation._y).toFixed(0),
+          //   za: THREE.Math.radToDeg(controllerMesh.rotation._z).toFixed(0),
+          //   xb: THREE.Math.radToDeg(cameraMesh.rotation._x).toFixed(0),
+          //   yb: THREE.Math.radToDeg(cameraMesh.rotation._y).toFixed(0),
+          //   zb: THREE.Math.radToDeg(cameraMesh.rotation._z).toFixed(0),
+          // }));
+          var diff = cameraMesh.getWorldQuaternion().multiply(controllerMesh.getWorldQuaternion());
+          // AFRAME.log(JSON.stringify({
+          //   x: THREE.Math.radToDeg(diff._x).toFixed(0),
+          //   y: THREE.Math.radToDeg(diff._y).toFixed(0),
+          //   z: THREE.Math.radToDeg(diff._z).toFixed(0),
+          // }));
+          // https://stackoverflow.com/a/12785589
+          // diff = new THREE.Euler().setFromQuaternion(diff);
+          // AFRAME.log(JSON.stringify({
+          //   x: THREE.Math.radToDeg(diff._x).toFixed(0),
+          //   y: THREE.Math.radToDeg(diff._y).toFixed(0),
+          //   z: THREE.Math.radToDeg(diff._z).toFixed(0),
+          // }));
+          var cameraRotation = rotRadToDeg(new THREE.Euler().setFromQuaternion(cameraMesh.getWorldQuaternion(), 'YXZ'));
+          // if (cameraRotation._y < 0) cameraRotation._y += 360;
+          var controllerRotation = rotRadToDeg(new THREE.Euler().setFromQuaternion(controllerMesh.getWorldQuaternion(), 'YXZ'));
+          // if (controllerRotation._y < 0) controllerRotation._y += 360;
+          var diffYRotation = cameraRotation._y - controllerRotation._y;
+          if (diffYRotation < -180) diffYRotation += 360;
+          if (diffYRotation > 180) diffYRotation -= 360;
+          //AFRAME.log(JSON.stringify({ cam: cameraRotation, cont: controllerRotation, diff: diffYRotation }));
+          AFRAME.log(JSON.stringify({ cam: cameraRotation._y.toFixed(0), cont: controllerRotation._y.toFixed(0), diff: diffYRotation.toFixed(0) }));
+          // Bei einem FOV von 60 Grad (30 Grad in beide Richtungen) kann der Teleporter ab einer Differenz von 30 Grad nicht mehr benutzt werden,
+          // weil er nicht mehr sichtbar ist. Daher kann ab 35 Grad die Drehgeste aktiviert werden.
+        }
+      });
+    </script>
+
+  </head>
+  <body>
+    <a-scene>
+      
+    <a-assets>
+      <img id="holodeck" src="https://cdn.glitch.com/509c48e8-4581-4eca-882d-c7b98cdf10d4%2Fholodeck.png">
+    </a-assets>
+
+      <!-- Player avatar and camera -->
+      <a-entity id="player">
+        <a-entity position="0 1.6 0" id="camera" camera look-controls wasd-controls></a-entity>
+        <!-- gearvr-controls funktioniert für oculus-go-controls ganz gut -->
+        <a-entity avt-controller daydream-controls gearvr-controls
+                  teleport-controls="cameraRig: #player; interval: 10; curveShootingSpeed: 10;collisionEntities: [teleporttarget]"
+                  >
+          <avt-log position=".12 0 -.12" scale=".2 .2" rotation="-90 0 -45"></avt-log>
+        </a-entity>
+      </a-entity>
+
+      <!-- Holodeck box -->
+      <a-entity>
+        <a-box teleporttarget depth="30" width="30" height=".2" position="0 -.1 0" material="src: #holodeck; repeat: 30 30"></a-box>
+        <a-box teleporttarget depth="30" width="30" height=".2" position="0 10.1 0" material="src: #holodeck; repeat: 30 30"></a-box>
+        
+        <a-box teleporttarget depth=".2" width="30" height="10" position="0 5 -15.1" material="src: #holodeck; repeat: 30 10"></a-box>
+        <a-box teleporttarget depth=".2" width="30" height="10" position="0 5 15.1" material="src: #holodeck; repeat: 30 10"></a-box>
+
+        <a-box teleporttarget depth="30" width=".2" height="10" position="15.1 5 0" material="src: #holodeck; repeat: 30 10"></a-box>
+        <a-box teleporttarget depth="30" width=".2" height="10" position="-15.1 5 0" material="src: #holodeck; repeat: 30 10"></a-box>
+        
+      </a-entity>
+      
+      <!-- Content -->
+      <a-entity>
+        <a-sphere teleporttarget position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
+        <a-box teleporttarget position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" material="src: #holodeck"></a-box>
+        <a-cylinder teleporttarget position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+      </a-entity>
+      
+      <!-- Log -->  
+      <avt-log position="0 5 -14.8" scale="15 10 1"></avt-log>
+      <avt-log position="14.8 5 0" scale="15 10 1" rotation="0 -90 0"></avt-log>
+      <avt-log position="0 5 14.8" scale="15 10 1" rotation="0 180 0"></avt-log>
+      <avt-log position="-14.8 5 0" scale="15 10 1" rotation="0 90 0"></avt-log>
+      
+    </a-scene>
+  </body>
+</html>

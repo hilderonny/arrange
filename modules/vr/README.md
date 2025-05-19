@@ -4,6 +4,48 @@ TODO: VR-Modul dokumentieren, der folgende Text wurde von Copilot generiert und 
 
 Dieses Modul ist ein Teil des Projekts und bietet spezifische Funktionen für Virtual Reality (VR). Es wurde entwickelt, um VR-Interaktionen und -Erfahrungen zu verbessern und nahtlos in das Gesamtsystem zu integrieren.
 
+## Entwurf Hand-UI
+
+Entlang X-Achse um 1 Zentimeter Schritte bewegen
+
+```
+            11111111112
+  012345678901234567890
+  ---------------------
+0|►move◄ rotate  scale
+1|►x◄  y  z
+2|     ▲
+3|123.456 m
+4|     ▼
+```
+
+Um Y-Achse um 0,1° Schritte rotieren
+
+```
+ move ►rotate◄ scale
+ x ►y◄ z
+    ▲
+123.456 °
+    ▼
+```
+
+Länge entlang der Z-Achse um 10 Zentimeter Schritte ändern
+
+```
+ move  rotate ►scale◄
+ x  y ►z◄
+    ▲
+123.456 m
+    ▼
+```
+
+Die Anzeige wird am linken Controller positioniert.
+Der rechte Controller verändert die Werte.
+
+1. Zeile mit `B` ändern
+2. Zeile mit `A` ändern
+3. Zeile Stellenauswahl mit `Joystick` links / rechts, Werteänderung mit `Joystick` hoch / runter
+
 ## Features
 
 - Unterstützung für VR-Headsets und Controller.
