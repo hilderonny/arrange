@@ -6,22 +6,6 @@
     "configurations": [
         {
             "console": "integratedTerminal",
-            "name": "HTTP 80",
-            "env": {
-                "ARRANGE_DATABASE_DIRECTORY": "./database/",
-                "ARRANGE_PORT": "80",
-                "ARRANGE_TOKEN_SECRET": "hubbelebubbele"
-            },
-            "program": "${workspaceFolder}/server.mjs",
-            "runtimeExecutable": "node",
-            "request": "launch",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        },
-        {
-            "console": "integratedTerminal",
             "name": "HTTPS 443",
             "env": {
                 "ARRANGE_DATABASE_DIRECTORY": "./database/",
