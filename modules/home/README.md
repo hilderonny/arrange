@@ -180,6 +180,7 @@ const metadata = {
     iconPropertyName: 'icon', // Feld mit Icon, individuall für jeden Eintrag
     icon: './images/user.png', // Icon-URL für Listen, die gleichartige Elemente enthalöten und dieselben Icons anzeigen sollen
     listApi: '/api/users/listusergroups', // API für Auflistung der Objekte
+    listSortFunction: ((a, b) => a.localCompareTo(b)), // Sortierfunktion für Listen
     saveApi: '/api/users/saveusergroup', // Optional. API zum Speichern und Neuanlegen eines Datensatzes
     deleteApi: '/api/users/deleteusergroup', // Optional. API zum Löschen eines Datensatzes
     canCreate: true, // Gibt an, ob der Neu-Button angezeigt wird. Erfordert saveApi. Ist z.B. bei der Berechtigungsverwaltung auf false gesetzt, damit keine neuen Berechtigungen erstellt werden.
@@ -247,9 +248,11 @@ const data = [
 // Metadatan über die Listeninhalte
 const metadata = {
     listTitle: 'Benutzergruppen', // Titel für Listenkarte
+    identifierPropertyName: 'id', // Feld mit Identifizierer, der für Vorselektionen genutzt wird. Üblicherweise `id`.
     titlePropertyName: 'name', // Feld, welches die Bezeichnung enthält
     iconPropertyName: 'icon', // Feld mit Icon, individuall für jeden Eintrag
     icon: './images/user.png', // Icon-URL für Listen, die gleichartige Elemente enthalöten und dieselben Icons anzeigen sollen
+    listSortFunction: ((a, b) => a.localCompareTo(b)), // Sortierfunktion für Listen
 }
 // Selektions-Callback, bekommt ganzes Objekt als Parameter
 const selectHandler = async (selected_object) => {

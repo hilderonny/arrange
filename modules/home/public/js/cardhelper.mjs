@@ -35,7 +35,7 @@ async function createListAndDetailsCards(metadata) {
         titlePropertyName: metadata.titlePropertyName,
         iconPropertyName: metadata.iconPropertyName,
         icon: metadata.icon,
-        listApi: metadata.listApi
+        listSortFunction: metadata.listSortFunction
     }
     // Metadatenstruktur für Detailansicht
     const detailsMetadata = metadata.fields
@@ -138,6 +138,10 @@ function createListCard(data, metadata, select_handler, new_handler) {
     cardDiv.refresh = function(new_data, selected_identifier) {
         // Liste leeren
         linksDiv.innerHTML = ''
+        // Liste sortieren
+        if (metadata.listSortFunction) {
+            new_data.sort(metadata.listSortFunction)
+        }
         for (const element of new_data) {
             // Radio Input
             const inputId = 'link-' + metadata.listTitle + '-' + element[metadata.identifierPropertyName]
