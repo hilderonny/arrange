@@ -26,6 +26,7 @@
                 titlePropertyName: 'name',
                 iconPropertyName: 'icon',
                 listApi: '/api/home/listapps',
+                listSortFunction: ((a, b) => a.index - b.index),
                 saveApi: '/api/home/saveapp',
                 deleteApi: '/api/home/deleteapp',
                 canCreate: true,

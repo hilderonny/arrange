@@ -24,6 +24,8 @@
 
                 const applist = await (await fetch('/api/home/applistforuser')).json()
 
+                applist.sort(((a, b) => a.index - b.index))
+
                 for (const app of applist) {
                     const aTag = document.createElement('a')
                     aTag.style.backgroundImage = `url(${app.icon})`
