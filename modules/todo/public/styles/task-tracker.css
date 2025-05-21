@@ -336,6 +336,7 @@ kanban-board > lane > lane-header {
 
 p {
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 playerbar {
