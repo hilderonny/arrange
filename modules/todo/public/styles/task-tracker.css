@@ -397,6 +397,7 @@ player-widget playerinfo playerdetails playerlevel {
 player-widget playerinfo playerdetails playercoins {
     background: no-repeat left top;
     background-image: url(../images/coin.png);
+    background-size: 16px 16px;
     color: white;
     font-weight: bold;
     padding-left: 20px;

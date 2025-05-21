@@ -104,3 +104,18 @@ Aktualisierung geht so, in `arrange`-Verzeichnis:
 git pull
 sudo systemctl restart arrange
 ```
+
+## Icons
+
+|Icon|Source|
+|---|---|
+|<img src="modules/forensics/public/images/forensics.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/forensics" title="forensics icons">Forensics icons created by HAJICON - Flaticon</a>|
+|<img src="modules/home/public/images/apps.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/apps" title="apps icons">Apps icons created by Smashicons - Flaticon</a>|
+|<img src="modules/home/public/images/grid.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/masonry" title="masonry icons">Masonry icons created by Fajrul Fitrianto - Flaticon</a>|
+|<img src="modules/home/public/images/house.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/real-estate" title="real estate icons">Real estate icons created by Smashicons - Flaticon</a>|
+|<img src="modules/todo/public/images/coin.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/coin" title="coin icons">Coin icons created by Triangle Squad - Flaticon</a>|
+|<img src="modules/todo/public/images/list.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/task-list" title="task list icons">Task list icons created by Vectorslab - Flaticon</a>|
+|<img src="modules/users/public/images/group.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/people" title="people icons">People icons created by Freepik - Flaticon</a>|
+|<img src="modules/users/public/images/unlock.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/unlock" title="unlock icons">Unlock icons created by riajulislam - Flaticon</a>|
+|<img src="modules/users/public/images/user.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/user" title="user icons">User icons created by Freepik - Flaticon</a>|
+|<img src="modules/vr/public/images/vr.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/3d-camera" title="3d-camera icons">3d-camera icons created by Freepik - Flaticon</a>|

@@ -14,7 +14,7 @@ export default {
     },
     template: `
         <player-widget>
-            <avatar><img src="images/playerone.png" /></avatar>
+            <avatar><img src="images/avatar_tiny.jpg" /></avatar>
             <playerinfo>
                 <playername @click="$emit('playernameclick')">{{player.username}}</playername>
                 <playerdetails>
