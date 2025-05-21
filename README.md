@@ -109,7 +109,6 @@ sudo systemctl restart arrange
 
 |Icon|Source|
 |---|---|
-|<img src="modules/forensics/public/images/forensics.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/forensics" title="forensics icons">Forensics icons created by HAJICON - Flaticon</a>|
 |<img src="modules/home/public/images/apps.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/apps" title="apps icons">Apps icons created by Smashicons - Flaticon</a>|
 |<img src="modules/home/public/images/grid.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/masonry" title="masonry icons">Masonry icons created by Fajrul Fitrianto - Flaticon</a>|
 |<img src="modules/home/public/images/house.png" width="64"/>|<a href="https://www.flaticon.com/free-icons/real-estate" title="real estate icons">Real estate icons created by Smashicons - Flaticon</a>|
