@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <script type="module">
+
+            import * as Arrange from '/js/arrange.js'
+
+            // Benutzernamen anzeigen
+            document.getElementById('username').innerHTML = localStorage.getItem('username')
+
+            // Abmeldung
+            document.getElementById('logout').addEventListener('click', async () => {
+                await Arrange.logout()
+            })
+            
+            // Private Datei im Benutzerordner speichern
+            await Arrange.savePrivateFile('/halli/galli.txt', 'huiuiuiui')
+
+            // Private Datei laden
+            const fileContent = await (await Arrange.getFile('/halli/galli.txt')).text()
+            console.log(fileContent)
+
+            // Privates Verzeichnis rekursiv löschen
+            await Arrange.deletePath('/halli')
+
+            // Das gleiche mit öffentlichen Daten, die jeder Benutzer lesen und ändern kann
+            // Hierbei wird bei jedem Aufruf der Parameter "isPublic" = true mitgegeben
+            await Arrange.saveFile('/holla/die.txt', 'waldfee', true)
+            const publicFileContent = await (await Arrange.getFile('/holla/die.txt', true)).text()
+            console.log(publicFileContent)
+            await Arrange.deletePath('/holla', true)
+
+        </script>
+
+    </head>
+
+    <body>
+        <p>Diese Seite testet die Anmeldung. Das meiste geschieht in der Konsole.</p>
+
+        <p>Sie sind als Benutzer "<span id="username"></span>" angemeldet.</p>
+
+        <p><button id="logout">Abmelden</button></p>
+    </body>
+
+</html>

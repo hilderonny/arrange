@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Registrierung</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; font-family: sans-serif; }
+        main { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+        .card { width: 100%; max-width: 360px; padding: 20px; border: 1px solid rgba(127,127,127,.35); border-radius: 12px; }
+        h1 { margin: 0 0 14px; font-size: 18px; font-weight: 650; }
+        label { display:block; font-size: 12px; opacity: .8; margin: 12px 0 6px; }
+        input { width: 100%; margin-bottom: 14px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: transparent; }
+        button { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: transparent; cursor: pointer; }
+        button[disabled] { opacity: .6; cursor: not-allowed; }
+        .row { display:flex; justify-content: space-between; align-items:center; margin-top: 10px; gap: 10px; }
+        .message { margin-top: 12px; font-size: 13px; min-height: 1.2em; }
+        .message.ok { opacity: .9; }
+        .message.error { color: #d33; }
+        .tiny { font-size: 12px; opacity: .75; }
+        a { color: inherit; }
+    </style>
+    <script type="module">
+
+        const { successurl, backurl } = Object.fromEntries(new URLSearchParams(location.search))
+
+        const registerForm = document.getElementById('registerForm')
+        const usernameInput = document.getElementById('username')
+        const passwordInput = document.getElementById('password')
+        const registerButton = document.getElementById('registerButton')
+        const messageDiv = document.getElementById('message')
+        const backLink = document.getElementById('back')
+        const loginLink = document.getElementById('login')
+
+        function setLoading(isLoading) {
+            registerButton.disabled = isLoading
+            registerButton.textContent = isLoading ? "…" : "Registrieren"
+        }
+
+        function setMessage(text, type) {
+            messageDiv.className = "message " + (type || "")
+            messageDiv.textContent = text || ""
+        }
+
+        backLink.href = backurl
+        if(!backurl) backLink.style.display = 'none'
+        loginLink.href = 'login.html' + location.search
+
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault()
+            setMessage()
+            const username = usernameInput.value
+            const password = passwordInput.value
+            if (!username || !password) {
+                setMessage("Bitte Benutzername und Passwort ausfüllen.", "error")
+                return
+            }
+            setLoading(true)
+            const result = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            })
+            if (result.ok) {
+                const userData = await result.json()
+                localStorage.setItem('username', userData.username)
+                localStorage.setItem('userid', userData.id)
+                location.href = successurl
+            } else {
+                setMessage("Registrierung fehlgeschlagen.", "error")
+                setLoading(false)
+            }
+        })
+
+    </script>
+</head>
+<body>
+    <main>
+        <section class="card" aria-label="Login">
+            <h1>Registrierung</h1>
+
+            <form id="registerForm" autocomplete="on" novalidate>
+
+                <input id="username" name="username" type="text" autocomplete="username" required placeholder="Benutzername" />
+                <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Passwort" />
+
+                <button id="registerButton" type="submit">Registrieren</button>
+
+                <div id="message" class="message" role="status" aria-live="polite"></div>
+
+                <div class="row">
+                    <a class="tiny" id="back">Zurück</a>
+                    <a class="tiny" id="login">Anmelden</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+</body>
+</html>
