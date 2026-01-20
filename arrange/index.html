@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <script type="module">
+
+            import * as Arrange from './js/arrange.js'
+
+            // Benutzernamen anzeigen
+            document.getElementById('username').innerHTML = localStorage.getItem('username')
+
+            // Abmeldung
+            document.getElementById('logout').addEventListener('click', async () => {
+                await Arrange.logout()
+            })
+            
+            // Private Datei im Benutzerordner speichern
+            await Arrange.postPrivateFile('/halli/galli.txt', 'huiuiuiui')
+            await Arrange.postPrivateFile('/nochmehr/murks.html', 'trallala')
+
+
+            // Private Datei laden
+            const fileContent = await (await Arrange.getPrivateFile('/halli/galli.txt')).text()
+            console.log(fileContent)
+            document.getElementById('private_iframe').src = `/api/files/${localStorage.getItem('userid')}/nochmehr/murks.html`
+
+            // Privates Verzeichnis rekursiv löschen
+            await Arrange.deletePrivatePath('/halli')
+
+            // Das gleiche mit öffentlichen Daten, die jeder Benutzer lesen und ändern kann
+            await Arrange.postPublicFile('/holla/die.txt', 'waldfee')
+            await Arrange.postPublicFile('/frumpf/hallalo.html', 'hornzpronz')
+
+            const publicFileContent = await (await Arrange.getPublicFile('/holla/die.txt', true)).text()
+            console.log(publicFileContent)
+            document.getElementById('public_iframe').src = '/api/files/public/frumpf/hallalo.html'
+
+            await Arrange.deletePublicPath('/holla', true)
+
+        </script>
+
+    </head>
+
+    <body>
+        <p>Diese Seite testet die Anmeldung. Das meiste geschieht in der Konsole.</p>
+
+        <p>Sie sind als Benutzer "<span id="username"></span>" angemeldet.</p>
+
+        <p><button id="logout">Abmelden</button></p>
+
+        <iframe id="private_iframe"></iframe>
+
+        <iframe id="public_iframe"></iframe>
+
+    </body>
+
+</html>

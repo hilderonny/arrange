@@ -1,4 +1,4 @@
-// Aktuelle Version: 0.0.1
+// Version: 0.0.1
 package main
 
 import (
@@ -352,8 +352,11 @@ func main() {
 	http.HandleFunc("POST /api/files/{userid}/{filepath...}", handlePostFile)
 	http.HandleFunc("DELETE /api/files/{userid}/{path...}", handleDeletePath)
 
-	// Statische HTML Seiten ausliefern
+	// Statische HTML Seiten ausliefern, wird reingemountet
 	http.Handle("/", http.FileServer(http.Dir("./html")))
+
+	// Arrange-Client-Skripte und Seiten ausliefern
+	http.Handle("/arrange/", http.StripPrefix("/arrange/", http.FileServer(http.Dir("./arrange"))))
 
 	// // HTTP-Server starten, geht in Endlosschleife
 	fmt.Println("arrange server running at port 3000")
