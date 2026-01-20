@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -87,6 +88,32 @@ func encryptString(plainText string, key [32]byte) string {
 	return base64.StdEncoding.EncodeToString(cipherText)
 }
 
+func extractFirstFileFromRequest(request *http.Request) (multipart.File, error) {
+	var maxUploadSize int64 = 1 << 40 // 1 TB
+	err := request.ParseMultipartForm(maxUploadSize)
+	if err != nil || request.MultipartForm == nil || request.MultipartForm.File == nil {
+		return nil, err
+	}
+	for _, fileHeaders := range request.MultipartForm.File {
+		if len(fileHeaders) != 0 {
+			return fileHeaders[0].Open()
+		}
+	}
+	return nil, errors.New("No files in request")
+}
+
+func extractUserFromCookie(request *http.Request) *UserStruct {
+	arrangeCookie, arrangeCookieError := request.Cookie("arrange")
+	if arrangeCookieError != nil {
+		return nil
+	}
+	userId, decryptError := decryptString(arrangeCookie.Value, TOKEN_SECRET)
+	if decryptError != nil {
+		return nil
+	}
+	return getUserById(userId)
+}
+
 func getUserById(id string) *UserStruct {
 	for i := range ALL_USERS {
 		if ALL_USERS[i].Id == id {
@@ -152,30 +179,59 @@ func setCookie(user *UserStruct, remove bool, response http.ResponseWriter) {
 
 // Automatische Anmeldung anhand des Cookies
 func handleAutoLogin(response http.ResponseWriter, request *http.Request) {
-	arrangeCookie, arrangeCookieError := request.Cookie("arrange")
-	if arrangeCookieError != nil {
-		response.WriteHeader(401)
-		return
-	}
-	userId, decryptError := decryptString(arrangeCookie.Value, TOKEN_SECRET)
-	if decryptError != nil {
-		response.WriteHeader(401)
-		return
-	}
-	existingUser := getUserById(userId)
-	if existingUser == nil {
+	userFromCookie := extractUserFromCookie(request)
+	if userFromCookie == nil {
 		response.WriteHeader(401)
 		return
 	}
 	response.WriteHeader(200)
 }
 
-// Benutzer anmelden
-func handleLogin(response http.ResponseWriter, request *http.Request) {
-	if request.Method != "POST" {
-		response.WriteHeader(405)
+// Datei löschen
+func handleDeletePath(response http.ResponseWriter, request *http.Request) {
+	userId := request.PathValue("userid")
+	path := request.PathValue("path")
+	if userId == "" || path == "" {
+		response.WriteHeader(400)
 		return
 	}
+	userFromCookie := extractUserFromCookie(request)
+	if userFromCookie == nil || (userId != "public" && userFromCookie.Id != userId) {
+		response.WriteHeader(403)
+		return
+	}
+	absoluteFilePath := filepath.Join(FILES_PATH, userId, path)
+	if _, err := os.Stat(absoluteFilePath); err != nil {
+		response.WriteHeader(404)
+		return
+	}
+	os.RemoveAll(absoluteFilePath)
+	response.WriteHeader(200)
+}
+
+// Datei liefern
+func handleGetFile(response http.ResponseWriter, request *http.Request) {
+	userId := request.PathValue("userid")
+	filePath := request.PathValue("filepath")
+	if userId == "" || filePath == "" {
+		response.WriteHeader(400)
+		return
+	}
+	userFromCookie := extractUserFromCookie(request)
+	if userFromCookie == nil || (userId != "public" && userFromCookie.Id != userId) {
+		response.WriteHeader(403)
+		return
+	}
+	absoluteFilePath := filepath.Join(FILES_PATH, userId, filePath)
+	if _, err := os.Stat(absoluteFilePath); err != nil {
+		response.WriteHeader(404)
+		return
+	}
+	http.ServeFile(response, request, absoluteFilePath)
+}
+
+// Benutzer anmelden
+func handleLogin(response http.ResponseWriter, request *http.Request) {
 	var credentials CredentialsStruct
 	err := json.NewDecoder(request.Body).Decode(&credentials)
 	if err != nil || len(credentials.Username) < 1 || len(credentials.Password) < 1 {
@@ -206,12 +262,45 @@ func handleLogout(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(200)
 }
 
-// Benutzer registrieren
-func handleRegister(response http.ResponseWriter, request *http.Request) {
-	if request.Method != "POST" {
-		response.WriteHeader(405)
+// Datei speichern
+func handlePostFile(response http.ResponseWriter, request *http.Request) {
+	userId := request.PathValue("userid")
+	filePath := request.PathValue("filepath")
+	if userId == "" || filePath == "" {
+		response.WriteHeader(400)
 		return
 	}
+	userFromCookie := extractUserFromCookie(request)
+	if userFromCookie == nil || (userId != "public" && userFromCookie.Id != userId) {
+		response.WriteHeader(403)
+		return
+	}
+	firstFile, firstFileError := extractFirstFileFromRequest(request)
+	if firstFileError != nil {
+		response.WriteHeader(400)
+		return
+	}
+	defer firstFile.Close() // Sicherstellen, dass auch bei Fehlern die Datei wieder geschlossen wird
+	fileContent, fileContentError := io.ReadAll(firstFile)
+	if fileContentError != nil {
+		response.WriteHeader(400)
+		return
+	}
+	absoluteFilePath := filepath.Join(FILES_PATH, userId, filePath)
+	parentDir := filepath.Dir(absoluteFilePath)
+	if os.MkdirAll(parentDir, 0755) != nil {
+		response.WriteHeader(500)
+		return
+	}
+	if os.WriteFile(absoluteFilePath, fileContent, 0644) != nil {
+		response.WriteHeader(500)
+		return
+	}
+	response.WriteHeader(200)
+}
+
+// Benutzer registrieren
+func handleRegister(response http.ResponseWriter, request *http.Request) {
 	var credentials CredentialsStruct
 	err := json.NewDecoder(request.Body).Decode(&credentials)
 	if err != nil || len(credentials.Username) < 1 || len(credentials.Password) < 1 {
@@ -255,10 +344,13 @@ func main() {
 	ALL_USERS = loadUsers()
 
 	// API-Endpunkte
-	http.HandleFunc("/api/autologin", handleAutoLogin)
-	http.HandleFunc("/api/login", handleLogin)
-	http.HandleFunc("/api/logout", handleLogout)
-	http.HandleFunc("/api/register", handleRegister)
+	http.HandleFunc("GET /api/autologin", handleAutoLogin)
+	http.HandleFunc("POST /api/login", handleLogin)
+	http.HandleFunc("GET /api/logout", handleLogout)
+	http.HandleFunc("POST /api/register", handleRegister)
+	http.HandleFunc("GET /api/files/{userid}/{filepath...}", handleGetFile)
+	http.HandleFunc("POST /api/files/{userid}/{filepath...}", handlePostFile)
+	http.HandleFunc("DELETE /api/files/{userid}/{path...}", handleDeletePath)
 
 	// Statische HTML Seiten ausliefern
 	http.Handle("/", http.FileServer(http.Dir("./html")))

@@ -16,21 +16,27 @@
             })
             
             // Private Datei im Benutzerordner speichern
-            await Arrange.savePrivateFile('/halli/galli.txt', 'huiuiuiui')
+            await Arrange.postPrivateFile('/halli/galli.txt', 'huiuiuiui')
+            await Arrange.postPrivateFile('/nochmehr/murks.html', 'trallala')
+
 
             // Private Datei laden
-            const fileContent = await (await Arrange.getFile('/halli/galli.txt')).text()
+            const fileContent = await (await Arrange.getPrivateFile('/halli/galli.txt')).text()
             console.log(fileContent)
+            document.getElementById('private_iframe').src = `/api/files/${localStorage.getItem('userid')}/nochmehr/murks.html`
 
             // Privates Verzeichnis rekursiv löschen
-            await Arrange.deletePath('/halli')
+            await Arrange.deletePrivatePath('/halli')
 
             // Das gleiche mit öffentlichen Daten, die jeder Benutzer lesen und ändern kann
-            // Hierbei wird bei jedem Aufruf der Parameter "isPublic" = true mitgegeben
-            await Arrange.saveFile('/holla/die.txt', 'waldfee', true)
-            const publicFileContent = await (await Arrange.getFile('/holla/die.txt', true)).text()
+            await Arrange.postPublicFile('/holla/die.txt', 'waldfee')
+            await Arrange.postPublicFile('/frumpf/hallalo.html', 'hornzpronz')
+
+            const publicFileContent = await (await Arrange.getPublicFile('/holla/die.txt', true)).text()
             console.log(publicFileContent)
-            await Arrange.deletePath('/holla', true)
+            document.getElementById('public_iframe').src = '/api/files/public/frumpf/hallalo.html'
+
+            await Arrange.deletePublicPath('/holla', true)
 
         </script>
 
@@ -42,6 +48,11 @@
         <p>Sie sind als Benutzer "<span id="username"></span>" angemeldet.</p>
 
         <p><button id="logout">Abmelden</button></p>
+
+        <iframe id="private_iframe"></iframe>
+
+        <iframe id="public_iframe"></iframe>
+
     </body>
 
 </html>
