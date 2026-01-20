@@ -1,4 +1,4 @@
-// Version: 0.0.1
+// Version: 0.0.2
 package main
 
 import (
@@ -27,6 +27,11 @@ import (
 type CredentialsStruct struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
+}
+
+type DirEntryStruct struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 type UserResponseStruct struct {
@@ -209,25 +214,53 @@ func handleDeletePath(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(200)
 }
 
-// Datei liefern
+// Datei oder Verzeichnisliste liefern
 func handleGetFile(response http.ResponseWriter, request *http.Request) {
 	userId := request.PathValue("userid")
-	filePath := request.PathValue("filepath")
-	if userId == "" || filePath == "" {
+	if userId == "" {
 		response.WriteHeader(400)
 		return
 	}
+	filePath := request.PathValue("filepath")
 	userFromCookie := extractUserFromCookie(request)
 	if userFromCookie == nil || (userId != "public" && userFromCookie.Id != userId) {
 		response.WriteHeader(403)
 		return
 	}
 	absoluteFilePath := filepath.Join(FILES_PATH, userId, filePath)
-	if _, err := os.Stat(absoluteFilePath); err != nil {
+	fileStat, fileStatError := os.Stat(absoluteFilePath)
+	if fileStatError != nil {
 		response.WriteHeader(404)
 		return
 	}
-	http.ServeFile(response, request, absoluteFilePath)
+	if fileStat.IsDir() {
+		dirPointer, dirPointerError := os.Open(absoluteFilePath)
+		if dirPointerError != nil {
+			response.WriteHeader(500)
+			return
+		}
+		dirEntries, filesError := dirPointer.ReadDir(-1)
+		dirPointer.Close()
+		if filesError != nil {
+			response.WriteHeader(500)
+			return
+		}
+		var files []DirEntryStruct
+		for _, dirEntry := range dirEntries {
+			fileType := "file"
+			if dirEntry.IsDir() {
+				fileType = "dir"
+			}
+			file := DirEntryStruct{
+				Name: dirEntry.Name(),
+				Type: fileType,
+			}
+			files = append(files, file)
+		}
+		json.NewEncoder(response).Encode(files)
+	} else {
+		http.ServeFile(response, request, absoluteFilePath)
+	}
 }
 
 // Benutzer anmelden
