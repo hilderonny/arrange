@@ -308,26 +308,42 @@ func handlePostFile(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(403)
 		return
 	}
-	firstFile, firstFileError := extractFirstFileFromRequest(request)
-	if firstFileError != nil {
-		response.WriteHeader(400)
-		return
-	}
-	defer firstFile.Close() // Sicherstellen, dass auch bei Fehlern die Datei wieder geschlossen wird
-	fileContent, fileContentError := io.ReadAll(firstFile)
-	if fileContentError != nil {
-		response.WriteHeader(400)
-		return
-	}
 	absoluteFilePath := filepath.Join(FILES_PATH, userId, filePath)
 	parentDir := filepath.Dir(absoluteFilePath)
 	if os.MkdirAll(parentDir, 0755) != nil {
 		response.WriteHeader(500)
 		return
 	}
-	if os.WriteFile(absoluteFilePath, fileContent, 0644) != nil {
-		response.WriteHeader(500)
-		return
+	if request.Header["Content-Type"][0] == "application/octet-stream" {
+		// Binärdateien per Upload
+		file, fileError := os.Create(absoluteFilePath)
+		if fileError != nil {
+			response.WriteHeader(500)
+			return
+		}
+		defer file.Close()
+		_, writeError := io.Copy(file, request.Body)
+		if writeError != nil {
+			response.WriteHeader(500)
+			return
+		}
+	} else {
+		// Textdateien direkt im Multipart-Body
+		firstFile, firstFileError := extractFirstFileFromRequest(request)
+		if firstFileError != nil {
+			response.WriteHeader(400)
+			return
+		}
+		defer firstFile.Close() // Sicherstellen, dass auch bei Fehlern die Datei wieder geschlossen wird
+		fileContent, fileContentError := io.ReadAll(firstFile)
+		if fileContentError != nil {
+			response.WriteHeader(400)
+			return
+		}
+		if os.WriteFile(absoluteFilePath, fileContent, 0644) != nil {
+			response.WriteHeader(500)
+			return
+		}
 	}
 	response.WriteHeader(200)
 }

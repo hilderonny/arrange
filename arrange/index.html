@@ -14,7 +14,7 @@
             document.getElementById('logout').addEventListener('click', async () => {
                 await Arrange.logout()
             })
-            
+
             // Private Datei im Benutzerordner speichern
             await Arrange.postPrivateFile('/halli/galli.txt', 'huiuiuiui')
             await Arrange.postPrivateFile('/halli/berta/vogel.txt', 'huiuiuiui')
@@ -47,22 +47,54 @@
             const publicDirContent = await (await Arrange.getPublicFile('/holla')).json()
             console.log(publicDirContent)
 
-            const publicFileContent = await (await Arrange.getPublicFile('/holla/die.txt', true)).text()
+            const publicFileContent = await (await Arrange.getPublicFile('/holla/die.txt')).text()
             console.log(publicFileContent)
             document.getElementById('public_iframe').src = '/api/files/public/frumpf/hallalo.html'
 
-            await Arrange.deletePublicPath('/holla', true)
+            await Arrange.deletePublicPath('/holla')
+
+            // Upload
+            const privateFileInput = document.getElementById('privatefile')
+            privateFileInput.addEventListener('change', async () => {
+                const file = privateFileInput.files[0]
+                await Arrange.uploadPrivateFile('/nochmehr/' + file.name, file, (progress) => {
+                    document.getElementById('progress').value = progress
+                })
+            })
+
+            const publicFileInput = document.getElementById('publicfile')
+            publicFileInput.addEventListener('change', async () => {
+                const file = publicFileInput.files[0]
+                await Arrange.uploadPublicFile('/frumpf/' + file.name, file, (progress) => {
+                    document.getElementById('progress').value = progress
+                })
+            })
+
 
         </script>
 
     </head>
 
     <body>
-        <p>Diese Seite testet die Anmeldung. Das meiste geschieht in der Konsole.</p>
+        <p>Diese Seite testet die Anmeldung und Dateiverwaltung. Das meiste geschieht in der Konsole.</p>
 
         <p>Sie sind als Benutzer "<span id="username"></span>" angemeldet.</p>
 
         <p><button id="logout">Abmelden</button></p>
+
+        <p>
+            Private Datei
+            <input id="privatefile" type="file"/>
+        </p>
+
+        <p>
+            Öffentliche Datei
+            <input id="publicfile" type="file"/>
+        </p>
+
+        <p>
+            <progress id="progress" value="0" max="100"></progress>
+        </p>
 
         <iframe id="private_iframe"></iframe>
 
