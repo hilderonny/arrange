@@ -3,7 +3,7 @@
 ## Usage
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:0.0.3
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:0.0.4
 ```
 
 ## Integration
@@ -50,9 +50,9 @@ postPublicFile(filePath, fileContent)
 ## Development
 
 ```sh
-gh release create v0.0.3
-docker build --platform=linux/amd64,linux/arm64 -f docker/Dockerfile -t hilderonny2024/arrange:latest -t hilderonny2024/arrange:0.0.3 .
-docker scout quickview local://hilderonny2024/arrange:0.0.3
-docker push hilderonny2024/arrange:0.0.3
+gh release create v0.0.4
+docker build --platform=linux/amd64,linux/arm64 -f docker/Dockerfile -t hilderonny2024/arrange:latest -t hilderonny2024/arrange:0.0.4 .
+docker scout quickview local://hilderonny2024/arrange:0.0.4
+docker push hilderonny2024/arrange:0.0.4
 docker push hilderonny2024/arrange:latest
 ```
