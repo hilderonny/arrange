@@ -332,6 +332,27 @@ func handlePostFile(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(200)
 }
 
+// Verzeichnis erstellen
+func handlePutPath(response http.ResponseWriter, request *http.Request) {
+	userId := request.PathValue("userid")
+	path := request.PathValue("path")
+	if userId == "" || path == "" {
+		response.WriteHeader(400)
+		return
+	}
+	userFromCookie := extractUserFromCookie(request)
+	if userFromCookie == nil || (userId != "public" && userFromCookie.Id != userId) {
+		response.WriteHeader(403)
+		return
+	}
+	absolutePath := filepath.Join(FILES_PATH, userId, path)
+	if os.MkdirAll(absolutePath, 0755) != nil {
+		response.WriteHeader(500)
+		return
+	}
+	response.WriteHeader(200)
+}
+
 // Benutzer registrieren
 func handleRegister(response http.ResponseWriter, request *http.Request) {
 	var credentials CredentialsStruct
@@ -381,9 +402,10 @@ func main() {
 	http.HandleFunc("POST /api/login", handleLogin)
 	http.HandleFunc("GET /api/logout", handleLogout)
 	http.HandleFunc("POST /api/register", handleRegister)
+	http.HandleFunc("DELETE /api/files/{userid}/{path...}", handleDeletePath)
 	http.HandleFunc("GET /api/files/{userid}/{filepath...}", handleGetFile)
 	http.HandleFunc("POST /api/files/{userid}/{filepath...}", handlePostFile)
-	http.HandleFunc("DELETE /api/files/{userid}/{path...}", handleDeletePath)
+	http.HandleFunc("PUT /api/files/{userid}/{path...}", handlePutPath)
 
 	// Statische HTML Seiten ausliefern, wird reingemountet
 	http.Handle("/", http.FileServer(http.Dir("./html")))

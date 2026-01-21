@@ -26,6 +26,9 @@
             console.log(fileContent)
             document.getElementById('private_iframe').src = `/api/files/${localStorage.getItem('userid')}/nochmehr/murks.html`
 
+            // Leeres privates Verzeichnis erstellen
+            await Arrange.createPrivatePath('/halli/lumpi')
+
             // Auflistung des privaten Verzeichnisses
             const privateDirContent = await (await Arrange.getPrivateFile('/halli')).json()
             console.log(privateDirContent)
@@ -37,8 +40,11 @@
             await Arrange.postPublicFile('/holla/die.txt', 'waldfee')
             await Arrange.postPublicFile('/frumpf/hallalo.html', 'hornzpronz')
 
+            // Leeres privates Verzeichnis erstellen
+            await Arrange.createPublicPath('/holla/fronzel')
+
             // Auflistung des öffentlichen Verzeichnisses
-            const publicDirContent = await (await Arrange.getPublicFile('/')).json()
+            const publicDirContent = await (await Arrange.getPublicFile('/holla')).json()
             console.log(publicDirContent)
 
             const publicFileContent = await (await Arrange.getPublicFile('/holla/die.txt', true)).text()

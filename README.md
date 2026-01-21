@@ -26,9 +26,10 @@ GET /api/logout
 POST /api/login
 POST /api/register
 
+DELETE /api/files/{userid}/{path...}
 GET /api/files/{userid}/{filepath...}
 POST /api/files/{userid}/{filepath...}
-DELETE /api/files/{userid}/{path...}
+PUT /api/files/{userid}/{path...}
 ```
 
 ## /js/arrange.js
@@ -36,6 +37,8 @@ DELETE /api/files/{userid}/{path...}
 ```js
 logout()
 
+createPrivatePath(path)
+createPublicPath(path)
 deletePrivatePath(path)
 deletePublicPath(path)
 getPrivateFile(filePath)

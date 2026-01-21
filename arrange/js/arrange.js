@@ -7,6 +7,19 @@ async function autoLogin() {
     }
 }
 
+async function createPrivatePath(path) {
+    const userid = localStorage.getItem('userid')
+    const filteredPath = path.split('/').filter(e => e).join('/')
+    const url = new URL(`/api/files/${userid}/${filteredPath}`, import.meta.url).href
+    return await fetch(url, { method: 'PUT' })
+}
+
+async function createPublicPath(path) {
+    const filteredPath = path.split('/').filter(e => e).join('/')
+    const url = new URL(`/api/files/public/${filteredPath}`, import.meta.url).href
+    return await fetch(url, { method: 'PUT' })
+}
+
 async function deletePrivatePath(path) {
     const userid = localStorage.getItem('userid')
     const filteredPath = path.split('/').filter(e => e).join('/')
@@ -63,7 +76,9 @@ async function postPublicFile(filePath, fileContent) {
 
 await autoLogin()
 
-export { 
+export {
+    createPrivatePath,
+    createPublicPath,
     deletePrivatePath, 
     deletePublicPath, 
     getPrivateFile,
