@@ -2,11 +2,14 @@
 package main
 
 import (
+	"bufio"
 	"crypto/aes"
 	"crypto/cipher"
 	crand "crypto/rand"
+	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -14,6 +17,7 @@ import (
 	"io"
 	"math/rand/v2"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -51,6 +55,9 @@ var USERS_JSON_PATH string = "./data/users/users.json" // Pfad zur JSON-Datei mi
 var FILES_PATH string = "./data/files"                 // Pfad zu den Dateien
 var ALL_USERS []UserStruct
 var TOKEN_SECRET [32]byte
+var NEXT_WEBSOCKET_CLIENT_ID int64 = time.Now().UTC().UnixNano()
+
+const WEBSOCKET_ACCEPT_KEY_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 /********** Hilfsfunktionen **********/
 
@@ -137,6 +144,21 @@ func getUserByUsername(username string) *UserStruct {
 	return nil
 }
 
+func handleWebsocketConnection(connection net.Conn, buffer *bufio.ReadWriter) {
+	defer connection.Close()
+	for {
+		readFrame, readError := readWebsocketFrame(buffer.Reader)
+		if readError != nil {
+			return
+		}
+		fmt.Println("Empfangen:", string(readFrame))
+		writeError := writeWebsocketFrame(connection, readFrame)
+		if writeError != nil {
+			return
+		}
+	}
+}
+
 func hashPassword(password string) string {
 	hash := sha256.Sum256([]byte(password))
 	return hex.EncodeToString(hash[:])
@@ -154,6 +176,45 @@ func loadUsers() []UserStruct {
 		json.Unmarshal(fileContent, &users)
 		return users
 	}
+}
+
+func readWebsocketFrame(reader *bufio.Reader) ([]byte, error) {
+	// Erstes Byte: FIN + Opcode
+	firstByte, firstByteError := reader.ReadByte()
+	if firstByteError != nil {
+		return nil, firstByteError
+	}
+	fmt.Println("First byte:", firstByte)
+	// Zweites Byte: Mask + Payload Länge
+	secondByte, secondByteError := reader.ReadByte()
+	if secondByteError != nil {
+		return nil, secondByteError
+	}
+	fmt.Println("Second byte:", secondByte)
+	isMasked := secondByte&0x80 != 0
+	payloadLength := int(secondByte & 0x7F)
+	if payloadLength == 126 { // Bei langen Frames wird die Länge im 3. und 4. Byte kodiert
+		thirdByte, _ := reader.ReadByte()
+		fourthByte, _ := reader.ReadByte()
+		payloadLength = int(thirdByte)<<8 | int(fourthByte)
+	}
+	if payloadLength == 127 {
+		return nil, fmt.Errorf("Payload too big")
+	}
+	fmt.Println("Is masked:", isMasked)
+	fmt.Println("Payload length:", payloadLength)
+	var maskKey [4]byte
+	if isMasked {
+		io.ReadFull(reader, maskKey[:])
+	}
+	payload := make([]byte, payloadLength)
+	io.ReadFull(reader, payload)
+	if isMasked {
+		for i := 0; i < payloadLength; i++ {
+			payload[i] ^= maskKey[i%4]
+		}
+	}
+	return payload, nil
 }
 
 func saveUsers(users []UserStruct) {
@@ -178,6 +239,23 @@ func setCookie(user *UserStruct, remove bool, response http.ResponseWriter) {
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(response, &arrangeCookie)
+}
+
+func writeWebsocketFrame(connection net.Conn, payload []byte) error {
+	frame := []byte{}
+	// FIN + Binary Frame
+	frame = append(frame, 0x82)
+	payloadLength := len(payload)
+	if payloadLength < 126 {
+		frame = append(frame, byte(payloadLength))
+	} else if payloadLength < 65536 {
+		frame = append(frame, 126, byte(payloadLength>>8), byte(payloadLength))
+	} else {
+		return fmt.Errorf("Payload too big")
+	}
+	frame = append(frame, payload...)
+	_, writeError := connection.Write(frame)
+	return writeError
 }
 
 /********** API Funktionen **********/
@@ -403,6 +481,31 @@ func handleRegister(response http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(response).Encode(userToReturn)
 }
 
+// Websocketverbindung erstellen
+func handleConnectWebSocket(response http.ResponseWriter, request *http.Request) {
+	hijacker, _ := response.(http.Hijacker)
+	connection, buffer, hijackError := hijacker.Hijack()
+	if hijackError != nil {
+		return
+	}
+	requestKey := request.Header.Get("Sec-WebSocket-Key")
+	sha1Hash := sha1.Sum([]byte(requestKey + WEBSOCKET_ACCEPT_KEY_MAGIC))
+	acceptResponseKey := base64.StdEncoding.EncodeToString(sha1Hash[:])
+	connectResponse := "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + acceptResponseKey + "\r\n\r\n"
+	connection.Write([]byte(connectResponse))
+	// ID senden
+	clientIdResponseFrame := make([]byte, 9)
+	clientIdResponseFrame[0] = 0x01
+	binary.LittleEndian.PutUint64(clientIdResponseFrame[1:], uint64(NEXT_WEBSOCKET_CLIENT_ID)) // Das Casting ist nur notwendig, um die PutUint64 Funktion nutzen zu können, hat clientseitig keine Bedeutung
+	fmt.Printf("Client ID: %x\n", clientIdResponseFrame)
+	NEXT_WEBSOCKET_CLIENT_ID = NEXT_WEBSOCKET_CLIENT_ID + 1
+	writeClientIdError := writeWebsocketFrame(connection, clientIdResponseFrame)
+	if writeClientIdError != nil {
+		return
+	}
+	handleWebsocketConnection(connection, buffer)
+}
+
 /********** Server ***********/
 
 func main() {
@@ -428,6 +531,9 @@ func main() {
 
 	// Arrange-Client-Skripte und Seiten ausliefern
 	http.Handle("/arrange/", http.StripPrefix("/arrange/", http.FileServer(http.Dir("./arrange"))))
+
+	// Websockets
+	http.HandleFunc("/ws", handleConnectWebSocket)
 
 	// // HTTP-Server starten, geht in Endlosschleife
 	fmt.Println("arrange server running at port 3000")

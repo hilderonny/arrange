@@ -70,6 +70,23 @@
                 })
             })
 
+            // Websockets
+            let myWebClientId
+            await Arrange.connectWebSocket(async (type, senderId, message) => {
+                console.log(type, senderId, message)
+                if (type === 0x01) {
+                    myWebClientId = message
+                    console.log(myWebClientId)
+                }
+            })
+
+            await Arrange.joinRoom(815)
+            await Arrange.sendMessageToRoom(815)
+            await Arrange.sendMessageToClient(myWebClientId)
+            await Arrange.leaveRoom(815)
+            await Arrange.joinRoom(4711)
+            await Arrange.leaveRoom(4711)
+
 
         </script>
 
