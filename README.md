@@ -18,6 +18,16 @@ docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROO
 </html>
 ```
 
+## Reserved URLs
+
+The following URLs and sub paths are reserved and cannot be used by the application.
+
+|URL|Description|
+|-|-|
+|`/api/`|REST APIs|
+|`/arrange/`|Arrange ressources|
+|`/ws/`|Websockets|
+
 ## API
 
 ```
@@ -32,6 +42,27 @@ POST /api/files/{userid}/{filepath...}
 PUT /api/files/{userid}/{path...}
 ```
 
+## Websockets
+
+Messages over websockets contain one byte of type information and the rest as payload in any data structure (defined by application).
+
+### Messages from client to server
+
+|First byte|Meaning|
+|-|-|
+|`0x10`|Join room. `8` bytes room number|
+|`0x20`|Leave room. `8` bytes room number|
+|`0x30`|Send broadcast message into room. `8` bytes room number followed by payload|
+|`0x40`|Send direct message to client. `8` bytes client ID followed by payload|
+
+### Messages from server to client
+
+|First byte|Meaning|
+|-|-|
+|`0x01`|`8` bytes of assigned client ID. Sent directly after connecting|
+|`0x31`|Broadcast message from client. `8` bytes room number , `8` bytes sender client ID, followed by payload|
+|`0x41`|Direct message from client. `8` bytes sender client ID followed by payload|
+
 ## /js/arrange.js
 
 ```js
@@ -45,6 +76,12 @@ getPrivateFile(filePath)
 getPublicFile(filePath)
 postPrivateFile(filePath, fileContent)
 postPublicFile(filePath, fileContent)
+
+connectSocket(serverMessageCallback)
+joinRoom(roomNumber)
+leaveRoom(roomNumber)
+sendMessageToRoom(roomNumber)
+sendMessageToClient(clientId)
 ```
 
 ## Development
