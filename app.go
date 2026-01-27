@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -57,6 +58,9 @@ var ALL_USERS []UserStruct
 var TOKEN_SECRET [32]byte
 var NEXT_WEBSOCKET_CLIENT_ID int64 = time.Now().UTC().UnixNano()
 
+// var WEBSOCKET_CLIENTS = make(map[int64]net.Conn)
+var WEBSOCKET_ROOMS = make(map[int64][]net.Conn)
+
 const WEBSOCKET_ACCEPT_KEY_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 /********** Hilfsfunktionen **********/
@@ -88,6 +92,10 @@ func decryptString(cipherTextBase64 string, key [32]byte) (string, error) {
 		return "", err
 	}
 	return string(plainText), nil
+}
+
+func disconnectSocket(connection net.Conn) {
+	connection.Close()
 }
 
 func encryptString(plainText string, key [32]byte) string {
@@ -145,13 +153,31 @@ func getUserByUsername(username string) *UserStruct {
 }
 
 func handleWebsocketConnection(connection net.Conn, buffer *bufio.ReadWriter) {
-	defer connection.Close()
+	defer disconnectSocket(connection)
 	for {
 		readFrame, readError := readWebsocketFrame(buffer.Reader)
 		if readError != nil {
 			return
 		}
-		fmt.Println("Empfangen:", string(readFrame))
+		messageType := readFrame[0]
+		switch messageType {
+		case 0x10: // Join room
+			roomId := int64(binary.LittleEndian.Uint64(readFrame[1:]))
+			connectionList := WEBSOCKET_ROOMS[roomId]
+			if !slices.Contains(connectionList, connection) {
+				WEBSOCKET_ROOMS[roomId] = append(connectionList, connection)
+			}
+			fmt.Println("Joined room:", roomId, connection, len(WEBSOCKET_ROOMS[roomId]))
+		case 0x20: // Leave room
+			roomId := int64(binary.LittleEndian.Uint64(readFrame[1:]))
+			connectionList := WEBSOCKET_ROOMS[roomId]
+			index := slices.Index(connectionList, connection)
+			if index >= 0 {
+				WEBSOCKET_ROOMS[roomId] = slices.Delete(connectionList, index, index+1)
+			}
+			fmt.Println("Left room:", roomId, connection, len(WEBSOCKET_ROOMS[roomId]))
+		}
+		// fmt.Printf("Empfangen: %x\n", readFrame)
 		writeError := writeWebsocketFrame(connection, readFrame)
 		if writeError != nil {
 			return
@@ -180,17 +206,15 @@ func loadUsers() []UserStruct {
 
 func readWebsocketFrame(reader *bufio.Reader) ([]byte, error) {
 	// Erstes Byte: FIN + Opcode
-	firstByte, firstByteError := reader.ReadByte()
+	_, firstByteError := reader.ReadByte()
 	if firstByteError != nil {
 		return nil, firstByteError
 	}
-	fmt.Println("First byte:", firstByte)
 	// Zweites Byte: Mask + Payload Länge
 	secondByte, secondByteError := reader.ReadByte()
 	if secondByteError != nil {
 		return nil, secondByteError
 	}
-	fmt.Println("Second byte:", secondByte)
 	isMasked := secondByte&0x80 != 0
 	payloadLength := int(secondByte & 0x7F)
 	if payloadLength == 126 { // Bei langen Frames wird die Länge im 3. und 4. Byte kodiert
@@ -201,8 +225,6 @@ func readWebsocketFrame(reader *bufio.Reader) ([]byte, error) {
 	if payloadLength == 127 {
 		return nil, fmt.Errorf("Payload too big")
 	}
-	fmt.Println("Is masked:", isMasked)
-	fmt.Println("Payload length:", payloadLength)
 	var maskKey [4]byte
 	if isMasked {
 		io.ReadFull(reader, maskKey[:])
@@ -497,7 +519,6 @@ func handleConnectWebSocket(response http.ResponseWriter, request *http.Request)
 	clientIdResponseFrame := make([]byte, 9)
 	clientIdResponseFrame[0] = 0x01
 	binary.LittleEndian.PutUint64(clientIdResponseFrame[1:], uint64(NEXT_WEBSOCKET_CLIENT_ID)) // Das Casting ist nur notwendig, um die PutUint64 Funktion nutzen zu können, hat clientseitig keine Bedeutung
-	fmt.Printf("Client ID: %x\n", clientIdResponseFrame)
 	NEXT_WEBSOCKET_CLIENT_ID = NEXT_WEBSOCKET_CLIENT_ID + 1
 	writeClientIdError := writeWebsocketFrame(connection, clientIdResponseFrame)
 	if writeClientIdError != nil {

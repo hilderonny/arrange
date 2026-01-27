@@ -75,11 +75,19 @@ async function getPublicFile(filePath) {
 }
 
 async function joinRoom(roomNumber) {
-
+    const arrayBuffer = new ArrayBuffer(9)
+    const dataView = new DataView(arrayBuffer)
+    dataView.setInt8(0, 0x10)
+    dataView.setBigInt64(1, roomNumber, true)
+    WEB_SOCKET.send(arrayBuffer)
 }
 
 async function leaveRoom(roomNumber) {
-
+    const arrayBuffer = new ArrayBuffer(9)
+    const dataView = new DataView(arrayBuffer)
+    dataView.setInt8(0, 0x20)
+    dataView.setBigInt64(1, roomNumber, true)
+    WEB_SOCKET.send(arrayBuffer)
 }
 
 async function logout() {
