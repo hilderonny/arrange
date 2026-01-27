@@ -72,20 +72,25 @@
 
             // Websockets
             let myWebClientId
-            await Arrange.connectWebSocket(async (type, senderId, message) => {
-                console.log(type, senderId, message)
-                if (type === 0x01) {
-                    myWebClientId = message
-                    console.log(myWebClientId)
-                }
+            await new Promise((resolve) => {
+                Arrange.connectWebSocket(async (message) => {
+                    console.log(message)
+                    if (message.type === 0x01) {
+                        myWebClientId = message.clientId
+                        console.log(myWebClientId)
+                        resolve()
+                    }
+                })
             })
 
             await Arrange.joinRoom(815n)
-            await Arrange.sendMessageToRoom(815n)
-            await Arrange.sendMessageToClient(myWebClientId)
+            await Arrange.sendMessageToRoom(815n, "Hallo Raum")
+            await Arrange.sendMessageToClient(myWebClientId, "Hallo Client")
             await Arrange.leaveRoom(815n)
             await Arrange.joinRoom(4711n)
             await Arrange.leaveRoom(4711n)
+            await Arrange.joinRoom(3315n)
+            await Arrange.sendMessageToRoom(3315n, "Hallo anderer Raum")
 
 
         </script>

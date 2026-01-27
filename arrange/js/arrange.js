@@ -20,16 +20,21 @@ async function connectWebSocket(messageCallback) {
             const dataView = new DataView(arrayBuffer)
             const type = dataView.getInt8(0)
             switch (type) {
-                case 0x01:
+                case 0x01: {
                     const clientId = dataView.getBigInt64(1, true)
-                    await messageCallback(type, undefined, clientId)
-                    break
-                case 0x31:
-                case 0x41:
+                    await messageCallback({ type, clientId })
+                } break
+                case 0x31: {
                     const senderId = dataView.getBigInt64(1, true)
-                    const message = new TextDecoder().decode(bytes.subarray(9))
-                    await messageCallback(type, senderId, message)
-                    break
+                    const roomId = dataView.getBigInt64(9, true)
+                    const message = new TextDecoder().decode(arrayBuffer.slice(17))
+                    await messageCallback({ type, senderId, roomId, message })
+                } break
+                case 0x41: {
+                    const senderId = dataView.getBigInt64(1, true)
+                    const message = new TextDecoder().decode(arrayBuffer.slice(9))
+                    await messageCallback({ type, senderId, message })
+                } break
             }
         }
     })
@@ -118,12 +123,24 @@ async function postPublicFile(filePath, fileContent) {
     return await postFile(url, fileContent)
 }
 
-async function sendMessageToClient(clientId) {
-
+async function sendMessageToClient(clientId, textMessage) {
+    const textBytes = new TextEncoder().encode(textMessage)
+    const arrayBuffer = new ArrayBuffer(9 + textBytes.length)
+    const dataView = new DataView(arrayBuffer)
+    dataView.setInt8(0, 0x40)
+    dataView.setBigInt64(1, clientId, true)
+    new Uint8Array(arrayBuffer).set(textBytes, 9)
+    WEB_SOCKET.send(arrayBuffer)
 }
 
-async function sendMessageToRoom(roomNumber) {
-
+async function sendMessageToRoom(roomNumber, textMessage) {
+    const textBytes = new TextEncoder().encode(textMessage)
+    const arrayBuffer = new ArrayBuffer(9 + textBytes.length)
+    const dataView = new DataView(arrayBuffer)
+    dataView.setInt8(0, 0x30)
+    dataView.setBigInt64(1, roomNumber, true)
+    new Uint8Array(arrayBuffer).set(textBytes, 9)
+    WEB_SOCKET.send(arrayBuffer)
 }
 
 async function uploadFile(url, file, progressCallback) {

@@ -58,7 +58,7 @@ var ALL_USERS []UserStruct
 var TOKEN_SECRET [32]byte
 var NEXT_WEBSOCKET_CLIENT_ID int64 = time.Now().UTC().UnixNano()
 
-// var WEBSOCKET_CLIENTS = make(map[int64]net.Conn)
+var WEBSOCKET_CLIENTS = make(map[int64]net.Conn)
 var WEBSOCKET_ROOMS = make(map[int64][]net.Conn)
 
 const WEBSOCKET_ACCEPT_KEY_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -95,6 +95,13 @@ func decryptString(cipherTextBase64 string, key [32]byte) (string, error) {
 }
 
 func disconnectSocket(connection net.Conn) {
+	for roomId := range WEBSOCKET_ROOMS {
+		leaveRoom(roomId, connection)
+	}
+	clientId, clientIdError := getClientIdForConnection(connection)
+	if clientIdError == nil {
+		delete(WEBSOCKET_CLIENTS, clientId)
+	}
 	connection.Close()
 }
 
@@ -134,6 +141,15 @@ func extractUserFromCookie(request *http.Request) *UserStruct {
 	return getUserById(userId)
 }
 
+func getClientIdForConnection(connection net.Conn) (int64, error) {
+	for clientId, clientConnection := range WEBSOCKET_CLIENTS {
+		if clientConnection == connection {
+			return clientId, nil
+		}
+	}
+	return -1, fmt.Errorf("Not found")
+}
+
 func getUserById(id string) *UserStruct {
 	for i := range ALL_USERS {
 		if ALL_USERS[i].Id == id {
@@ -155,32 +171,42 @@ func getUserByUsername(username string) *UserStruct {
 func handleWebsocketConnection(connection net.Conn, buffer *bufio.ReadWriter) {
 	defer disconnectSocket(connection)
 	for {
-		readFrame, readError := readWebsocketFrame(buffer.Reader)
+		receivedFrame, readError := readWebsocketFrame(buffer.Reader)
 		if readError != nil {
 			return
 		}
-		messageType := readFrame[0]
+		messageType := receivedFrame[0]
 		switch messageType {
 		case 0x10: // Join room
-			roomId := int64(binary.LittleEndian.Uint64(readFrame[1:]))
+			roomId := int64(binary.LittleEndian.Uint64(receivedFrame[1:]))
 			connectionList := WEBSOCKET_ROOMS[roomId]
 			if !slices.Contains(connectionList, connection) {
 				WEBSOCKET_ROOMS[roomId] = append(connectionList, connection)
 			}
-			fmt.Println("Joined room:", roomId, connection, len(WEBSOCKET_ROOMS[roomId]))
 		case 0x20: // Leave room
-			roomId := int64(binary.LittleEndian.Uint64(readFrame[1:]))
-			connectionList := WEBSOCKET_ROOMS[roomId]
-			index := slices.Index(connectionList, connection)
-			if index >= 0 {
-				WEBSOCKET_ROOMS[roomId] = slices.Delete(connectionList, index, index+1)
+			roomId := int64(binary.LittleEndian.Uint64(receivedFrame[1:]))
+			leaveRoom(roomId, connection)
+		case 0x30: // Send message to room
+			roomId := int64(binary.LittleEndian.Uint64(receivedFrame[1:9]))
+			frameToSend := make([]byte, 17)
+			frameToSend[0] = 0x31
+			senderId, _ := getClientIdForConnection(connection)
+			binary.LittleEndian.PutUint64(frameToSend[1:9], uint64(senderId))
+			binary.LittleEndian.PutUint64(frameToSend[9:17], uint64(roomId))
+			frameToSend = append(frameToSend, receivedFrame[9:]...)
+			for _, clientConnection := range WEBSOCKET_ROOMS[roomId] {
+				writeWebsocketFrame(clientConnection, frameToSend)
 			}
-			fmt.Println("Left room:", roomId, connection, len(WEBSOCKET_ROOMS[roomId]))
-		}
-		// fmt.Printf("Empfangen: %x\n", readFrame)
-		writeError := writeWebsocketFrame(connection, readFrame)
-		if writeError != nil {
-			return
+		case 0x40: // Send message to client
+			clientId := int64(binary.LittleEndian.Uint64(receivedFrame[1:9]))
+			clientConnection := WEBSOCKET_CLIENTS[clientId]
+			if clientConnection != nil {
+				frameToSend := receivedFrame[:]
+				frameToSend[0] = 0x41
+				senderId, _ := getClientIdForConnection(connection)
+				binary.LittleEndian.PutUint64(frameToSend[1:9], uint64(senderId))
+				writeWebsocketFrame(clientConnection, frameToSend)
+			}
 		}
 	}
 }
@@ -188,6 +214,19 @@ func handleWebsocketConnection(connection net.Conn, buffer *bufio.ReadWriter) {
 func hashPassword(password string) string {
 	hash := sha256.Sum256([]byte(password))
 	return hex.EncodeToString(hash[:])
+}
+
+func leaveRoom(roomId int64, connection net.Conn) {
+	connectionList := WEBSOCKET_ROOMS[roomId]
+	index := slices.Index(connectionList, connection)
+	if index >= 0 {
+		updatedConnectionList := slices.Delete(connectionList, index, index+1)
+		if len(updatedConnectionList) < 1 {
+			delete(WEBSOCKET_ROOMS, roomId)
+		} else {
+			WEBSOCKET_ROOMS[roomId] = updatedConnectionList
+		}
+	}
 }
 
 func loadUsers() []UserStruct {
@@ -519,6 +558,7 @@ func handleConnectWebSocket(response http.ResponseWriter, request *http.Request)
 	clientIdResponseFrame := make([]byte, 9)
 	clientIdResponseFrame[0] = 0x01
 	binary.LittleEndian.PutUint64(clientIdResponseFrame[1:], uint64(NEXT_WEBSOCKET_CLIENT_ID)) // Das Casting ist nur notwendig, um die PutUint64 Funktion nutzen zu können, hat clientseitig keine Bedeutung
+	WEBSOCKET_CLIENTS[NEXT_WEBSOCKET_CLIENT_ID] = connection
 	NEXT_WEBSOCKET_CLIENT_ID = NEXT_WEBSOCKET_CLIENT_ID + 1
 	writeClientIdError := writeWebsocketFrame(connection, clientIdResponseFrame)
 	if writeClientIdError != nil {

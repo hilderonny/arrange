@@ -60,7 +60,7 @@ Messages over websockets contain one byte of type information and the rest as pa
 |First byte|Meaning|
 |-|-|
 |`0x01`|`8` bytes of assigned client ID. Sent directly after connecting|
-|`0x31`|Broadcast message from client. `8` bytes sender client ID, followed by payload|
+|`0x31`|Broadcast message from client. `8` bytes sender client ID, `8` bytes room ID, followed by payload|
 |`0x41`|Direct message from client. `8` bytes sender client ID followed by payload|
 
 ## /js/arrange.js
@@ -77,11 +77,11 @@ getPublicFile(filePath)
 postPrivateFile(filePath, fileContent)
 postPublicFile(filePath, fileContent)
 
-connectWebSocket(serverMessageCallback(type, sender, message))
+connectWebSocket(serverMessageCallback({type, senderId, roomId, clientId, message}))
 joinRoom(roomNumber)
 leaveRoom(roomNumber)
-sendMessageToClient(clientId)
-sendMessageToRoom(roomNumber)
+sendMessageToClient(clientId, textMessage)
+sendMessageToRoom(roomNumber, textMessage)
 ```
 
 ## Development
