@@ -3,7 +3,7 @@
 ## Usage
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:0.0.5
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:0.0.6
 ```
 
 ## Integration
@@ -87,9 +87,9 @@ sendMessageToRoom(roomNumber, textMessage)
 ## Development
 
 ```sh
-gh release create v0.0.5
-docker build --platform=linux/amd64,linux/arm64 -f docker/Dockerfile -t hilderonny2024/arrange:latest -t hilderonny2024/arrange:0.0.5 .
-docker scout quickview local://hilderonny2024/arrange:0.0.5
-docker push hilderonny2024/arrange:0.0.5
+gh release create v0.0.6
+docker build --platform=linux/amd64,linux/arm64 -f docker/Dockerfile -t hilderonny2024/arrange:latest -t hilderonny2024/arrange:0.0.6 .
+docker scout quickview local://hilderonny2024/arrange:0.0.6
+docker push hilderonny2024/arrange:0.0.6
 docker push hilderonny2024/arrange:latest
 ```
