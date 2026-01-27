@@ -74,7 +74,7 @@
             let myWebClientId
             await new Promise((resolve) => {
                 Arrange.connectWebSocket(async (message) => {
-                    console.log(message)
+                    console.log(message, new TextDecoder().decode(message.message))
                     if (message.type === 0x01) {
                         myWebClientId = message.clientId
                         console.log(myWebClientId)

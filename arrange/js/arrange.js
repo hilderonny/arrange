@@ -27,12 +27,12 @@ async function connectWebSocket(messageCallback) {
                 case 0x31: {
                     const senderId = dataView.getBigInt64(1, true)
                     const roomId = dataView.getBigInt64(9, true)
-                    const message = new TextDecoder().decode(arrayBuffer.slice(17))
+                    const message = arrayBuffer.slice(17)
                     await messageCallback({ type, senderId, roomId, message })
                 } break
                 case 0x41: {
                     const senderId = dataView.getBigInt64(1, true)
-                    const message = new TextDecoder().decode(arrayBuffer.slice(9))
+                    const message = arrayBuffer.slice(9)
                     await messageCallback({ type, senderId, message })
                 } break
             }
