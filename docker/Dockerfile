@@ -12,6 +12,8 @@ FROM scratch
 WORKDIR /app
 COPY --from=build /out/app /app/app
 COPY ./arrange /app/arrange
+COPY ./server.crt /app/
+COPY ./server.key /app/
 ENV GIN_MODE=release
 EXPOSE 3000
 ENTRYPOINT ["/app/app"]
