@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math/rand/v2"
 	"mime/multipart"
 	"net"
@@ -597,7 +598,12 @@ func main() {
 	http.HandleFunc("/ws", handleConnectWebSocket)
 
 	// // HTTP-Server starten, geht in Endlosschleife
+	server := &http.Server{
+		Addr:     ":3000",
+		Handler:  nil,                        // DefaultServeMux
+		ErrorLog: log.New(io.Discard, "", 0), // ← unterdrückt TLS-Handshake-Fehler
+	}
 	fmt.Println("arrange server running at port 3000")
-	http.ListenAndServe(":3000", nil)
+	server.ListenAndServeTLS("server.crt", "server.key")
 
 }

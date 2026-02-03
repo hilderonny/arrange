@@ -93,3 +93,18 @@ docker scout quickview local://hilderonny2024/arrange:0.0.6
 docker push hilderonny2024/arrange:0.0.6
 docker push hilderonny2024/arrange:latest
 ```
+
+## Zertifikat erstellt
+
+Zuerst habe ich [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) installiert und den OpenSSL Command Prompt geöffnet.
+
+```cmd
+openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
+Country Name (2 letter code) [AU]:DE
+State or Province Name (full name) [Some-State]:Thueringen
+Locality Name (eg, city) []:Erfurt
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:TLKA
+Organizational Unit Name (eg, section) []:DBE
+Common Name (e.g. server FQDN or YOUR name) []:SENECA
+Email Address []:ronny.hildebrandt@polizei.thueringen.de
+```
