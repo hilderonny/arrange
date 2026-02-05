@@ -1,5 +1,7 @@
 # arrange
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hilderonny/arrange)
+
 ## Usage
 
 ```sh
