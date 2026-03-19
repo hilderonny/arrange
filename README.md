@@ -1,11 +1,33 @@
 # arrange
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hilderonny/arrange)
-
-## Usage
+## Entwicklung
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:0.0.7
+gh repo clone arrange
+cd arrange
+npm install
+```
+
+In Visual Studio kann man mit **F5** einen lokalen HTPS-Server an Port `3000` starten.
+
+Das Docker Image kann so gebaut, deployed und getestet werden:
+
+```sh
+# Bauen
+docker build -t hilderonny2024/arrange:2.0.0 .
+
+# testen
+docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.0.0
+
+# Auf Docker Hub deployen
+docker login
+docker push hilderonny2024/arrange:2.0.0
+```
+
+## Benutzung mit Docker
+
+```sh
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.0.0
 ```
 
 ## Integration

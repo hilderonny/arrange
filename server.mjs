@@ -1,0 +1,271 @@
+import express from 'express'
+import cookieSession from 'cookie-session'
+import crypto from 'node:crypto'
+import fs from 'fs'
+import https from 'https'
+import path from 'node:path'
+import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import multer from 'multer'
+import { WebSocketServer } from 'ws'
+
+
+/********** Konstanten und globale Variable **********/
+
+
+let ALLE_BENUTZER = []
+let NAECHSTE_WEBSOCKET_ID = 0
+
+const BENUTZER_JSON_PFAD = './data/users/users.json' // Pfad zur JSON-Datei mit Benutzerinfos
+const DATEIEN_PFAD = './data/files' // Pfad zu den Dateien
+const PORT = process.env.PORT
+const TOKEN_SECRET = process.env.TOKEN_SECRET || 'hubbelebubbele'
+const UPLOAD_HANDLER = multer()
+const WEBSOCKETS = {}
+const WEBSOCKET_RAEUME = {}
+
+/********** Hilfsfunktionen **********/
+
+function benutzerFuerBenutzername(benutzername) {
+    return ALLE_BENUTZER.find(benutzer => benutzer.username === benutzername)
+}
+
+function erstelleBenutzersitzung(request, benutzerId) {
+    request.session.userId = benutzerId
+}
+
+function ladeBenutzer() {
+    if (!fs.existsSync(BENUTZER_JSON_PFAD)) {
+        fs.mkdirSync(path.dirname(BENUTZER_JSON_PFAD), { recursive: true })
+        ALLE_BENUTZER = []
+        speichereBenutzer()
+    } else {
+        ALLE_BENUTZER = JSON.parse(fs.readFileSync(BENUTZER_JSON_PFAD))
+    }
+}
+
+function speichereBenutzer() {
+    fs.writeFileSync(BENUTZER_JSON_PFAD, JSON.stringify(ALLE_BENUTZER, null, '\t'))
+}
+
+
+/********** API Funktionen **********/
+
+
+// Pfad löschen
+async function behandleDeleteDateipfad(request, response) {
+    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
+    try {
+        await rm(absoluterPfad, { recursive: true })
+        response.sendStatus(200)
+    } catch (e) {
+        response.sendStatus(404)
+    }
+}
+
+// Automatische Anmeldung anhand des Cookies
+function behandleGetAutoLogin(request, response) {
+    if (request.session && request.session.userId) {
+        response.sendStatus(200)
+    } else {
+        response.sendStatus(401)
+    }
+}
+
+// Datei oder Verzeichnisliste liefern
+async function behandleGetDateipfad(request, response) {
+    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
+    if (!fs.existsSync(absoluterPfad)) {
+        return response.sendStatus(404)
+    }
+    const pfadEigenschaften = await stat(absoluterPfad)
+    if (pfadEigenschaften.isDirectory()) {
+        const verzeichniseintraege = await readdir(absoluterPfad, { withFileTypes: true })
+        const verzeichnisliste = verzeichniseintraege.map(eintrag => { return {
+            name: eintrag.name,
+            type: eintrag.isDirectory() ? 'dir' : 'file'
+        }})
+        response.json(verzeichnisliste)
+    } else if (pfadEigenschaften.isFile()) {
+        response.sendFile(absoluterPfad)
+    } else {
+        return response.sendStatus(400)
+    }
+}
+
+// Benutzer abmelden
+function behandleGetLogout(request, response) {
+    if (request.session) {
+        delete request.session.userId
+    }
+    response.sendStatus(200)
+} 
+
+// Datei speichern
+async function behandlePostDateipfad(request, response) {
+    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
+    await mkdir(path.dirname(absoluterPfad), { recursive: true })
+    try {
+        await writeFile(absoluterPfad, request.files[0].buffer)
+        response.sendStatus(200)
+    } catch (fehlermeldung) {
+        response.status(400).send(fehlermeldung)
+    }
+}
+
+// Benutzer anmelden
+function behandlePostLogin(request, response) {
+    const benutzername = request.body.username
+    const passwort = request.body.password
+    if (!benutzername || !passwort) return response.sendStatus(400)
+    const benutzer = benutzerFuerBenutzername(benutzername)
+    if (!benutzer) return response.sendStatus(401)
+    const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
+    if (benutzer.password !== passwortHash) return response.sendStatus(401)
+    erstelleBenutzersitzung(request, benutzer.id)
+    response.json({
+        id: benutzer.id,
+        username: benutzer.username,
+    })
+} 
+
+// Benutzer registrieren
+function behandlePostRegister(request, response) {
+    const benutzername = request.body.username
+    const passwort = request.body.password
+    if (!benutzername || !passwort) return response.sendStatus(400)
+    const existierenderBenutzer = benutzerFuerBenutzername(benutzername)
+    if (existierenderBenutzer) return response.sendStatus(409)
+    const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
+    const neuerBenutzer = {
+        id: Date.now().toString() + Math.floor(Math.random() * 1000000),
+        password: passwortHash,
+        username: benutzername,
+    }
+    ALLE_BENUTZER.push(neuerBenutzer)
+    speichereBenutzer()
+    erstelleBenutzersitzung(request, neuerBenutzer.id)
+    response.json({
+        id: neuerBenutzer.id,
+        username: neuerBenutzer.username,
+    })
+}
+
+// Verzeichnis erstellen
+async function behandlePutDateipfad(request, response) {
+    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
+    try {
+        await mkdir(absoluterPfad, { recursive: true })
+        response.sendStatus(200)
+    } catch (fehlermeldung) {
+        response.status(400).send(fehlermeldung)
+    }
+}
+
+// Websocket Verbindung wurde aufgebaut
+function behandleWebSocketVerbindung(webSocket) {
+    webSocket.on('message', nachricht => behandleWebSocketNachricht(webSocket, nachricht))
+    // Websocket-ID an Client senden
+    const webSocketId = BigInt(NAECHSTE_WEBSOCKET_ID++)
+    webSocket.id = webSocketId // Für Wiedererkennung
+    WEBSOCKETS[webSocketId] = webSocket
+    webSocket.on('close', () => { delete WEBSOCKETS[webSocketId] })
+    const arrayBuffer = new ArrayBuffer(9)
+    const dataView = new DataView(arrayBuffer)
+    dataView.setInt8(0, 0x01)
+    dataView.setBigInt64(1, webSocketId, true)
+    webSocket.send(arrayBuffer)
+}
+
+// Websocket Nachricht empfangen
+async function behandleWebSocketNachricht(webSocket, nachricht) {
+    const type = nachricht[0]
+    switch (type) {
+        case 0x10: { // Raum betreten
+            const raumnummer = nachricht.readBigUInt64LE(1)
+            if (!WEBSOCKET_RAEUME[raumnummer]) {
+                WEBSOCKET_RAEUME[raumnummer] = []
+            }
+            WEBSOCKET_RAEUME[raumnummer].push(webSocket)
+        } break
+        case 0x20: { // Raum verlassen
+            const raumnummer = nachricht.readBigUInt64LE(1)
+            if (WEBSOCKET_RAEUME[raumnummer]) {
+                WEBSOCKET_RAEUME[raumnummer].splice(WEBSOCKET_RAEUME[raumnummer].indexOf(webSocket), 1)
+            }
+        } break
+        case 0x30: { // Nachricht an Raum senden
+            const raumnummer = nachricht.readBigUInt64LE(1)
+            const raum = WEBSOCKET_RAEUME[raumnummer]
+            if (raum?.length) {
+                const nachrichteninhalt = nachricht.slice(9)
+                const ausgehendeNachricht = Buffer.alloc(17 + nachrichteninhalt.length)
+                ausgehendeNachricht[0] = 0x31
+                ausgehendeNachricht.writeBigUint64LE(webSocket.id, 1)
+                ausgehendeNachricht.writeBigUint64LE(raumnummer, 9)
+                nachrichteninhalt.copy(ausgehendeNachricht, 17)
+                for (const zielWebSocket of raum) {
+                    zielWebSocket.send(ausgehendeNachricht)
+                }
+            }
+        } break
+        case 0x40: { // Nachricht an anderen Client senden
+            const zielWebSocket = WEBSOCKETS[nachricht.readBigUInt64LE(1)]
+            if (zielWebSocket) {
+                const nachrichteninhalt = nachricht.slice(9)
+                const ausgehendeNachricht = Buffer.alloc(9 + nachrichteninhalt.length)
+                ausgehendeNachricht[0] = 0x41
+                ausgehendeNachricht.writeBigUint64LE(webSocket.id, 1)
+                nachrichteninhalt.copy(ausgehendeNachricht, 9)
+                zielWebSocket.send(ausgehendeNachricht)
+            }
+        } break
+    }
+}
+
+/********** Server **********/
+
+
+// Benutzerdatenbank laden
+ladeBenutzer()
+
+const expressAnwendung = express()
+
+// Benutzersessions
+expressAnwendung.use(cookieSession({
+    name: 'session',
+    secret: TOKEN_SECRET,
+}))
+
+// JSON in POST Daten aktivieren
+expressAnwendung.use(express.json())
+
+// Statische HTML Seiten ausliefern, wird reingemountet
+expressAnwendung.use(express.static('./html'))
+
+// Arrange-Client-Skripte und Seiten ausliefern
+expressAnwendung.use('/arrange', express.static('./arrange'))
+
+// API-Endpunkte
+expressAnwendung.get('/api/autologin', behandleGetAutoLogin)
+expressAnwendung.post('/api/login', behandlePostLogin)
+expressAnwendung.get('/api/logout', behandleGetLogout)
+expressAnwendung.post('/api/register', behandlePostRegister)
+expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
+expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
+expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
+expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
+
+// Server vorbereiten
+const httpsServer = https.createServer({
+    key: fs.readFileSync('./server.key'),
+    cert: fs.readFileSync('./server.crt'),
+}, expressAnwendung)
+
+// Websocketverbindungen behandeln
+const webSocketServer = new WebSocketServer({ server: httpsServer })
+webSocketServer.on('connection', behandleWebSocketVerbindung)
+
+// HTTP-Server starten, geht in Endlosschleife
+httpsServer.listen(PORT, () => {
+    console.log('Arrange läuft an PORT ' + PORT)
+})
