@@ -2,11 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
-            "type": "go",
+            "name": "NodeJS",
+            "env": {
+                "PORT": "3000",
+                "TOKEN_SECRET": "hubbelebubbele"
+            },
+            "program": "${workspaceFolder}/server.mjs",
+            "runtimeExecutable": "node",
             "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}"
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
         }
     ]
 }
