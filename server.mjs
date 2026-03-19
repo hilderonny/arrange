@@ -7,6 +7,7 @@ import path from 'node:path'
 import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import multer from 'multer'
 import { WebSocketServer } from 'ws'
+import sqlite from 'node:sqlite'
 
 
 /********** Konstanten und globale Variable **********/
@@ -22,6 +23,8 @@ const TOKEN_SECRET = process.env.TOKEN_SECRET || 'hubbelebubbele'
 const UPLOAD_HANDLER = multer()
 const WEBSOCKETS = {}
 const WEBSOCKET_RAEUME = {}
+const DATENBANKEN = {}
+const DATENBANKEN_PFAD = './data/databases'
 
 /********** Hilfsfunktionen **********/
 
@@ -110,6 +113,24 @@ async function behandlePostDateipfad(request, response) {
     } catch (fehlermeldung) {
         response.status(400).send(fehlermeldung)
     }
+}
+
+// SQLite Datenbank bearbeiten oder abfragen
+async function behandlePostDatenbankabfrage(request, response) {
+    const datenbankname = request.params.datenbankname
+    // Datenbank bei Bedarf laden
+    let datenbank = DATENBANKEN[datenbankname]
+    if (!datenbank) {
+        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
+        await mkdir(path.dirname(absoluterPfad), { recursive: true })
+        datenbank = new sqlite.DatabaseSync(absoluterPfad)
+        DATENBANKEN[datenbankname] = datenbank
+    }
+    // Abfrage durchführen
+    const abfrage = datenbank.prepare(request.body.query)
+    const ergebnis = abfrage.all()
+    // Ergebnisse als JSON zurück geben
+    response.json(ergebnis)
 }
 
 // Benutzer anmelden
@@ -254,6 +275,7 @@ expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
 expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
 expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
+expressAnwendung.post('/api/database/:datenbankname', behandlePostDatenbankabfrage)
 
 // Server vorbereiten
 const httpsServer = https.createServer({

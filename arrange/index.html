@@ -92,6 +92,13 @@
             await Arrange.joinRoom(3315n)
             await Arrange.sendMessageToRoom(3315n, "Hallo anderer Raum")
 
+            // Datenbank
+
+            console.log(await Arrange.queryDatabase('Testdatenbank', `CREATE TABLE IF NOT EXISTS Testtabelle (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT);`))
+            console.log(await Arrange.queryDatabase('Testdatenbank', `INSERT INTO Testtabelle (text) VALUES ('Hallo Datenbank!');`))
+            console.log(await Arrange.queryDatabase('Testdatenbank', `SELECT * FROM Testtabelle;`))
+            console.log(await Arrange.queryDatabase('Testdatenbank', `DELETE FROM Testtabelle WHERE text = 'Hallo Datenbank!';`))
+            console.log(await Arrange.queryDatabase('Testdatenbank', `DROP TABLE Testtabelle;`))
 
         </script>
 
