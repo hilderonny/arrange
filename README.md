@@ -14,7 +14,7 @@ Das Docker Image kann so gebaut, deployed und getestet werden:
 
 ```sh
 # Bauen
-docker build -t hilderonny2024/arrange:2.2.0 .
+docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.2.0 .
 
 # Testen
 docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.2.0
