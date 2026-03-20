@@ -65,7 +65,11 @@ GET /api/files/{userid}/{filepath...}
 POST /api/files/{userid}/{filepath...}
 PUT /api/files/{userid}/{path...}
 
-POST /api/database/{datenbankname}
+PATCH /api/datenbank/{datenbankname}
+PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
+POST /api/datenbank/{datenbankname}/{tabellenname}
+DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
+POST /api/datenbank/{datenbankname}
 ```
 
 ## Websockets
@@ -109,7 +113,11 @@ leaveRoom(roomNumber)
 sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
-queryDatabase(databaseName, sqlQuery)
+aktualisiereDatenbankschema(datenbankname, schema)
+aktualisiereDatensatz(datenbankname, tabellenname, datensatzId, felder)
+erstelleDatensatz(datenbankname, tabellenname, datensatz)
+loescheDatensatz(datenbankname, tabellenname, datensatzId)
+macheDatenbankabfrage(datenbankname, abfrage)
 ```
 
 ## Zertifikat erstellt

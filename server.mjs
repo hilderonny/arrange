@@ -110,7 +110,7 @@ async function behandleAktualisiereDatensatz(request, response) {
     response.sendStatus(200)
 }
 
-// Informationen aus Datenbank holen. GET-Request mit SQL-Abfrage IM BODY!
+// Informationen aus Datenbank holen.
 // Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
 async function behandleDatenbankabfrage(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
@@ -137,8 +137,8 @@ async function behandleDeleteDateipfad(request, response) {
 
 async function behandleErstelleDatensatz(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const neueId = Math.floor((Date.now() + Math.random()) * 1000).toString()
     const zuErstellenderDatensatz = request.body.datensatz
+    const neueId = zuErstellenderDatensatz.id || Math.floor((Date.now() + Math.random()) * 1000).toString() // Kann auch vorgegeben werden
     zuErstellenderDatensatz.id = neueId
     const abfragezeichenkette = [
         'INSERT INTO ',

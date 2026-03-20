@@ -107,11 +107,16 @@
                 TabelleOhneIrgendwas: {},
             }
 
+            // Schema aktualisieren
             await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
-            const neuerDatensatz = await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Hallo Welt`, nix: undefined })
+            // Datensatz erstellen
+            const neuerDatensatz = await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { id: 'EIGENE_ID', nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Hallo Welt`, nix: undefined })
             console.log(neuerDatensatz)
+            // Datensatz aktualisieren
             await Arrange.aktualisiereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id, { nummer: 987, text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            // SQL-Abfrage machen
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
+            // Datensatz löschen
             await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id)
 
         </script>

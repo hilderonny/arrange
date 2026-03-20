@@ -187,23 +187,6 @@ async function postPublicFile(filePath, fileContent) {
     return await postFile(url, fileContent)
 }
 
-async function queryDatabase(databaseName, sqlQuery) {
-    const url = new URL(`/api/database/${databaseName}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ query: sqlQuery })
-    })
-    if (response.ok) {
-        return await response.json()
-    } else {
-        return undefined
-    }
-}
-
 async function sendMessageToClient(clientId, textMessage) {
     const textBytes = new TextEncoder().encode(textMessage)
     const arrayBuffer = new ArrayBuffer(9 + textBytes.length)
@@ -279,7 +262,6 @@ export {
     macheDatenbankabfrage,
     postPrivateFile,
     postPublicFile,
-    queryDatabase,
     sendMessageToClient,
     sendMessageToRoom,
     uploadPrivateFile,
