@@ -46,6 +46,17 @@ function ladeBenutzer() {
     }
 }
 
+async function ladeDatenbank(datenbankname) {
+    let datenbank = DATENBANKEN[datenbankname]
+    if (!datenbank) {
+        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
+        await mkdir(path.dirname(absoluterPfad), { recursive: true })
+        datenbank = new sqlite.DatabaseSync(absoluterPfad)
+        DATENBANKEN[datenbankname] = datenbank
+    }
+    return datenbank
+}
+
 function speichereBenutzer() {
     fs.writeFileSync(BENUTZER_JSON_PFAD, JSON.stringify(ALLE_BENUTZER, null, '\t'))
 }
@@ -53,6 +64,19 @@ function speichereBenutzer() {
 
 /********** API Funktionen **********/
 
+// Informationen aus Datenbank holen. GET-Request mit SQL-Abfrage IM BODY!
+// Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
+async function behandleDatenbankabfrage(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    // Abfrage durchführen
+    if (!request.body.abfrage || !request.body.abfrage?.toLowerCase().startsWith('select') || request.body.abfrage?.contains(';')) {
+        return response.sendStatus(400)
+    }
+    const abfrage = datenbank.prepare(request.body.abfrage)
+    const ergebnis = abfrage.all()
+    // Ergebnisse als JSON zurück geben
+    response.json(ergebnis)
+}
 
 // Pfad löschen
 async function behandleDeleteDateipfad(request, response) {
@@ -63,6 +87,27 @@ async function behandleDeleteDateipfad(request, response) {
     } catch (e) {
         response.sendStatus(404)
     }
+}
+
+async function behandleErstelleDatensatz(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const neueId = Date.now().toString() + Math.floor(Math.random() * 1000000)
+    const zuErstellenderDatensatz = request.body.datensatz
+    zuErstellenderDatensatz.id = neueId
+    const abfragezeichenkette = [
+        'INSERT INTO ',
+        request.params.tabellenname,
+        ' (',
+        Object.keys(zuErstellenderDatensatz).join(','),
+        ') VALUES ',
+        // TODO: INTEGER und TEXT auseinander halten
+        Object.values(zuErstellenderDatensatz).map(wert => `'${wert.replaceAll(`'`, `''`)}'`).join(','),
+        ';'
+    ].join('')
+    const abfrage = datenbank.prepare(`INSERT INTO ${request.params.tabellenname} (id) VALUES '${neueId}';`)
+    abfrage.run()
+    response.sendStatus(200)
+
 }
 
 // Automatische Anmeldung anhand des Cookies
@@ -101,7 +146,15 @@ function behandleGetLogout(request, response) {
         delete request.session.userId
     }
     response.sendStatus(200)
-} 
+}
+
+// Datensatz löschen
+async function behandleLoescheDatensatz(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE id = '${request.params.datensatzId}';`)
+    abfrage.run()
+    response.sendStatus(200)
+}
 
 // Datei speichern
 async function behandlePostDateipfad(request, response) {
@@ -113,24 +166,6 @@ async function behandlePostDateipfad(request, response) {
     } catch (fehlermeldung) {
         response.status(400).send(fehlermeldung)
     }
-}
-
-// SQLite Datenbank bearbeiten oder abfragen
-async function behandlePostDatenbankabfrage(request, response) {
-    const datenbankname = request.params.datenbankname
-    // Datenbank bei Bedarf laden
-    let datenbank = DATENBANKEN[datenbankname]
-    if (!datenbank) {
-        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
-        await mkdir(path.dirname(absoluterPfad), { recursive: true })
-        datenbank = new sqlite.DatabaseSync(absoluterPfad)
-        DATENBANKEN[datenbankname] = datenbank
-    }
-    // Abfrage durchführen
-    const abfrage = datenbank.prepare(request.body.query)
-    const ergebnis = abfrage.all()
-    // Ergebnisse als JSON zurück geben
-    response.json(ergebnis)
 }
 
 // Benutzer anmelden
@@ -275,7 +310,11 @@ expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
 expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
 expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
-expressAnwendung.post('/api/database/:datenbankname', behandlePostDatenbankabfrage)
+expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
+expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleAktualisiereDatensatz)
+expressAnwendung.post('/api/datenbank/:datenbankname/:tabellenname', behandleErstelleDatensatz)
+expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
+expressAnwendung.get('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 
 // Server vorbereiten
 const httpsServer = https.createServer({
