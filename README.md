@@ -14,20 +14,20 @@ Das Docker Image kann so gebaut, deployed und getestet werden:
 
 ```sh
 # Bauen
-docker build -t hilderonny2024/arrange:2.1.0 .
+docker build -t hilderonny2024/arrange:2.2.0 .
 
 # Testen
-docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.1.0
+docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.2.0
 
 # Auf Docker Hub deployen
 docker login
-docker push hilderonny2024/arrange:2.1.0
+docker push hilderonny2024/arrange:2.2.0
 ```
 
 ## Benutzung mit Docker
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.1.0
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.2.0
 ```
 
 ## Integration
@@ -65,7 +65,11 @@ GET /api/files/{userid}/{filepath...}
 POST /api/files/{userid}/{filepath...}
 PUT /api/files/{userid}/{path...}
 
-POST /api/database/{datenbankname}
+PATCH /api/datenbank/{datenbankname}
+PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
+POST /api/datenbank/{datenbankname}/{tabellenname}
+DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
+POST /api/datenbank/{datenbankname}
 ```
 
 ## Websockets
@@ -109,7 +113,11 @@ leaveRoom(roomNumber)
 sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
-queryDatabase(databaseName, sqlQuery)
+aktualisiereDatenbankschema(datenbankname, schema)
+aktualisiereDatensatz(datenbankname, tabellenname, datensatzId, felder)
+erstelleDatensatz(datenbankname, tabellenname, datensatz)
+loescheDatensatz(datenbankname, tabellenname, datensatzId)
+macheDatenbankabfrage(datenbankname, abfrage)
 ```
 
 ## Zertifikat erstellt

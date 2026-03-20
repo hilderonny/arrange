@@ -93,12 +93,31 @@
             await Arrange.sendMessageToRoom(3315n, "Hallo anderer Raum")
 
             // Datenbank
+            const datenbankschema = {
+                Testtabelle: {
+                    text: 'TEXT',
+                    nummer: 'NUMBER',
+                    wahrheit: 'NUMBER',
+                    anderewahrheit: 'NUMBER',
+                    nix: 'TEXT',
+                },
+                AndereTabelle: {
+                    nummer: 'NUMBER',
+                },
+                TabelleOhneIrgendwas: {},
+            }
 
-            console.log(await Arrange.queryDatabase('Testdatenbank', `CREATE TABLE IF NOT EXISTS Testtabelle (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT);`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `INSERT INTO Testtabelle (text) VALUES ('Hallo Datenbank!');`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `SELECT * FROM Testtabelle;`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `DELETE FROM Testtabelle WHERE text = 'Hallo Datenbank!';`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `DROP TABLE Testtabelle;`))
+            // Schema aktualisieren
+            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
+            // Datensatz erstellen
+            const neuerDatensatz = await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { id: 'EIGENE_ID', nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Hallo Welt`, nix: undefined })
+            console.log(neuerDatensatz)
+            // Datensatz aktualisieren
+            await Arrange.aktualisiereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id, { nummer: 987, text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            // SQL-Abfrage machen
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
+            // Datensatz löschen
+            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id)
 
         </script>
 

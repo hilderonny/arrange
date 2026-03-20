@@ -1,5 +1,29 @@
 let WEB_SOCKET = undefined;
 
+async function aktualisiereDatenbankschema(datenbankname, schema) {
+    const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ schema: schema })
+    })
+    return response.ok
+}
+
+async function aktualisiereDatensatz(datenbankname, tabellenname, datensatzId, felder) {
+    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ felder: felder })
+    })
+    return response.ok
+}
+
 async function autoLogin() {
     const autoLoginResponse = await fetch('/api/autologin')
     if (autoLoginResponse.status !== 200) {
@@ -66,6 +90,23 @@ async function deletePublicPath(path) {
     return await fetch(url, { method: 'DELETE' })
 }
 
+async function erstelleDatensatz(datenbankname, tabellenname, datensatz) {
+    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ datensatz: datensatz })
+    })
+    if (response.ok) {
+        return await response.json()
+    } else {
+        return undefined
+    }
+}
+
 async function getPrivateFile(filePath) {
     const userid = localStorage.getItem('userid')
     const filteredFilePath = filePath.split('/').filter(e => e).join('/')
@@ -100,6 +141,29 @@ async function logout() {
     location.reload()
 }
 
+async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
+    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
+    const response = await fetch(url, { method: 'DELETE' })
+    return response.ok
+}
+
+async function macheDatenbankabfrage(datenbankname, abfrage) {
+    const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ abfrage: abfrage })
+    })
+    if (response.ok) {
+        return await response.json()
+    } else {
+        return undefined
+    }
+}
+
 async function postFile(url, fileContent) {
     const formData = new FormData()
     formData.append('data', new Blob([fileContent]))
@@ -121,23 +185,6 @@ async function postPublicFile(filePath, fileContent) {
     const filteredFilePath = filePath.split('/').filter(e => e).join('/')
     const url = new URL(`/api/files/public/${filteredFilePath}`, import.meta.url).href
     return await postFile(url, fileContent)
-}
-
-async function queryDatabase(databaseName, sqlQuery) {
-    const url = new URL(`/api/database/${databaseName}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ query: sqlQuery })
-    })
-    if (response.ok) {
-        return await response.json()
-    } else {
-        return undefined
-    }
 }
 
 async function sendMessageToClient(clientId, textMessage) {
@@ -198,21 +245,25 @@ async function uploadPublicFile(filePath, file, progressCallback) {
 await autoLogin()
 
 export {
+    aktualisiereDatenbankschema,
+    aktualisiereDatensatz,
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
     deletePrivatePath, 
     deletePublicPath, 
+    erstelleDatensatz,
     getPrivateFile,
     getPublicFile,
     joinRoom,
     leaveRoom,
+    loescheDatensatz,
     logout,
+    macheDatenbankabfrage,
     postPrivateFile,
     postPublicFile,
-    queryDatabase,
     sendMessageToClient,
     sendMessageToRoom,
     uploadPrivateFile,
-    uploadPublicFile
+    uploadPublicFile,
 }

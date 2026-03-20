@@ -46,6 +46,17 @@ function ladeBenutzer() {
     }
 }
 
+async function ladeDatenbank(datenbankname) {
+    let datenbank = DATENBANKEN[datenbankname]
+    if (!datenbank) {
+        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
+        await mkdir(path.dirname(absoluterPfad), { recursive: true })
+        datenbank = new sqlite.DatabaseSync(absoluterPfad)
+        DATENBANKEN[datenbankname] = datenbank
+    }
+    return datenbank
+}
+
 function speichereBenutzer() {
     fs.writeFileSync(BENUTZER_JSON_PFAD, JSON.stringify(ALLE_BENUTZER, null, '\t'))
 }
@@ -53,6 +64,65 @@ function speichereBenutzer() {
 
 /********** API Funktionen **********/
 
+async function behandleAktualisiereDatenbankschema(request, response) {
+    if (!request.body.schema) {
+        return response.sendStatus(400)
+    }
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
+        // Tabelle bei Bedarf anlegen, id-Spalte wird immer generiert
+        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (id TEXT);`)
+        for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
+            // Spalte nur erstellen, wenn sie noch nicht existiert
+            if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
+                datenbank.exec(`ALTER TABLE ${tabellenname} ADD COLUMN ${spaltenname} ${spaltendefinition};`)
+            }
+        }
+    }
+    response.sendStatus(200)
+}
+
+async function behandleAktualisiereDatensatz(request, response) {
+    if (!request.body.felder) {
+        return response.sendStatus(400)
+    }
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const abfragezeichenkette = [
+        'UPDATE ',
+        request.params.tabellenname,
+        ' SET ',
+        Object.entries(request.body.felder).map(([ feldname, feldwert ]) => {
+            let zeichenkette = feldname + '='
+            switch (typeof(feldwert)) {
+                case 'undefined': zeichenkette += 'NULL'; break
+                case 'boolean': zeichenkette += feldwert ? '1' : '0'; break
+                case 'number': zeichenkette += feldwert; break
+                default: zeichenkette += `'${('' + feldwert).toString().replaceAll(`'`, `''`)}'`; break
+            }
+            return zeichenkette
+        }).join(', '),
+        ` WHERE id='`,
+        request.params.datensatzId,
+        `';`
+    ].join('')
+    const abfrage = datenbank.prepare(abfragezeichenkette)
+    abfrage.run()
+    response.sendStatus(200)
+}
+
+// Informationen aus Datenbank holen.
+// Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
+async function behandleDatenbankabfrage(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    // Abfrage durchführen
+    const auszufuehrendeAbfrage = request.body.abfrage
+    if (!auszufuehrendeAbfrage || !auszufuehrendeAbfrage.toLowerCase().startsWith('select') || auszufuehrendeAbfrage.includes(';')) {
+        return response.sendStatus(400)
+    }
+    const ergebnis = datenbank.prepare(auszufuehrendeAbfrage).all()
+    // Ergebnisse als JSON zurück geben
+    response.json(ergebnis)
+}
 
 // Pfad löschen
 async function behandleDeleteDateipfad(request, response) {
@@ -63,6 +133,32 @@ async function behandleDeleteDateipfad(request, response) {
     } catch (e) {
         response.sendStatus(404)
     }
+}
+
+async function behandleErstelleDatensatz(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const zuErstellenderDatensatz = request.body.datensatz
+    const neueId = zuErstellenderDatensatz.id || Math.floor((Date.now() + Math.random()) * 1000).toString() // Kann auch vorgegeben werden
+    zuErstellenderDatensatz.id = neueId
+    const abfragezeichenkette = [
+        'INSERT INTO ',
+        request.params.tabellenname,
+        ' (',
+        Object.keys(zuErstellenderDatensatz).join(','),
+        ') VALUES (',
+        Object.values(zuErstellenderDatensatz).map(wert => {
+            switch (typeof(wert)) {
+                case 'undefined': return 'NULL'
+                case 'boolean': return wert ? '1' : '0'
+                case 'number': return wert
+                default: return `'${('' + wert).toString().replaceAll(`'`, `''`)}'`
+            }
+        }).join(','),
+        ');'
+    ].join('')
+    const abfrage = datenbank.prepare(abfragezeichenkette)
+    abfrage.run()
+    response.json(zuErstellenderDatensatz)
 }
 
 // Automatische Anmeldung anhand des Cookies
@@ -101,7 +197,15 @@ function behandleGetLogout(request, response) {
         delete request.session.userId
     }
     response.sendStatus(200)
-} 
+}
+
+// Datensatz löschen
+async function behandleLoescheDatensatz(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE id = '${request.params.datensatzId}';`)
+    abfrage.run()
+    response.sendStatus(200)
+}
 
 // Datei speichern
 async function behandlePostDateipfad(request, response) {
@@ -113,24 +217,6 @@ async function behandlePostDateipfad(request, response) {
     } catch (fehlermeldung) {
         response.status(400).send(fehlermeldung)
     }
-}
-
-// SQLite Datenbank bearbeiten oder abfragen
-async function behandlePostDatenbankabfrage(request, response) {
-    const datenbankname = request.params.datenbankname
-    // Datenbank bei Bedarf laden
-    let datenbank = DATENBANKEN[datenbankname]
-    if (!datenbank) {
-        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
-        await mkdir(path.dirname(absoluterPfad), { recursive: true })
-        datenbank = new sqlite.DatabaseSync(absoluterPfad)
-        DATENBANKEN[datenbankname] = datenbank
-    }
-    // Abfrage durchführen
-    const abfrage = datenbank.prepare(request.body.query)
-    const ergebnis = abfrage.all()
-    // Ergebnisse als JSON zurück geben
-    response.json(ergebnis)
 }
 
 // Benutzer anmelden
@@ -275,7 +361,11 @@ expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
 expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
 expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
-expressAnwendung.post('/api/database/:datenbankname', behandlePostDatenbankabfrage)
+expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
+expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleAktualisiereDatensatz)
+expressAnwendung.post('/api/datenbank/:datenbankname/:tabellenname', behandleErstelleDatensatz)
+expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
+expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 
 // Server vorbereiten
 const httpsServer = https.createServer({
