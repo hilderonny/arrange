@@ -3,7 +3,7 @@ let WEB_SOCKET = undefined;
 async function aktualisiereDatenbankschema(datenbankname, schema) {
     const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
     const response = await fetch(url, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -93,7 +93,7 @@ async function deletePublicPath(path) {
 async function erstelleDatensatz(datenbankname, tabellenname, datensatz) {
     const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}`, import.meta.url).href
     const response = await fetch(url, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

@@ -93,12 +93,28 @@
             await Arrange.sendMessageToRoom(3315n, "Hallo anderer Raum")
 
             // Datenbank
+            const datenbankschema = {
+                Testtabelle: {
+                    id: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                    text: 'TEXT',
+                    nummer: 'NUMBER',
+                    wahrheit: 'NUMBER',
+                    anderewahrheit: 'NUMBER',
+                    nix: 'TEXT',
+                },
+                AndereTabelle: {
+                    id: 'TEXT',
+                    nummer: 'NUMBER',
+                },
+                TabelleOhneId: {},
+            }
 
-            console.log(await Arrange.queryDatabase('Testdatenbank', `CREATE TABLE IF NOT EXISTS Testtabelle (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT);`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `INSERT INTO Testtabelle (text) VALUES ('Hallo Datenbank!');`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `SELECT * FROM Testtabelle;`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `DELETE FROM Testtabelle WHERE text = 'Hallo Datenbank!';`))
-            console.log(await Arrange.queryDatabase('Testdatenbank', `DROP TABLE Testtabelle;`))
+            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
+            console.log(await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Huhu, 'Du' da!`, nix: undefined }))
+
+            // console.log(await Arrange.queryDatabase('Testdatenbank', `SELECT * FROM Testtabelle;`))
+            // UPDATE
+            // console.log(await Arrange.queryDatabase('Testdatenbank', `DELETE FROM Testtabelle WHERE text = 'Hallo Datenbank!';`))
 
         </script>
 
