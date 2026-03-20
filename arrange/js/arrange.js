@@ -15,7 +15,7 @@ async function aktualisiereDatenbankschema(datenbankname, schema) {
 async function aktualisiereDatensatz(datenbankname, tabellenname, datensatzId, felder) {
     const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -150,7 +150,7 @@ async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
 async function macheDatenbankabfrage(datenbankname, abfrage) {
     const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
     const response = await fetch(url, {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

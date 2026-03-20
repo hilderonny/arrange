@@ -95,7 +95,6 @@
             // Datenbank
             const datenbankschema = {
                 Testtabelle: {
-                    id: 'INTEGER PRIMARY KEY AUTOINCREMENT',
                     text: 'TEXT',
                     nummer: 'NUMBER',
                     wahrheit: 'NUMBER',
@@ -103,18 +102,17 @@
                     nix: 'TEXT',
                 },
                 AndereTabelle: {
-                    id: 'TEXT',
                     nummer: 'NUMBER',
                 },
-                TabelleOhneId: {},
+                TabelleOhneIrgendwas: {},
             }
 
             await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
-            console.log(await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Huhu, 'Du' da!`, nix: undefined }))
-
-            // console.log(await Arrange.queryDatabase('Testdatenbank', `SELECT * FROM Testtabelle;`))
-            // UPDATE
-            // console.log(await Arrange.queryDatabase('Testdatenbank', `DELETE FROM Testtabelle WHERE text = 'Hallo Datenbank!';`))
+            const neuerDatensatz = await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Hallo Welt`, nix: undefined })
+            console.log(neuerDatensatz)
+            await Arrange.aktualisiereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id, { nummer: 987, text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
+            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id)
 
         </script>
 

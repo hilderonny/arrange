@@ -70,9 +70,8 @@ async function behandleAktualisiereDatenbankschema(request, response) {
     }
     const datenbank = await ladeDatenbank(request.params.datenbankname)
     for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
-        // Tabelle bei bedarf anlegen
-        const idSpalte = tabellendefinition.id ? 'id ' + tabellendefinition.id : 'id INTEGER PRIMARY KEY AUTOINCREMENT'
-        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (${idSpalte});`)
+        // Tabelle bei Bedarf anlegen, id-Spalte wird immer generiert
+        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (id TEXT);`)
         for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
             // Spalte nur erstellen, wenn sie noch nicht existiert
             if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
@@ -83,16 +82,44 @@ async function behandleAktualisiereDatenbankschema(request, response) {
     response.sendStatus(200)
 }
 
+async function behandleAktualisiereDatensatz(request, response) {
+    if (!request.body.felder) {
+        return response.sendStatus(400)
+    }
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const abfragezeichenkette = [
+        'UPDATE ',
+        request.params.tabellenname,
+        ' SET ',
+        Object.entries(request.body.felder).map(([ feldname, feldwert ]) => {
+            let zeichenkette = feldname + '='
+            switch (typeof(feldwert)) {
+                case 'undefined': zeichenkette += 'NULL'; break
+                case 'boolean': zeichenkette += feldwert ? '1' : '0'; break
+                case 'number': zeichenkette += feldwert; break
+                default: zeichenkette += `'${('' + feldwert).toString().replaceAll(`'`, `''`)}'`; break
+            }
+            return zeichenkette
+        }).join(', '),
+        ` WHERE id='`,
+        request.params.datensatzId,
+        `';`
+    ].join('')
+    const abfrage = datenbank.prepare(abfragezeichenkette)
+    abfrage.run()
+    response.sendStatus(200)
+}
+
 // Informationen aus Datenbank holen. GET-Request mit SQL-Abfrage IM BODY!
 // Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
 async function behandleDatenbankabfrage(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
     // Abfrage durchführen
-    if (!request.body.abfrage || !request.body.abfrage?.toLowerCase().startsWith('select') || request.body.abfrage?.contains(';')) {
+    const auszufuehrendeAbfrage = request.body.abfrage
+    if (!auszufuehrendeAbfrage || !auszufuehrendeAbfrage.toLowerCase().startsWith('select') || auszufuehrendeAbfrage.includes(';')) {
         return response.sendStatus(400)
     }
-    const abfrage = datenbank.prepare(request.body.abfrage)
-    const ergebnis = abfrage.all()
+    const ergebnis = datenbank.prepare(auszufuehrendeAbfrage).all()
     // Ergebnisse als JSON zurück geben
     response.json(ergebnis)
 }
@@ -110,7 +137,7 @@ async function behandleDeleteDateipfad(request, response) {
 
 async function behandleErstelleDatensatz(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const neueId = Date.now().toString() + Math.floor(Math.random() * 1000000)
+    const neueId = Math.floor((Date.now() + Math.random()) * 1000).toString()
     const zuErstellenderDatensatz = request.body.datensatz
     zuErstellenderDatensatz.id = neueId
     const abfragezeichenkette = [
@@ -335,10 +362,10 @@ expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
 expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
 expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
-// expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleAktualisiereDatensatz)
+expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleAktualisiereDatensatz)
 expressAnwendung.post('/api/datenbank/:datenbankname/:tabellenname', behandleErstelleDatensatz)
 expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
-expressAnwendung.get('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
+expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 
 // Server vorbereiten
 const httpsServer = https.createServer({
