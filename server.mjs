@@ -73,22 +73,26 @@ async function behandleAktualisiereDatenbankschema(request, response) {
         // Existierende Tabelle umbenennen, neu anlegen und Daten rüber kopieren
         // Nur so können Fremdschlüssel korrekt angelegt werden
         const zuErstellendeSpalten = [ 'Id TEXT PRIMARY KEY' ]
+        const zuErstellendeConstraints = []
         for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
             if (spaltendefinition.startsWith('REFERENCE')) {
                 const referenzierteTabelle = spaltendefinition.split(' ')[1]
                 zuErstellendeSpalten.push(`${spaltenname} TEXT`)
-                zuErstellendeSpalten.push(`FOREIGN KEY (${spaltenname}) REFERENCES ${referenzierteTabelle} (Id) ON DELETE CASCADE`)
+                zuErstellendeConstraints.push(`FOREIGN KEY (${spaltenname}) REFERENCES ${referenzierteTabelle}(Id) ON DELETE CASCADE`)
             } else {
                 zuErstellendeSpalten.push(`${spaltenname} ${spaltendefinition}`)
             }
         }
+        zuErstellendeSpalten.push(...zuErstellendeConstraints)
         const erstellenStatement = `CREATE TABLE ${tabellenname} (${zuErstellendeSpalten.join(', ')});`
         if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM sqlite_master WHERE type='table' AND name='${tabellenname}';`).get().anzahl < 1) {
             // Tabelle existiert noch nicht, also einfach anlegen
+            console.log(erstellenStatement)
             datenbank.exec(erstellenStatement)
         } else {
             // Tabelle existiert bereits. Umbenennen, anlegen und rüberkopieren
-            const renameStatement = `PRAGMA foreign_keys=off; BEGIN TRANSACTION; ALTER TABLE ${tabellenname} RENAME TO _${tabellenname}_ALT; ${erstellenStatement} INSERT INTO ${tabellenname} SELECT * FROM _${tabellenname}_ALT; DROP TABLE _${tabellenname}_ALT; COMMIT; PRAGMA foreign_keys=on;`
+            const renameStatement = `PRAGMA foreign_keys=off; BEGIN TRANSACTION; DROP TABLE IF EXISTS _${tabellenname}_ALT; ALTER TABLE ${tabellenname} RENAME TO _${tabellenname}_ALT; ${erstellenStatement} INSERT INTO ${tabellenname} SELECT * FROM _${tabellenname}_ALT; COMMIT; PRAGMA foreign_keys=on; `
+            console.log(renameStatement)
             datenbank.exec(renameStatement)
         }
     }
@@ -268,6 +272,7 @@ async function behandleSpeichereDatensatz(request, response) {
             }).join(','),
             ');'
         ].join('')
+        console.log(abfragezeichenkette)
         const abfrage = datenbank.prepare(abfragezeichenkette)
         abfrage.run()
     } else {
@@ -290,6 +295,7 @@ async function behandleSpeichereDatensatz(request, response) {
             request.params.datensatzId,
             `';`
         ].join('')
+        console.log(abfragezeichenkette)
         const abfrage = datenbank.prepare(abfragezeichenkette)
         abfrage.run()
     }
