@@ -70,13 +70,26 @@ async function behandleAktualisiereDatenbankschema(request, response) {
     }
     const datenbank = await ladeDatenbank(request.params.datenbankname)
     for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
-        // Tabelle bei Bedarf anlegen, Id-Spalte wird immer generiert
-        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (Id TEXT);`)
+        // Existierende Tabelle umbenennen, neu anlegen und Daten rüber kopieren
+        // Nur so können Fremdschlüssel korrekt angelegt werden
+        const zuErstellendeSpalten = [ 'Id TEXT PRIMARY KEY' ]
         for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
-            // Spalte nur erstellen, wenn sie noch nicht existiert
-            if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
-                datenbank.exec(`ALTER TABLE ${tabellenname} ADD COLUMN ${spaltenname} ${spaltendefinition};`)
+            if (spaltendefinition.startsWith('REFERENCE')) {
+                const referenzierteTabelle = spaltendefinition.split(' ')[1]
+                zuErstellendeSpalten.push(`${spaltenname} TEXT`)
+                zuErstellendeSpalten.push(`FOREIGN KEY (${spaltenname}) REFERENCES ${referenzierteTabelle} (Id) ON DELETE CASCADE`)
+            } else {
+                zuErstellendeSpalten.push(`${spaltenname} ${spaltendefinition}`)
             }
+        }
+        const erstellenStatement = `CREATE TABLE ${tabellenname} (${zuErstellendeSpalten.join(', ')});`
+        if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM sqlite_master WHERE type='table' AND name='${tabellenname}';`).get().anzahl < 1) {
+            // Tabelle existiert noch nicht, also einfach anlegen
+            datenbank.exec(erstellenStatement)
+        } else {
+            // Tabelle existiert bereits. Umbenennen, anlegen und rüberkopieren
+            const renameStatement = `PRAGMA foreign_keys=off; BEGIN TRANSACTION; ALTER TABLE ${tabellenname} RENAME TO _${tabellenname}_ALT; ${erstellenStatement} INSERT INTO ${tabellenname} SELECT * FROM _${tabellenname}_ALT; DROP TABLE _${tabellenname}_ALT; COMMIT; PRAGMA foreign_keys=on;`
+            datenbank.exec(renameStatement)
         }
     }
     response.sendStatus(200)

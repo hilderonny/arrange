@@ -112,7 +112,7 @@
                 Spuren: {
                     Name: 'TEXT',
                     Nummer: 'TEXT',
-                    VorgangsId: 'TEXT',
+                    VorgangsId: 'REFERENCE Vorgaenge',
                 },
             }
 
@@ -148,16 +148,23 @@
             const vorgang = new Vorgang()
             vorgang.Name = 'Mein Vorgang'
             console.log(await vorgang.speichereInDatenbank())
-            const spur = new Spur()
-            spur.VorgangsId = vorgang.Id
-            spur.Name = 'Meine Spur'
-            spur.Nummer = 'Spur 1'
-            console.log(await spur.speichereInDatenbank())
-            const spurAusDatenbank = await Spur.ladeAusDatenbank(spur.Id)
+            const spur1 = new Spur()
+            spur1.VorgangsId = vorgang.Id
+            spur1.Name = 'Meine Spur'
+            spur1.Nummer = 'Spur 1'
+            console.log(await spur1.speichereInDatenbank())
+            const spurAusDatenbank = await Spur.ladeAusDatenbank(spur1.Id)
             spurAusDatenbank.Name = 'Meine tolle Spur'
             console.log(await spurAusDatenbank.speichereInDatenbank())
             await spurAusDatenbank.loescheAusDatenbank()
+            const spur2 = new Spur()
+            spur2.VorgangsId = vorgang.Id
+            spur2.Name = 'Meine zweite Spur'
+            spur2.Nummer = 'Spur 2'
+            console.log(await spur2.speichereInDatenbank())
             await vorgang.loescheAusDatenbank()
+            // Auch Spur 2 muss gelöscht sein, wenn Vorgang weg ist
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
 
         </script>
 
