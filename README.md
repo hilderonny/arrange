@@ -14,20 +14,20 @@ Das Docker Image kann so gebaut, deployed und getestet werden:
 
 ```sh
 # Bauen
-docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.4.0 .
+docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.4.1 .
 
 # Testen
-docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.4.0
+docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.4.1
 
 # Auf Docker Hub deployen
 docker login
-docker push hilderonny2024/arrange:2.4.0
+docker push hilderonny2024/arrange:2.4.1
 ```
 
 ## Benutzung mit Docker
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.4.0
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.4.1
 ```
 
 ## Integration
@@ -67,6 +67,7 @@ PUT /api/files/{userid}/{path...}
 
 PATCH /api/datenbank/{datenbankname}
 PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
+DELETE /api/datenbank/{datenbankname}/{tabellenname}
 DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
 POST /api/datenbank/{datenbankname}
 ```
@@ -113,6 +114,7 @@ sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
 aktualisiereDatenbankschema(datenbankname, schema)
+loescheDatenbanktabelle(datenbankname, tabellenname)
 loescheDatensatz(datenbankname, tabellenname, datensatzId)
 macheDatenbankabfrage(datenbankname, abfrage)
 speichereDatensatz(datenbankname, tabellenname, datensatz)

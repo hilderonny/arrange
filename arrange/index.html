@@ -94,7 +94,7 @@
             await Arrange.sendMessageToRoom(3315n, "Hallo anderer Raum")
 
             // Datenbank
-            const datenbankschema = {
+            const datenbankschemaVorher = {
                 Testtabelle: {
                     Text: 'TEXT',
                     Nummer: 'NUMBER',
@@ -111,13 +111,15 @@
                 },
                 Spuren: {
                     Name: 'TEXT',
-                    Nummer: 'TEXT',
-                    VorgangsId: 'REFERENCE Vorgaenge',
                 },
             }
 
+            // Erst mal alles Alte löschen
+            for (const tabellenname of [ 'Testtabelle', 'AndereTabelle', 'TabelleOhneIrgendwas', 'Vorgaenge', 'Spuren', 'Spurenaufgaben']) {
+                await Arrange.loescheDatenbanktabelle('Testdatenbank', tabellenname)
+            }
             // Schema aktualisieren
-            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
+            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschemaVorher)
             // Datensatz erstellen, undefined als id mitgeben
             const neuerDatensatz = await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
             console.log(neuerDatensatz)
@@ -145,26 +147,51 @@
                     return Datenbankobjekt.ladeAusDatenbank(new Spur(id))
                 }
             }
+            class Spurenaufgabe extends Datenbankobjekt {
+                constructor(id) {
+                    super('Testdatenbank', 'Spurenaufgaben', id)
+                }
+            }
             const vorgang = new Vorgang()
             vorgang.Name = 'Mein Vorgang'
             console.log(await vorgang.speichereInDatenbank())
             const spur1 = new Spur()
-            spur1.VorgangsId = vorgang.Id
             spur1.Name = 'Meine Spur'
-            spur1.Nummer = 'Spur 1'
             console.log(await spur1.speichereInDatenbank())
             const spurAusDatenbank = await Spur.ladeAusDatenbank(spur1.Id)
+            console.log('spurAusDatenbank:', spurAusDatenbank)
             spurAusDatenbank.Name = 'Meine tolle Spur'
             console.log(await spurAusDatenbank.speichereInDatenbank())
+
+            // Datenbankschema erweitern
+            await Arrange.aktualisiereDatenbankschema('Testdatenbank', {
+                Spuren: {
+                    Nummer: 'TEXT',
+                    VorgangsId: 'TEXT REFERENCES Vorgaenge(Id) ON DELETE CASCADE',
+                },
+                Spurenaufgaben: {
+                    Text: 'TEXT',
+                    SpurenId: 'TEXT REFERENCES Spuren(Id) ON DELETE CASCADE',
+                }
+            })
             await spurAusDatenbank.loescheAusDatenbank()
             const spur2 = new Spur()
             spur2.VorgangsId = vorgang.Id
             spur2.Name = 'Meine zweite Spur'
             spur2.Nummer = 'Spur 2'
             console.log(await spur2.speichereInDatenbank())
-            await vorgang.loescheAusDatenbank()
-            // Auch Spur 2 muss gelöscht sein, wenn Vorgang weg ist
+            const spurenaufgabe = Object.assign(new Spurenaufgabe(), {
+                Text: 'Mach was!',
+                SpurenId: spur2.Id,
+            })
+            console.log(await spurenaufgabe.speichereInDatenbank())
+            // Vor dem Löschen
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            await vorgang.loescheAusDatenbank()
+            // Auch Spur 2 und Spurwenaufgaben müssen gelöscht sein, wenn Vorgang weg ist
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
 
         </script>
 

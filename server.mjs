@@ -69,31 +69,21 @@ async function behandleAktualisiereDatenbankschema(request, response) {
         return response.sendStatus(400)
     }
     const datenbank = await ladeDatenbank(request.params.datenbankname)
+    // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
+    for (const tabellenname of Object.keys(request.body.schema)) {
+        const erstellenStatement = `CREATE TABLE IF NOT EXISTS ${tabellenname} (Id TEXT PRIMARY KEY NOT NULL);`
+        console.log(erstellenStatement)
+        datenbank.exec(erstellenStatement)
+    }
+    // Nochmal drüber iterieren und die Spalten aktualisieren
     for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
-        // Existierende Tabelle umbenennen, neu anlegen und Daten rüber kopieren
-        // Nur so können Fremdschlüssel korrekt angelegt werden
-        const zuErstellendeSpalten = [ 'Id TEXT PRIMARY KEY' ]
-        const zuErstellendeConstraints = []
         for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
-            if (spaltendefinition.startsWith('REFERENCE')) {
-                const referenzierteTabelle = spaltendefinition.split(' ')[1]
-                zuErstellendeSpalten.push(`${spaltenname} TEXT`)
-                zuErstellendeConstraints.push(`FOREIGN KEY (${spaltenname}) REFERENCES ${referenzierteTabelle}(Id) ON DELETE CASCADE`)
-            } else {
-                zuErstellendeSpalten.push(`${spaltenname} ${spaltendefinition}`)
+            // Spalte nur erstellen, wenn sie noch nicht existiert
+            if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
+                const updateStatement = `ALTER TABLE ${tabellenname} ADD COLUMN ${spaltenname} ${spaltendefinition};`
+                console.log(updateStatement)
+                datenbank.exec(updateStatement)
             }
-        }
-        zuErstellendeSpalten.push(...zuErstellendeConstraints)
-        const erstellenStatement = `CREATE TABLE ${tabellenname} (${zuErstellendeSpalten.join(', ')});`
-        if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM sqlite_master WHERE type='table' AND name='${tabellenname}';`).get().anzahl < 1) {
-            // Tabelle existiert noch nicht, also einfach anlegen
-            console.log(erstellenStatement)
-            datenbank.exec(erstellenStatement)
-        } else {
-            // Tabelle existiert bereits. Umbenennen, anlegen und rüberkopieren
-            const renameStatement = `PRAGMA foreign_keys=off; BEGIN TRANSACTION; DROP TABLE IF EXISTS _${tabellenname}_ALT; ALTER TABLE ${tabellenname} RENAME TO _${tabellenname}_ALT; ${erstellenStatement} INSERT INTO ${tabellenname} SELECT * FROM _${tabellenname}_ALT; COMMIT; PRAGMA foreign_keys=on; `
-            console.log(renameStatement)
-            datenbank.exec(renameStatement)
         }
     }
     response.sendStatus(200)
@@ -159,6 +149,14 @@ function behandleGetLogout(request, response) {
     if (request.session) {
         delete request.session.userId
     }
+    response.sendStatus(200)
+}
+
+// Tabelle löschen
+async function behandleLoescheDatenbanktabelle(request, response) {
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    const abfrage = datenbank.prepare(`DROP TABLE IF EXISTS ${request.params.tabellenname};`)
+    abfrage.run()
     response.sendStatus(200)
 }
 
@@ -384,6 +382,7 @@ expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), beha
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
 expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
 expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
+expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
 expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
 expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 

@@ -112,6 +112,12 @@ async function logout() {
     location.reload()
 }
 
+async function loescheDatenbanktabelle(datenbankname, tabellenname) {
+    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}`, import.meta.url).href
+    const response = await fetch(url, { method: 'DELETE' })
+    return response.ok
+}
+
 async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
     const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, { method: 'DELETE' })
@@ -246,6 +252,7 @@ export {
     getPublicFile,
     joinRoom,
     leaveRoom,
+    loescheDatenbanktabelle,
     loescheDatensatz,
     logout,
     macheDatenbankabfrage,
