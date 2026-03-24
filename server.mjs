@@ -70,8 +70,8 @@ async function behandleAktualisiereDatenbankschema(request, response) {
     }
     const datenbank = await ladeDatenbank(request.params.datenbankname)
     for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
-        // Tabelle bei Bedarf anlegen, id-Spalte wird immer generiert
-        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (id TEXT);`)
+        // Tabelle bei Bedarf anlegen, Id-Spalte wird immer generiert
+        datenbank.exec(`CREATE TABLE IF NOT EXISTS ${tabellenname} (Id TEXT);`)
         for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
             // Spalte nur erstellen, wenn sie noch nicht existiert
             if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
@@ -79,34 +79,6 @@ async function behandleAktualisiereDatenbankschema(request, response) {
             }
         }
     }
-    response.sendStatus(200)
-}
-
-async function behandleAktualisiereDatensatz(request, response) {
-    if (!request.body.felder) {
-        return response.sendStatus(400)
-    }
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const abfragezeichenkette = [
-        'UPDATE ',
-        request.params.tabellenname,
-        ' SET ',
-        Object.entries(request.body.felder).map(([ feldname, feldwert ]) => {
-            let zeichenkette = feldname + '='
-            switch (typeof(feldwert)) {
-                case 'undefined': zeichenkette += 'NULL'; break
-                case 'boolean': zeichenkette += feldwert ? '1' : '0'; break
-                case 'number': zeichenkette += feldwert; break
-                default: zeichenkette += `'${('' + feldwert).toString().replaceAll(`'`, `''`)}'`; break
-            }
-            return zeichenkette
-        }).join(', '),
-        ` WHERE id='`,
-        request.params.datensatzId,
-        `';`
-    ].join('')
-    const abfrage = datenbank.prepare(abfragezeichenkette)
-    abfrage.run()
     response.sendStatus(200)
 }
 
@@ -133,32 +105,6 @@ async function behandleDeleteDateipfad(request, response) {
     } catch (e) {
         response.sendStatus(404)
     }
-}
-
-async function behandleErstelleDatensatz(request, response) {
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const zuErstellenderDatensatz = request.body.datensatz
-    const neueId = zuErstellenderDatensatz.id || Math.floor((Date.now() + Math.random()) * 1000).toString() // Kann auch vorgegeben werden
-    zuErstellenderDatensatz.id = neueId
-    const abfragezeichenkette = [
-        'INSERT INTO ',
-        request.params.tabellenname,
-        ' (',
-        Object.keys(zuErstellenderDatensatz).join(','),
-        ') VALUES (',
-        Object.values(zuErstellenderDatensatz).map(wert => {
-            switch (typeof(wert)) {
-                case 'undefined': return 'NULL'
-                case 'boolean': return wert ? '1' : '0'
-                case 'number': return wert
-                default: return `'${('' + wert).toString().replaceAll(`'`, `''`)}'`
-            }
-        }).join(','),
-        ');'
-    ].join('')
-    const abfrage = datenbank.prepare(abfragezeichenkette)
-    abfrage.run()
-    response.json(zuErstellenderDatensatz)
 }
 
 // Automatische Anmeldung anhand des Cookies
@@ -202,7 +148,7 @@ function behandleGetLogout(request, response) {
 // Datensatz löschen
 async function behandleLoescheDatensatz(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE id = '${request.params.datensatzId}';`)
+    const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE Id = '${request.params.datensatzId}';`)
     abfrage.run()
     response.sendStatus(200)
 }
@@ -281,6 +227,62 @@ function behandleWebSocketVerbindung(webSocket) {
     dataView.setInt8(0, 0x01)
     dataView.setBigInt64(1, webSocketId, true)
     webSocket.send(arrayBuffer)
+}
+
+async function behandleSpeichereDatensatz(request, response) {
+    if (!request.body.felder) {
+        return response.sendStatus(400)
+    }
+    const datenbank = await ladeDatenbank(request.params.datenbankname)
+    // Prüfen, ob Datensatz bereits existiert
+    if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tabellenname} WHERE Id='${request.params.datensatzId}';`).get().anzahl < 1) {
+        // Existiert noch nicht, also neu anlegen
+        const zuErstellenderDatensatz = request.body.felder
+        zuErstellenderDatensatz.Id = request.params.datensatzId
+        const abfragezeichenkette = [
+            'INSERT INTO ',
+            request.params.tabellenname,
+            ' (',
+            Object.keys(zuErstellenderDatensatz).join(','),
+            ') VALUES (',
+            Object.values(zuErstellenderDatensatz).map(wert => {
+                switch (typeof(wert)) {
+                    case 'undefined': return 'NULL'
+                    case 'boolean': return wert ? '1' : '0'
+                    case 'number': return wert
+                    default: return `'${('' + wert).toString().replaceAll(`'`, `''`)}'`
+                }
+            }).join(','),
+            ');'
+        ].join('')
+        const abfrage = datenbank.prepare(abfragezeichenkette)
+        abfrage.run()
+    } else {
+        // Existiert, also aktualisieren
+        const abfragezeichenkette = [
+            'UPDATE ',
+            request.params.tabellenname,
+            ' SET ',
+            Object.entries(request.body.felder).map(([ feldname, feldwert ]) => {
+                let zeichenkette = feldname + '='
+                switch (typeof(feldwert)) {
+                    case 'undefined': zeichenkette += 'NULL'; break
+                    case 'boolean': zeichenkette += feldwert ? '1' : '0'; break
+                    case 'number': zeichenkette += feldwert; break
+                    default: zeichenkette += `'${('' + feldwert).toString().replaceAll(`'`, `''`)}'`; break
+                }
+                return zeichenkette
+            }).join(', '),
+            ` WHERE Id='`,
+            request.params.datensatzId,
+            `';`
+        ].join('')
+        const abfrage = datenbank.prepare(abfragezeichenkette)
+        abfrage.run()
+    }
+    // Vollständigen Datensatz zurück geben
+    const datensatz = datenbank.prepare(`SELECT * FROM ${request.params.tabellenname} WHERE Id='${request.params.datensatzId}';`).get()
+    response.json(datensatz)
 }
 
 // Websocket Nachricht empfangen
@@ -362,8 +364,7 @@ expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
 expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
 expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
 expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
-expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleAktualisiereDatensatz)
-expressAnwendung.post('/api/datenbank/:datenbankname/:tabellenname', behandleErstelleDatensatz)
+expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
 expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
 expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 

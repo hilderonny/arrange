@@ -6,6 +6,7 @@
         <script type="module">
 
             import * as Arrange from './js/arrange.js'
+            import Datenbankobjekt from './js/types/Datenbankobjekt.js'
 
             // Benutzernamen anzeigen
             document.getElementById('username').innerHTML = localStorage.getItem('username')
@@ -95,29 +96,68 @@
             // Datenbank
             const datenbankschema = {
                 Testtabelle: {
-                    text: 'TEXT',
-                    nummer: 'NUMBER',
-                    wahrheit: 'NUMBER',
-                    anderewahrheit: 'NUMBER',
-                    nix: 'TEXT',
+                    Text: 'TEXT',
+                    Nummer: 'NUMBER',
+                    Wahrheit: 'NUMBER',
+                    AndereWahrheit: 'NUMBER',
+                    Nix: 'TEXT',
                 },
                 AndereTabelle: {
-                    nummer: 'NUMBER',
+                    Nummer: 'NUMBER',
                 },
                 TabelleOhneIrgendwas: {},
+                Vorgaenge: {
+                    Name: 'TEXT',
+                },
+                Spuren: {
+                    Name: 'TEXT',
+                    Nummer: 'TEXT',
+                    VorgangsId: 'TEXT',
+                },
             }
 
             // Schema aktualisieren
             await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschema)
-            // Datensatz erstellen
-            const neuerDatensatz = await Arrange.erstelleDatensatz('Testdatenbank', 'Testtabelle', { id: 'EIGENE_ID', nummer: 1234, wahrheit: true, anderewahrheit: false, text: `Hallo Welt`, nix: undefined })
+            // Datensatz erstellen, undefined als id mitgeben
+            const neuerDatensatz = await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
             console.log(neuerDatensatz)
-            // Datensatz aktualisieren
-            await Arrange.aktualisiereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id, { nummer: 987, text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            // Datensatz aktualisieren, nur die geänderten Felder
+            await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
             // SQL-Abfrage machen
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
             // Datensatz löschen
-            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.id)
+            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
+
+            // Datenbankobjekte
+            class Vorgang extends Datenbankobjekt {
+                constructor(id) {
+                    super('Testdatenbank', 'Vorgaenge', id)
+                }
+                static async ladeAusDatenbank(id) {
+                    return Datenbankobjekt.ladeAusDatenbank(new Vorgang(id))
+                }
+            }
+            class Spur extends Datenbankobjekt {
+                constructor(id) {
+                    super('Testdatenbank', 'Spuren', id)
+                }
+                static async ladeAusDatenbank(id) {
+                    return Datenbankobjekt.ladeAusDatenbank(new Spur(id))
+                }
+            }
+            const vorgang = new Vorgang()
+            vorgang.Name = 'Mein Vorgang'
+            console.log(await vorgang.speichereInDatenbank())
+            const spur = new Spur()
+            spur.VorgangsId = vorgang.Id
+            spur.Name = 'Meine Spur'
+            spur.Nummer = 'Spur 1'
+            console.log(await spur.speichereInDatenbank())
+            const spurAusDatenbank = await Spur.ladeAusDatenbank(spur.Id)
+            spurAusDatenbank.Name = 'Meine tolle Spur'
+            console.log(await spurAusDatenbank.speichereInDatenbank())
+            await spurAusDatenbank.loescheAusDatenbank()
+            await vorgang.loescheAusDatenbank()
 
         </script>
 

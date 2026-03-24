@@ -14,20 +14,20 @@ Das Docker Image kann so gebaut, deployed und getestet werden:
 
 ```sh
 # Bauen
-docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.2.0 .
+docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.3.0 .
 
 # Testen
-docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.2.0
+docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.3.0
 
 # Auf Docker Hub deployen
 docker login
-docker push hilderonny2024/arrange:2.2.0
+docker push hilderonny2024/arrange:2.3.0
 ```
 
 ## Benutzung mit Docker
 
 ```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.2.0
+docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.3.0
 ```
 
 ## Integration

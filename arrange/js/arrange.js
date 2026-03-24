@@ -12,18 +12,6 @@ async function aktualisiereDatenbankschema(datenbankname, schema) {
     return response.ok
 }
 
-async function aktualisiereDatensatz(datenbankname, tabellenname, datensatzId, felder) {
-    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ felder: felder })
-    })
-    return response.ok
-}
-
 async function autoLogin() {
     const autoLoginResponse = await fetch('/api/autologin')
     if (autoLoginResponse.status !== 200) {
@@ -88,23 +76,6 @@ async function deletePublicPath(path) {
     const filteredPath = path.split('/').filter(e => e).join('/')
     const url = new URL(`/api/files/public/${filteredPath}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
-}
-
-async function erstelleDatensatz(datenbankname, tabellenname, datensatz) {
-    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ datensatz: datensatz })
-    })
-    if (response.ok) {
-        return await response.json()
-    } else {
-        return undefined
-    }
 }
 
 async function getPrivateFile(filePath) {
@@ -207,6 +178,26 @@ async function sendMessageToRoom(roomNumber, textMessage) {
     WEB_SOCKET.send(arrayBuffer)
 }
 
+async function speichereDatensatz(datenbankname, tabellenname, datensatzId, felder) {
+    if (!datensatzId) {
+        datensatzId = Math.floor((Date.now() + Math.random()) * 1000).toString()
+    }
+    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ felder: felder })
+    })
+    if (response.ok) {
+        return await response.json()
+    } else {
+        return undefined
+    }
+}
+
 async function uploadFile(url, file, progressCallback) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
@@ -246,13 +237,11 @@ await autoLogin()
 
 export {
     aktualisiereDatenbankschema,
-    aktualisiereDatensatz,
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
     deletePrivatePath, 
     deletePublicPath, 
-    erstelleDatensatz,
     getPrivateFile,
     getPublicFile,
     joinRoom,
@@ -264,6 +253,7 @@ export {
     postPublicFile,
     sendMessageToClient,
     sendMessageToRoom,
+    speichereDatensatz,
     uploadPrivateFile,
     uploadPublicFile,
 }
