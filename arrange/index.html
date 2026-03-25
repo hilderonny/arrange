@@ -194,7 +194,7 @@
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
             // Und nochmal eine Spur einfügen, one dass es eine Referenz per Foreign Key gibt
             const spur3 = new Spur()
-            spur3.VorgangsId = undefined // Geht das auch mit Leertext? NÖ, Muss wirklich undefined sein
+            spur3.VorgangsId = null // Geht das auch mit Leertext? NÖ, Muss wirklich undefined oder null sein
             console.log(await spur3.speichereInDatenbank())
             console.log(await Spur.ladeAusDatenbank(spur3.Id))
             await spur3.loescheAusDatenbank()

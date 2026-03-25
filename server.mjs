@@ -259,6 +259,7 @@ async function behandleSpeichereDatensatz(request, response) {
             Object.keys(zuErstellenderDatensatz).join(','),
             ') VALUES (',
             Object.values(zuErstellenderDatensatz).map(wert => {
+                if (wert === null) return 'NULL'
                 switch (typeof(wert)) {
                     case 'undefined': return 'NULL'
                     case 'boolean': return wert ? '1' : '0'
