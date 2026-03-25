@@ -188,6 +188,10 @@ async function speichereDatensatz(datenbankname, tabellenname, datensatzId, feld
     if (!datensatzId) {
         datensatzId = Math.floor((Date.now() + Math.random()) * 1000).toString()
     }
+    // Null durch undefined ersetzen
+    for (const key of Object.keys(felder)) {
+        if (felder[key] == null) felder[key] = undefined
+    }
     const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, {
         method: 'PATCH',
