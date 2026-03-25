@@ -192,6 +192,11 @@
             // Auch Spur 2 und Spurwenaufgaben müssen gelöscht sein, wenn Vorgang weg ist
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            // Und nochmal eine Spur einfügen, one dass es eine Referenz per Foreign Key gibt
+            const spur3 = new Spur()
+            console.log(await spur3.speichereInDatenbank())
+            console.log(await Spur.ladeAusDatenbank(spur3.Id))
+            await spur3.loescheAusDatenbank()
 
         </script>
 
