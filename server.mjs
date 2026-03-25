@@ -72,7 +72,6 @@ async function behandleAktualisiereDatenbankschema(request, response) {
     // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
     for (const tabellenname of Object.keys(request.body.schema)) {
         const erstellenStatement = `CREATE TABLE IF NOT EXISTS ${tabellenname} (Id TEXT PRIMARY KEY NOT NULL);`
-        console.log(erstellenStatement)
         datenbank.exec(erstellenStatement)
     }
     // Nochmal drüber iterieren und die Spalten aktualisieren
@@ -81,7 +80,6 @@ async function behandleAktualisiereDatenbankschema(request, response) {
             // Spalte nur erstellen, wenn sie noch nicht existiert
             if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
                 const updateStatement = `ALTER TABLE ${tabellenname} ADD COLUMN ${spaltenname} ${spaltendefinition};`
-                console.log(updateStatement)
                 datenbank.exec(updateStatement)
             }
         }
@@ -270,7 +268,6 @@ async function behandleSpeichereDatensatz(request, response) {
             }).join(','),
             ');'
         ].join('')
-        console.log(abfragezeichenkette)
         const abfrage = datenbank.prepare(abfragezeichenkette)
         abfrage.run()
     } else {
@@ -293,7 +290,6 @@ async function behandleSpeichereDatensatz(request, response) {
             request.params.datensatzId,
             `';`
         ].join('')
-        console.log(abfragezeichenkette)
         const abfrage = datenbank.prepare(abfragezeichenkette)
         abfrage.run()
     }
