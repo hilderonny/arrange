@@ -131,32 +131,33 @@
             await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
 
             // Datenbankobjekte
-            class Vorgang extends Datenbankobjekt {
-                constructor(id) {
-                    super('Testdatenbank', 'Vorgaenge', id)
-                }
-                static async ladeAusDatenbank(id) {
-                    return Datenbankobjekt.ladeAusDatenbank(new Vorgang(id))
-                }
+            class Testdatenbankobjekt extends Datenbankobjekt {
+
+                static get datenbankname() { return 'Testdatenbank' }
+
             }
-            class Spur extends Datenbankobjekt {
-                constructor(id) {
-                    super('Testdatenbank', 'Spuren', id)
-                }
-                static async ladeAusDatenbank(id) {
-                    return Datenbankobjekt.ladeAusDatenbank(new Spur(id))
-                }
+            class Vorgang extends Testdatenbankobjekt {
+
+                static get tabellenname() { return 'Vorgaenge' }
+                
             }
-            class Spurenaufgabe extends Datenbankobjekt {
-                constructor(id) {
-                    super('Testdatenbank', 'Spurenaufgaben', id)
-                }
+            class Spur extends Testdatenbankobjekt {
+
+                static get tabellenname() { return 'Spuren' }
+
             }
-            const vorgang = new Vorgang()
-            vorgang.Name = 'Mein Vorgang'
+            class Spurenaufgabe extends Testdatenbankobjekt {
+
+                static get tabellenname() { return 'Spurenaufgaben' }
+
+            }
+            const vorgang = new Vorgang({
+                Name: 'Mein Vorgang',
+            })
             console.log(await vorgang.speichereInDatenbank())
-            const spur1 = new Spur()
-            spur1.Name = 'Meine Spur'
+            const spur1 = new Spur({
+                Name: 'Meine Spur',
+            })
             console.log(await spur1.speichereInDatenbank())
             const spurAusDatenbank = await Spur.ladeAusDatenbank(spur1.Id)
             console.log('spurAusDatenbank:', spurAusDatenbank)
@@ -175,12 +176,13 @@
                 }
             })
             await spurAusDatenbank.loescheAusDatenbank()
-            const spur2 = new Spur()
-            spur2.VorgangsId = vorgang.Id
-            spur2.Name = 'Meine zweite Spur'
-            spur2.Nummer = 'Spur 2'
+            const spur2 = new Spur({
+                VorgangsId: vorgang.Id,
+                Name: 'Meine zweite Spur',
+                Nummer: 'Spur 2',
+            })
             console.log(await spur2.speichereInDatenbank())
-            const spurenaufgabe = Object.assign(new Spurenaufgabe(), {
+            const spurenaufgabe = new Spurenaufgabe({
                 Text: 'Mach was!',
                 SpurenId: spur2.Id,
             })
@@ -193,9 +195,15 @@
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
             console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
             // Und nochmal eine Spur einfügen, one dass es eine Referenz per Foreign Key gibt
-            const spur3 = new Spur()
-            spur3.VorgangsId = null // Geht das auch mit Leertext? NÖ, Muss wirklich undefined oder null sein
+            const spur3 = new Spur({
+                Name: 'Dritte Spur',
+                Nummer: 'Drei',
+                VorgangsId: null, // Geht das auch mit Leertext? NÖ, Muss wirklich undefined oder null sein
+            })
             console.log(await spur3.speichereInDatenbank())
+            console.log(await Spur.ladeAusDatenbank(spur3.Id))
+            // Mal nur ein Feld aktualisieren
+            await Spur.aktualisiereDatensatz(spur3.Id, { Nummer: '3 (Zahl)' })
             console.log(await Spur.ladeAusDatenbank(spur3.Id))
             await spur3.loescheAusDatenbank()
 

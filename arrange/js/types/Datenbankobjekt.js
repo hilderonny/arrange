@@ -2,33 +2,46 @@ import * as Arrange from '../arrange.js'
 
 export default class Datenbankobjekt {
 
-    constructor(datenbankname, tabellenname, id) {
-        this.datenbankname = datenbankname
-        this.tabellenname = tabellenname
-        this.Id = (id || Math.floor((Date.now() + Math.random()) * 1000)).toString()
+    static get datenbankname() { return undefined }
+    static get tabellenname() { return undefined }
+
+    constructor(felder) {
+        if (felder) {
+            for (const schluessel of Object.keys(felder)) {
+                this[schluessel] = felder[schluessel]
+            }
+        }
+        if (!this.Id) {
+            this.Id = Math.floor((Date.now() + Math.random()) * 1000).toString()
+        }
     }
 
-    static async ladeAusDatenbank(objektvorlageMitId) {
-        const abfrageergebnis = await Arrange.macheDatenbankabfrage(objektvorlageMitId.datenbankname, `SELECT * FROM ${objektvorlageMitId.tabellenname} WHERE Id='${objektvorlageMitId.Id}'`)
+    static async aktualisiereDatensatz(id, felder) {
+        return await Arrange.speichereDatensatz(this.datenbankname, this.tabellenname, id, felder)
+    }
+
+    static async ladeAusDatenbank(id) {
+        const abfrageergebnis = await Arrange.macheDatenbankabfrage(this.datenbankname, `SELECT * FROM ${this.tabellenname} WHERE Id='${id}'`)
         if (!abfrageergebnis?.length) {
             return undefined
         }
+        const instanz = new this()
         for (const [schluessel, wert] of Object.entries(abfrageergebnis[0])) {
-            objektvorlageMitId[schluessel] = wert
+            instanz[schluessel] = wert
         }
-        return objektvorlageMitId
+        return instanz
     }
     
     async loescheAusDatenbank() {
-        return await Arrange.loescheDatensatz(this.datenbankname, this.tabellenname, this.Id)
+        return await Arrange.loescheDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
     }
 
     async speichereInDatenbank() {
         const zuSpeichernderDatensatz = {}
-        for (const schluessel of Object.keys(this).filter(schluessel => !['datenbankname', 'tabellenname'].includes(schluessel))) {
+        for (const schluessel of Object.keys(this)) {
             zuSpeichernderDatensatz[schluessel] = this[schluessel]
         }
-        return await Arrange.speichereDatensatz(this.datenbankname, this.tabellenname, this.Id, zuSpeichernderDatensatz)
+        return await Arrange.speichereDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id, zuSpeichernderDatensatz)
     }
 
 }
