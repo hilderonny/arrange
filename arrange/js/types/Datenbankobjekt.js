@@ -44,7 +44,9 @@ export default class Datenbankobjekt {
     async speichereInDatenbank() {
         const zuSpeichernderDatensatz = {}
         for (const schluessel of Object.keys(this)) {
-            zuSpeichernderDatensatz[schluessel] = this[schluessel]
+            if (schluessel !== 'Id') {
+                zuSpeichernderDatensatz[schluessel] = this[schluessel]
+            }
         }
         return await Arrange.speichereDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id, zuSpeichernderDatensatz)
     }
