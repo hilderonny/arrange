@@ -31,6 +31,11 @@ export default class Datenbankobjekt {
         }
         return instanz
     }
+
+    static async ladeListeMitAbfrage(abfrage) {
+        const listeAusDatenbank = await Arrange.macheDatenbankabfrage(this.datenbankname, abfrage)
+        return listeAusDatenbank.map(elementAusDatenbank => new this(elementAusDatenbank))
+    }
     
     async loescheAusDatenbank() {
         return await Arrange.loescheDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
