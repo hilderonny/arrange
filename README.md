@@ -5,6 +5,12 @@ Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien 
 # Entwicklung
 
 ```sh
+# NodeJS unter Linux installieren
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install 24
+
+# Arrange installieren
 git clone http://192.168.178.138:8100/ronny/arrange.git
 cd arrange
 npm ci
@@ -68,7 +74,7 @@ sudo systemctl start arrange
 Description=arrange
 
 [Service]
-ExecStart=/usr/bin/node --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs
+ExecStart=/######PFAD_ZU_NODE###### --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs
 WorkingDirectory=/######PFAD_ZU_ARRANGE######
 Restart=always
 RestartSec=10
