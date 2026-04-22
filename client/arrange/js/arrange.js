@@ -54,40 +54,34 @@ async function connectWebSocket(messageCallback) {
 
 async function createPrivatePath(path) {
     const userid = localStorage.getItem('userid')
-    const filteredPath = path.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/${userid}/${filteredPath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
 async function createPublicPath(path) {
-    const filteredPath = path.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/public/${filteredPath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
 async function deletePrivatePath(path) {
     const userid = localStorage.getItem('userid')
-    const filteredPath = path.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/${userid}/${filteredPath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 
 async function deletePublicPath(path) {
-    const filteredPath = path.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/public/${filteredPath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 
 async function getPrivateFile(filePath) {
     const userid = localStorage.getItem('userid')
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/${userid}/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await fetch(url)
 }
 
 async function getPublicFile(filePath) {
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/public/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await fetch(url)
 }
 
@@ -153,14 +147,12 @@ async function postFile(url, fileContent) {
 
 async function postPrivateFile(filePath, fileContent) {
     const userid = localStorage.getItem('userid')
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/${userid}/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await postFile(url, fileContent)
 }
 
 async function postPublicFile(filePath, fileContent) {
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/public/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await postFile(url, fileContent)
 }
 
@@ -232,14 +224,12 @@ async function uploadFile(url, file, progressCallback) {
 
 async function uploadPrivateFile(filePath, file, progressCallback) {
     const userid = localStorage.getItem('userid')
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/${userid}/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await uploadFile(url, file, progressCallback)
 }
 
 async function uploadPublicFile(filePath, file, progressCallback) {
-    const filteredFilePath = filePath.split('/').filter(e => e).join('/')
-    const url = new URL(`/api/files/public/${filteredFilePath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await uploadFile(url, file, progressCallback)
 }
 
