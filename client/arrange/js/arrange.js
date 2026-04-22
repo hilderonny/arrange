@@ -54,23 +54,23 @@ async function connectWebSocket(messageCallback) {
 
 async function createPrivatePath(path) {
     const userid = localStorage.getItem('userid')
-    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${path}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
 async function createPublicPath(path) {
-    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${path}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
 async function deletePrivatePath(path) {
     const userid = localStorage.getItem('userid')
-    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${path}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 
 async function deletePublicPath(path) {
-    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
+    const url = new URL(`/api/files/public/${path}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 
