@@ -1,48 +1,89 @@
 # arrange
 
-## Entwicklung
+Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien und SQLite-Datenbanken auf dem Server sowie Websockets mitbringt.
+
+# Entwicklung
 
 ```sh
-gh repo clone arrange
+git clone http://192.168.178.138:8100/ronny/arrange.git
 cd arrange
-npm install
+npm ci
 ```
 
-In Visual Studio kann man mit **F5** einen lokalen HTPS-Server an Port `3000` starten.
+In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `8443` starten.
 
-Das Docker Image kann so gebaut, deployed und getestet werden:
+# Verwendung
 
-```sh
-# Bauen
-docker build --platform linux/amd64,linux/arm64 -t hilderonny2024/arrange:2.6.1 .
-
-# Testen
-docker run -d -v ./data:/app/data -v ./html:/app/html -p 3000:3000 hilderonny2024/arrange:2.6.1
-
-# Auf Docker Hub deployen
-docker login
-docker push hilderonny2024/arrange:2.6.1
-```
-
-## Benutzung mit Docker
-
-```sh
-docker run --name myarrangeserver -d -v /LOCALDATAPATH:/app/data -v /LOCALWEBROOT:/app/html -v /LOCALWEBSUBFOLDER:/app/html/subfolder -p 3000:3000 hilderonny2024/arrange:2.6.1
-```
-
-## Integration
+Im Prinzip läuft Arrange als eigener Webserver.
+Man erstellt irgendwo ein Verzeichnisund platziert seine HTML-Seiten darin.
+Beispielsweise in `/var/www/index.html`:
 
 ```html
 <html>
     <head>
         <script type="module">
-            import * as Arrange from './arrange/js/arrange.js'
+            import * as Arrange from '/arrange/js/arrange.js'
+            // Beim ersten Aufruf wird automatisch die Anmeldeseite angezeigt
         </script>
     </head>
 </html>
 ```
 
-## Reserved URLs
+Danach klont man das `arrange` - Repository und startet Arrange per Kommandozeile oder als Hintergrunddienst.
+Dabei müssen folgende Umgebungsvariablen gesetzt sein:
+
+|Umgebungsvariable|Bedeutung|
+|-|-|
+|ARRANGE_PORT|Port, an welchem der Webserver mit SSL lauschen soll, z.B. `8443`|
+|ARRANGE_DATA_PATH|Pfad, wo Arrange Anwendungsdateien und Datenbanken speichert|
+|ARRANGE_HTML_PATH|Pfad, wo Arrange Das HTML Stammverzeichnis sucht|
+|ARRANGE_TOKEN_SECRET|Schlüssel für Anmeldetoken|
+|ARRANGE_CRT_FILE|Pfad zur SSL Zertifikatsdatei|
+|ARRANGE_KEY_FILE|Pfad zur SSL Schlüsseldatei|
+
+## Starten über Kommandozeile
+
+```sh
+git clone http://192.168.178.138:8100/ronny/arrange.git
+cd arrange
+npm ci
+ARRANGE_PORT=8443 ARRANGE_DATA_PATH=./data ARRANGE_HTML_PATH=./test ARRANGE_TOKEN_SECRET=hubbelebubbele ARRANGE_CRT_FILE=./server.crt ARRANGE_KEY_FILE=./server.key node --experimental-sqlite ./server.mjs
+```
+
+## Einrichtung als Hintergrunddienst
+
+```sh
+git clone http://192.168.178.138:8100/ronny/arrange.git
+cd arrange
+npm ci
+sudo nano /etc/systemd/system/arrange.service
+sudo systemctl enable arrange
+sudo systemctl start arrange
+```
+
+### /etc/systemd/system/arrange.service
+
+```
+[Unit]
+Description=arrange
+
+[Service]
+ExecStart=/usr/bin/node --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs
+WorkingDirectory=/######PFAD_ZU_ARRANGE######
+Restart=always
+RestartSec=10
+Environment="ARRANGE_PORT=8443"
+Environment="ARRANGE_DATA_PATH=######PFAD_ZUM_DATENVERZEICHNIS######"
+Environment="ARRANGE_HTML_PATH=######PFAD_ZUM_HTML-VERZEICHNIS######"
+Environment="ARRANGE_TOKEN_SECRET=hubbelebubbele"
+Environment="ARRANGE_CRT_FILE=######PFAD_ZUR_SSL_ZERTIFIKATSDATEI######"
+Environment="ARRANGE_KEY_FILE=######PFAD_ZUR_SSL_SCHLUESSELDATEI######"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+# Reservierte URLs
 
 The following URLs and sub paths are reserved and cannot be used by the application.
 
@@ -52,7 +93,7 @@ The following URLs and sub paths are reserved and cannot be used by the applicat
 |`/arrange/`|Arrange ressources|
 |`/ws/`|Websockets|
 
-## API
+# API
 
 ```
 GET /api/autologin
@@ -72,11 +113,11 @@ DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
 POST /api/datenbank/{datenbankname}
 ```
 
-## Websockets
+# Websockets
 
 Messages over websockets contain one byte of type information and the rest as payload in any data structure (defined by application).
 
-### Messages from client to server
+## Messages from client to server
 
 |First byte|Meaning|
 |-|-|
@@ -85,7 +126,7 @@ Messages over websockets contain one byte of type information and the rest as pa
 |`0x30`|Send broadcast message into room. `8` bytes room number followed by payload|
 |`0x40`|Send direct message to client. `8` bytes client ID followed by payload|
 
-### Messages from server to client
+## Messages from server to client
 
 |First byte|Meaning|
 |-|-|
@@ -93,7 +134,7 @@ Messages over websockets contain one byte of type information and the rest as pa
 |`0x31`|Broadcast message from client. `8` bytes sender client ID, `8` bytes room ID, followed by payload|
 |`0x41`|Direct message from client. `8` bytes sender client ID followed by payload|
 
-## /js/arrange.js
+# Bibliothek /arrange/js/arrange.js
 
 ```js
 logout()
@@ -120,17 +161,18 @@ macheDatenbankabfrage(datenbankname, abfrage)
 speichereDatensatz(datenbankname, tabellenname, datensatz)
 ```
 
-## Zertifikat erstellt
+# SSL-Zertifikat erstellen
 
-Zuerst habe ich [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) installiert und den OpenSSL Command Prompt geöffnet.
+Unter Windows habe ich [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) installiert und den OpenSSL Command Prompt geöffnet.
+In Linux uns MacOS ist `openssl` bereits installiert.
 
-```cmd
+```sh
 openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
-Country Name (2 letter code) [AU]:DE
-State or Province Name (full name) [Some-State]:Thueringen
-Locality Name (eg, city) []:Erfurt
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:TLKA
-Organizational Unit Name (eg, section) []:DBE
-Common Name (e.g. server FQDN or YOUR name) []:SENECA
-Email Address []:ronny.hildebrandt@polizei.thueringen.de
+Country Name (2 letter code) [AU]: leer gelassen
+State or Province Name (full name) [Some-State]: leer gelassen
+Locality Name (eg, city) []: leer gelassen
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: leer gelassen
+Organizational Unit Name (eg, section) []: leer gelassen
+Common Name (e.g. server FQDN or YOUR name) []:arrange
+Email Address []: leer gelassen
 ```

@@ -10,21 +10,29 @@ import { WebSocketServer } from 'ws'
 import sqlite from 'node:sqlite'
 
 
-/********** Konstanten und globale Variable **********/
+/********** Umgebungsvariablen prüfen **********/
 
+for (const umgebungsvariable of [ 'ARRANGE_PORT', 'ARRANGE_DATA_PATH', 'ARRANGE_HTML_PATH', 'ARRANGE_TOKEN_SECRET', 'ARRANGE_CRT_FILE', 'ARRANGE_KEY_FILE' ]) {
+    if (!process.env[umgebungsvariable]) {
+        console.error(`Umgebungsvariable ${umgebungsvariable} fehlt. Kann nicht starten.`)
+        process.exit()
+    }
+}
+
+/********** Konstanten und globale Variable **********/
 
 let ALLE_BENUTZER = []
 let NAECHSTE_WEBSOCKET_ID = 0
 
-const BENUTZER_JSON_PFAD = './data/users/users.json' // Pfad zur JSON-Datei mit Benutzerinfos
-const DATEIEN_PFAD = './data/files' // Pfad zu den Dateien
-const PORT = process.env.PORT
-const TOKEN_SECRET = process.env.TOKEN_SECRET || 'hubbelebubbele'
+const DATENPFAD = process.env.ARRANGE_DATA_PATH
+const BENUTZER_JSON_PFAD = path.join(DATENPFAD, 'users/users.json') // Pfad zur JSON-Datei mit Benutzerinfos
+const DATEIEN_PFAD = path.join(DATENPFAD, 'files') // Pfad zu den Dateien
+const PORT = process.env.ARRANGE_PORT
 const UPLOAD_HANDLER = multer()
 const WEBSOCKETS = {}
 const WEBSOCKET_RAEUME = {}
 const DATENBANKEN = {}
-const DATENBANKEN_PFAD = './data/databases'
+const DATENBANKEN_PFAD = path.join(DATENPFAD, 'databases')
 
 /********** Hilfsfunktionen **********/
 
@@ -356,17 +364,17 @@ const expressAnwendung = express()
 // Benutzersessions
 expressAnwendung.use(cookieSession({
     name: 'session',
-    secret: TOKEN_SECRET,
+    secret: process.env.ARRANGE_TOKEN_SECRET,
 }))
 
 // JSON in POST Daten aktivieren
 expressAnwendung.use(express.json())
 
 // Statische HTML Seiten ausliefern, wird reingemountet
-expressAnwendung.use(express.static('./html'))
+expressAnwendung.use(express.static(process.env.ARRANGE_HTML_PATH))
 
 // Arrange-Client-Skripte und Seiten ausliefern
-expressAnwendung.use('/arrange', express.static('./arrange'))
+expressAnwendung.use('/arrange', express.static('./client/arrange'))
 
 // API-Endpunkte
 expressAnwendung.get('/api/autologin', behandleGetAutoLogin)
@@ -385,8 +393,8 @@ expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
 
 // Server vorbereiten
 const httpsServer = https.createServer({
-    key: fs.readFileSync('./server.key'),
-    cert: fs.readFileSync('./server.crt'),
+    key: fs.readFileSync(process.env.ARRANGE_KEY_FILE),
+    cert: fs.readFileSync(process.env.ARRANGE_CRT_FILE),
 }, expressAnwendung)
 
 // Websocketverbindungen behandeln
