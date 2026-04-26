@@ -1,0 +1,5 @@
+{
+    "nodejs-testing.env": {
+        "NODE_OPTIONS": "--experimental-sqlite"
+    }
+}

@@ -2,6 +2,8 @@
 
 Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien und SQLite-Datenbanken auf dem Server sowie Websockets mitbringt.
 
+- [API](API.md)
+
 # Entwicklung
 
 ```sh
