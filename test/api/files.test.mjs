@@ -26,13 +26,46 @@ describe('API /api/files', () => {
         userId = response.body.id
     })
 
+    describe('DELETE /api/files/:userId/*filePath', () => {
+
+        it('Wenn es kein Verzeichnis für den Benutzer gibt, wird HTTP Status Code 404 zurückgegeben.', async () => {
+            await supertest(expressApplication.app).delete(`/api/files/${userId}`).expect(404)
+        })
+
+        it('Wenn es im Benutzerverzeichnis den Pfad nicht gibt, wird HTTP Status Code 404 zurückgegeben.', async () => {
+            fs.mkdirSync(path.resolve('./test/data/files/' + userId), { recursive: true })
+            await supertest(expressApplication.app).delete(`/api/files/${userId}/not/existing/path`).expect(404)
+        })
+
+        it('Wenn der Pfad auf ein Verzeichnis verweist, wird dessen Inhalt rekursiv gelöscht.', async () => {
+            const parentPath = `./test/data/files/${userId}/existing/path/`
+            fs.mkdirSync(path.resolve(parentPath + 'directory_1/subdirectory'), { recursive: true })
+            fs.writeFileSync(path.resolve(parentPath + 'directory_1/file_0.ext0'), 'File 0 content')
+            fs.writeFileSync(path.resolve(parentPath + 'file_1.ext1'), 'File 1 content')
+            fs.writeFileSync(path.resolve(parentPath + 'file_2.ext2'), 'File 2 content')
+            await supertest(expressApplication.app).delete(`/api/files/${userId}/existing/path/`).expect(200)
+            const directoryExists = fs.existsSync(path.resolve(parentPath))
+            assert.strictEqual(directoryExists, false)
+        })
+
+        it('Wenn der Pfad auf eine Datei verweist, wird diese Datei gelöscht.', async () => {
+            const parentPath = `./test/data/files/${userId}/existing/path/`
+            fs.mkdirSync(path.resolve(parentPath), { recursive: true })
+            fs.writeFileSync(path.resolve(parentPath + 'file_1.ext1'), 'File 1 content')
+            await supertest(expressApplication.app).delete(`/api/files/${userId}/existing/path/file_1.ext1`).expect(200)
+            const fileExists = fs.existsSync(path.resolve(parentPath + 'file_1.ext1'))
+            assert.strictEqual(fileExists, false)
+        })
+    
+    })
+
     describe('GET /api/files/:userId/*filePath', () => {
 
         it('Wenn es kein Verzeichnis für den Benutzer gibt, wird HTTP Status Code 404 zurückgegeben.', async () => {
             await supertest(expressApplication.app).get(`/api/files/${userId}`).expect(404)
         })
 
-        it('Wenn im Benutzerverzeichnis den Pfad nicht gibt, wird HTTP Status Code 404 zurückgegeben.', async () => {
+        it('Wenn es im Benutzerverzeichnis den Pfad nicht gibt, wird HTTP Status Code 404 zurückgegeben.', async () => {
             fs.mkdirSync(path.resolve('./test/data/files/' + userId), { recursive: true })
             await supertest(expressApplication.app).get(`/api/files/${userId}/not/existing/path`).expect(404)
         })

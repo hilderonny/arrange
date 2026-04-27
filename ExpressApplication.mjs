@@ -70,17 +70,6 @@ async function behandleDatenbankabfrage(request, response) {
     response.json(ergebnis)
 }
 
-// Pfad löschen
-async function behandleDeleteDateipfad(request, response) {
-    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
-    try {
-        await rm(absoluterPfad, { recursive: true })
-        response.sendStatus(200)
-    } catch (e) {
-        response.sendStatus(404)
-    }
-}
-
 // Tabelle löschen
 async function behandleLoescheDatenbanktabelle(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
@@ -296,7 +285,7 @@ export default class ExpressApplication {
         this.app.post('/api/login', this.#handlePostLogin.bind(this))
         this.app.get('/api/logout', this.#handleGetLogout.bind(this))
         this.app.post('/api/register', this.#handlePostRegister.bind(this))
-        // expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
+        this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         // expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
         // expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
@@ -332,6 +321,17 @@ export default class ExpressApplication {
     }
 
     /********** API Funktionen **********/
+
+    // Pfad löschen
+    async #handleDeletePath(request, response) {
+        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+        if (fs.existsSync(absolutePath)) {
+            fs.rmSync(absolutePath, { recursive: true })
+            response.sendStatus(200)
+        } else {
+            response.sendStatus(404)
+        }
+    }
 
     /**
      * Automatische Anmeldung anhand des Cookies

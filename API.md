@@ -5,6 +5,7 @@
 - [Benutzer registrieren - POST /api/register](#benutzer-registrieren---post-apiregister)
 - [Benutzersitzung prüfen - GET /api/autologin](#benutzersitzung-prüfen---get-apiautologin)
 - [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
+- [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
 
 
 ## Benutzer abmelden - `GET / api/logout`
@@ -107,11 +108,17 @@ Bei Verzeichnissen wird eine JSON-Struktur mit den Eintragsnamen und deren Typen
 Wird der Pfad nicht gefunden, wird als HTTP Statuscode `404` zurückgegeben.
 
 
+## Datei oder Verzeichnis löschen - `DELETE /api/files/:userId/*filePath`
+
+Löscht einen Pfad (Datei oder Verzeichnis) unterhalb eines Benutzerverzeichnisses. Wenn der angegebene Pfad ein Verzeichnis ist, wird dieses samt Inhalt rekursiv gelöscht.
+
+Wenn der angegebene Pfad nicht existiert, wird als HTTP Statuscode `404` zurückgegeben.
+
+Bei Erfolg wird der HTTP Statuscode `200` ohne Inhalt zurückgegeben.
+
 
 
 ```
-DELETE /api/files/{userid}/{path...}
-GET /api/files/{userid}/{filepath...}
 POST /api/files/{userid}/{filepath...}
 PUT /api/files/{userid}/{path...}
 

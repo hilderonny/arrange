@@ -13,11 +13,14 @@
 </html>
 ```
 
+
 ## Funktionen
 
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
+- [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
 - [Private Datei oder Verzeichnis laden - getPrivateFile(filePath)](#private-datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
+- [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
 
 
 ### Benutzer abmelden - `logout()`
@@ -27,6 +30,7 @@ Meldet den Benutzer ab und lädt die Seite neu, damit der Anmeldedialog wieder a
 ```js
 Arrange.logout()
 ```
+
 
 ### Öffentliche Datei oder Verzeichnis laden - `async getPubliceFile(filePath)`
 
@@ -45,6 +49,20 @@ const dirPublicEntries = await Arrange.getPublicFile('path/to/directory/')
 // ]
 ```
 
+
+### Öffentliche Datei oder Verzeichnis löschen - `async deletePublicPath(filePath)`
+
+Löscht eine Datei oder ein Verzeichnis aus dem öffentlichen Verzeichnis. Falls es sich beim angegebenen Pfad um ein Verzeichnis handelt, wird dieses rekursiv gelöscht.
+
+```js
+// Öffentliches Verzeichnis rekursiv löschen
+await Arrange.deletePublicPath('path/to/directory')
+
+// Öffentliche Datei löschen
+await Arrange.deletePublicPath('path/to/directory/with/file.txt')
+```
+
+
 ### Private Datei oder Verzeichnis laden - `async getPrivateFile(filePath)`
 
 Lädt eine Datei aus dem Benutzerverzeichnis des angemeldeten Benutzers oder listet ein Verzeichnis darin auf.
@@ -60,4 +78,17 @@ const privateDirEntries = await Arrange.getPrivateFile('path/to/directory/')
 //     { "name": "filename.ext", "type": "file" },
 //     { "name": "directoryname", "type": "dir" }
 // ]
+```
+
+
+### Private Datei oder Verzeichnis löschen - `async deletePrivatePath(filePath)`
+
+Löscht eine Datei oder ein Verzeichnis aus dem Benutzerverzeichnis des angemeldeten Benutzers. Falls es sich beim angegebenen Pfad um ein Verzeichnis handelt, wird dieses rekursiv gelöscht.
+
+```js
+// Privates Verzeichnis rekursiv löschen
+await Arrange.deletePrivatePath('path/to/directory')
+
+// Private Datei löschen
+await Arrange.deletePrivatePath('path/to/directory/with/file.txt')
 ```

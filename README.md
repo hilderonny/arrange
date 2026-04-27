@@ -129,10 +129,6 @@ Messages over websockets contain one byte of type information and the rest as pa
 
 createPrivatePath(path)
 createPublicPath(path)
-deletePrivatePath(path)
-deletePublicPath(path)
-getPrivateFile(filePath)
-getPublicFile(filePath)
 postPrivateFile(filePath, fileContent)
 postPublicFile(filePath, fileContent)
 
