@@ -5,6 +5,7 @@ describe('arrange.js autoLogin()', () => {
 
     let originalFetch
     let originalLocation
+    const arrangeLocation = '../../../../../client/arrange/js/arrange.mjs?'
 
     afterEach(() => {
         global.fetch = originalFetch
@@ -23,7 +24,7 @@ describe('arrange.js autoLogin()', () => {
             fetchWasCalled = true
             return { status: 401 }
         }
-        await import('../../../../client/arrange/js/arrange.mjs?' + Math.random())
+        await import(arrangeLocation + Math.random())
         assert.strictEqual(fetchWasCalled, true)
     })
 
@@ -33,7 +34,7 @@ describe('arrange.js autoLogin()', () => {
             assert.strictEqual(options, undefined)
             return { status: 401 }
         }
-        const arrange = await import('../../../../client/arrange/js/arrange.mjs?' + Math.random())
+        const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)
         assert.ok(global.location.href.endsWith('/arrange/login.html?successurl=index.html'))
     })
@@ -43,7 +44,7 @@ describe('arrange.js autoLogin()', () => {
             return { status: 401 }
         }
         global.location = { href: 'index.html' }
-        const arrange = await import('../../../../client/arrange/js/arrange.mjs?' + Math.random())
+        const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)
         assert.ok(global.location.href.endsWith('/arrange/login.html?successurl=index.html'))
     })
@@ -53,7 +54,7 @@ describe('arrange.js autoLogin()', () => {
             return { status: 200 }
         }
         global.location = { href: 'index.html' }
-        const arrange = await import('../../../../client/arrange/js/arrange.mjs?' + Math.random())
+        const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)
         assert.strictEqual(global.location.href, 'index.html')
     })
