@@ -1,6 +1,78 @@
 # API
 
+- [Benutzer abmelden - GET / api/logout](#benutzer-abmelden---get--apilogout)
+- [Benutzer anmelden - POST /api/login](#benutzer-anmelden---post-apilogin)
+- [Benutzer registrieren - POST /api/register](#benutzer-registrieren---post-apiregister)
 - [Benutzersitzung prüfen - GET /api/autologin](#benutzersitzung-prüfen---get-apiautologin)
+
+
+## Benutzer abmelden - `GET / api/logout`
+
+Meldet einen Benutzer von System ab, indem die Sitzung und das Sitzungs-Cookie gelöscht werden.
+Falls kein Benutzer angemeldet war, passiert nichts weiter.
+
+Diese API gibt immer einen HTTP Statuscode `200` ohne Inhalt zurück.
+
+
+## Benutzer anmelden - `POST /api/login`
+
+Meldet einen existierenden Benutzer am System an. Es wird erwartet, dass als Body eine JSON-Struktur gesendet wird:
+
+```json
+{
+    "username": "Benutzername des Benutzers",
+    "password": "Klartextpasswort des Benutzers"
+}
+```
+
+Bei Erfolg wird eine ähnliche JSON-Struktur zurück gesandt, die die Id des existierenden Benutzers enthält.
+Außerdem wird ein Sitzungs-Cookie erstellt.
+
+```json
+{
+    "id": "Id des Benutzers",
+    "username": "Benutzername des Benutzers",
+}
+```
+
+Falls kein Benutzername oder kein Passwort angegeben wurde, es keinen Benutzer mit dem Benutzernamen im System gibt oder das Passwort nicht korrekt ist, wird ein HTTP-Status-Fehler zurückgegeben.
+
+|HTTP Statuscode|Bedeutung|
+|-|-|
+|`200`|Anmeldung erfolgreich.|
+|`400`|Im POST-Body fehlt entweder die Eigenschaft `username` oder die Eigenschaft `password`.|
+|`401`|Es existiert kein Benutzer mit dem angegebenen Benutzernamen oder das angegebene Passwort ist falsch.|
+
+
+## Benutzer registrieren - `POST /api/register`
+
+Registriert einen neuen Benutzer. Es wird erwartet, dass als Body eine JSON-Struktur gesendet wird:
+
+```json
+{
+    "username": "Benutzername des neuen Benutzers",
+    "password": "Klartextpasswort des neuen Benutzers"
+}
+```
+
+Bei Erfolg wird eine ähnliche JSON-Struktur zurück gesandt, die die Id des neuen Benutzers enthält.
+Außerdem wird der Benutzer gleich angemeldet und ein Sitzungs-Cookie erstellt.
+
+```json
+{
+    "id": "Generierte Id des neuen Benutzers",
+    "username": "Benutzername des neuen Benutzers",
+}
+```
+
+Falls kein Benutzername oder kein Passwort angegeben wurde oder es bereits einen Benutzer mit demselben Benutzernamen im System gibt, wird ein HTTP-Status-Fehler zurückgegeben.
+
+|HTTP Statuscode|Bedeutung|
+|-|-|
+|`200`|Registrierung erfolgreich.|
+|`400`|Im POST-Body fehlt entweder die Eigenschaft `username` oder die Eigenschaft `password`.|
+|`409`|Es existiert bereits ein Benutzer mit dem angegebenen Benutzernamen.|
+
 
 ## Benutzersitzung prüfen - `GET /api/autologin`
 
@@ -20,11 +92,6 @@ Diese API dient der schnellen Prüfung, ob der Client auf die Anmeldeseite umlei
 
 
 ```
-GET /api/autologin
-GET /api/logout
-POST /api/login
-POST /api/register
-
 DELETE /api/files/{userid}/{path...}
 GET /api/files/{userid}/{filepath...}
 POST /api/files/{userid}/{filepath...}

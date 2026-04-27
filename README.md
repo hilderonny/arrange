@@ -3,6 +3,7 @@
 Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien und SQLite-Datenbanken auf dem Server sowie Websockets mitbringt.
 
 - [API](API.md)
+- [Client-Bibliothek arrange.mjs](LIB.md)
 
 # Entwicklung
 
@@ -12,10 +13,10 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 \. "$HOME/.nvm/nvm.sh"
 nvm install 24
 
-# Arrange installieren
+# Arrange klonen und Abhängigkeiten installieren
 git clone http://192.168.178.138:8100/ronny/arrange.git
 cd arrange
-npm ci
+npm install
 ```
 
 In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `8443` starten.
@@ -30,7 +31,7 @@ Beispielsweise in `/var/www/index.html`:
 <html>
     <head>
         <script type="module">
-            import * as Arrange from '/arrange/js/arrange.js'
+            import * as Arrange from '/arrange/js/arrange.mjs'
             // Beim ersten Aufruf wird automatisch die Anmeldeseite angezeigt
         </script>
     </head>
@@ -101,26 +102,6 @@ The following URLs and sub paths are reserved and cannot be used by the applicat
 |`/arrange/`|Arrange ressources|
 |`/ws/`|Websockets|
 
-# API
-
-```
-GET /api/autologin
-GET /api/logout
-POST /api/login
-POST /api/register
-
-DELETE /api/files/{userid}/{path...}
-GET /api/files/{userid}/{filepath...}
-POST /api/files/{userid}/{filepath...}
-PUT /api/files/{userid}/{path...}
-
-PATCH /api/datenbank/{datenbankname}
-PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-POST /api/datenbank/{datenbankname}
-```
-
 # Websockets
 
 Messages over websockets contain one byte of type information and the rest as payload in any data structure (defined by application).
@@ -145,7 +126,6 @@ Messages over websockets contain one byte of type information and the rest as pa
 # Bibliothek /arrange/js/arrange.js
 
 ```js
-logout()
 
 createPrivatePath(path)
 createPublicPath(path)
