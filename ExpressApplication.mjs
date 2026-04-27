@@ -4,7 +4,6 @@ import crypto from 'node:crypto'
 import fs from 'fs'
 import path from 'node:path'
 import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
-import multer from 'multer'
 import sqlite from 'node:sqlite'
 
 /********** Konstanten und globale Variable **********/
@@ -112,14 +111,6 @@ async function behandleGetDateipfad(request, response) {
     }
 }
 
-// Benutzer abmelden
-function behandleGetLogout(request, response) {
-    if (request.session) {
-        delete request.session.userId
-    }
-    response.sendStatus(200)
-}
-
 // Tabelle löschen
 async function behandleLoescheDatenbanktabelle(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
@@ -147,22 +138,6 @@ async function behandlePostDateipfad(request, response) {
         response.status(400).send(fehlermeldung)
     }
 }
-
-// Benutzer anmelden
-function behandlePostLogin(request, response) {
-    const benutzername = request.body.username
-    const passwort = request.body.password
-    if (!benutzername || !passwort) return response.sendStatus(400)
-    const benutzer = benutzerFuerBenutzername(benutzername)
-    if (!benutzer) return response.sendStatus(401)
-    const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
-    if (benutzer.password !== passwortHash) return response.sendStatus(401)
-    erstelleBenutzersitzung(request, benutzer.id)
-    response.json({
-        id: benutzer.id,
-        username: benutzer.username,
-    })
-} 
 
 // Verzeichnis erstellen
 async function behandlePutDateipfad(request, response) {
@@ -345,8 +320,8 @@ export default class ExpressApplication {
 
         // // API-Endpunkte
         this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
-        // expressAnwendung.post('/api/login', behandlePostLogin)
-        // expressAnwendung.get('/api/logout', behandleGetLogout)
+        this.app.post('/api/login', this.#handlePostLogin.bind(this))
+        this.app.get('/api/logout', this.#handleGetLogout.bind(this))
         this.app.post('/api/register', this.#handlePostRegister.bind(this))
         // expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
         // expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
@@ -370,6 +345,7 @@ export default class ExpressApplication {
     }
 
     #ladeBenutzer() {
+        console.log(this.#usersJsonPath, fs.existsSync(this.#usersJsonPath))
         if (!fs.existsSync(this.#usersJsonPath)) {
             fs.mkdirSync(path.dirname(this.#usersJsonPath), { recursive: true })
             this.#alleBenutzer = []
@@ -395,6 +371,32 @@ export default class ExpressApplication {
             response.sendStatus(401)
         }
     }
+
+    /**
+     * Benutzer abmelden
+     */
+    #handleGetLogout(request, response) {
+        request.session = null
+        response.sendStatus(200)
+    }
+
+    /**
+     * Benutzer anmelden
+     */
+    #handlePostLogin(request, response) {
+        const benutzername = request.body.username
+        const passwort = request.body.password
+        if (!benutzername || !passwort) return response.sendStatus(400)
+        const benutzer = this.#benutzerFuerBenutzername(benutzername)
+        if (!benutzer) return response.sendStatus(401)
+        const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
+        if (benutzer.password !== passwortHash) return response.sendStatus(401)
+            this.#erstelleBenutzersitzung(request, benutzer.id)
+        response.json({
+            id: benutzer.id,
+            username: benutzer.username,
+        })
+    } 
 
     /**
      * Benutzer registrieren

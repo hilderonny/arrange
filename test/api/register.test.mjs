@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { rm } from 'node:fs/promises'
+import fs from 'fs'
 import crypto from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
@@ -13,7 +13,10 @@ describe('GET /api/register', () => {
 
     beforeEach(async () => {
         const dataPath = './test/data'
-        await rm(path.resolve(dataPath), { recursive: true })
+        const fullPath = path.resolve(dataPath)
+        if (fs.existsSync(fullPath)) {
+            fs.rmSync(fullPath, { recursive: true })
+        }
         expressApplication = new ExpressApplication(
             dataPath,
             './test/html', // htmlPath

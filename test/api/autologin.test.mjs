@@ -1,7 +1,6 @@
 import path from 'node:path'
 import { rm } from 'node:fs/promises'
 import { beforeEach, describe, it } from 'node:test'
-import * as assert from 'node:assert'
 import supertest from 'supertest'
 import ExpressApplication from '../../ExpressApplication.mjs'
 
@@ -19,11 +18,11 @@ describe('GET /api/autologin', () => {
         )
     })
 
-    it('Ohne Sitzung wird HTTP Status 401 zurück gegeben', async () => {
+    it('Ohne Sitzung wird HTTP Status 401 zurück gegeben.', async () => {
         await supertest(expressApplication.app).get('/api/autologin').expect(401)
     })
 
-    it('Mit Sitzung wird HTTP Status 200 zurück gegeben', async () => {
+    it('Mit Sitzung wird HTTP Status 200 zurück gegeben.', async () => {
         // Agenten senden Cookies automatisch zurück
         const agent = supertest.agent(expressApplication.app)
         // Benutzer anlegen, sollte funktionieren
