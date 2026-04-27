@@ -20,7 +20,7 @@ describe('arrange.js autoLogin()', () => {
 
     it('autoLogin() wird gleich beim Import aufgerufen.', async () => {
         let fetchWasCalled = false
-        global.fetch = async() => {
+        global.fetch = () => {
             fetchWasCalled = true
             return { status: 401 }
         }
@@ -29,7 +29,7 @@ describe('arrange.js autoLogin()', () => {
     })
 
     it('Es wird die API GET /api/login aufgerufen', async () => {
-        global.fetch = async(url, options) => {
+        global.fetch = (url, options) => {
             assert.strictEqual(url, '/api/autologin')
             assert.strictEqual(options, undefined)
             return { status: 401 }
@@ -40,7 +40,7 @@ describe('arrange.js autoLogin()', () => {
     })
 
     it('Ohne Sitzung wird auf login.html umgeleitet.', async () => {
-        global.fetch = async() => {
+        global.fetch = () => {
             return { status: 401 }
         }
         global.location = { href: 'index.html' }
@@ -50,7 +50,7 @@ describe('arrange.js autoLogin()', () => {
     })
 
     it('Mit Sitzung erfolgt keine Umleitung.', async () => {
-        global.fetch = async() => {
+        global.fetch = () => {
             return { status: 200 }
         }
         global.location = { href: 'index.html' }
