@@ -21,7 +21,7 @@ describe('arrange.js logout()', () => {
         global.location = { reload: () => {} }
     })
 
-    it('Es wird die API GET /api/logout aufgerufen', async () => {
+    it('Es wird die API GET /api/logout aufgerufen.', async () => {
         // Automatisch anmelden lassen
         const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)
@@ -36,7 +36,7 @@ describe('arrange.js logout()', () => {
         assert.strictEqual(fetchWasCalled, true)
     })
 
-    it('Die Seite wird neu geladen', async () => {
+    it('Die Seite wird neu geladen.', async () => {
         // Automatisch anmelden lassen
         const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)

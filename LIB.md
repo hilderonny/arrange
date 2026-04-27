@@ -15,12 +15,31 @@
 
 ## Funktionen
 
-- [logout()](#logout)
+- [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
+- [Datei oder Verzeichnis laden - getPrivateFile(filePath)](#datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
 
-### `logout()`
+
+### Benutzer abmelden - `logout()`
 
 Meldet den Benutzer ab und lädt die Seite neu, damit der Anmeldedialog wieder angezeigt wird.
 
-```
+```js
 Arrange.logout()
+```
+
+### Datei oder Verzeichnis laden - `async getPrivateFile(filePath)`
+
+Lädt eine Datei aus dem Benutzerverzeichnis des angemeldeten Benutzers oder listet ein Verzeichnis darin auf.
+
+```js
+// Dateiinhalt laden
+const privateFileContent = await Arrange.getPrivateFile('path/to/file.ext')
+// z.B.: "File content"
+
+// Verzeichnis auflisten
+const dirEntries = await Arrange.getPrivateFile('path/to/directory/')
+// [
+//     { "name": "filename.ext", "type": "file" },
+//     { "name": "directoryname", "type": "dir" }
+// ]
 ```

@@ -3,7 +3,7 @@ import cookieSession from 'cookie-session'
 import crypto from 'node:crypto'
 import fs from 'fs'
 import path from 'node:path'
-import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, rm, stat, writeFile } from 'node:fs/promises'
 import sqlite from 'node:sqlite'
 
 /********** Konstanten und globale Variable **********/
@@ -23,7 +23,7 @@ async function ladeDatenbank(datenbankname) {
     let datenbank = DATENBANKEN[datenbankname]
     if (!datenbank) {
         const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
-        await mkdir(path.dirname(absoluterPfad), { recursive: true })
+        fs.mkdirSync(path.dirname(absoluterPfad), { recursive: true })
         datenbank = new sqlite.DatabaseSync(absoluterPfad)
         DATENBANKEN[datenbankname] = datenbank
     }
@@ -78,36 +78,6 @@ async function behandleDeleteDateipfad(request, response) {
         response.sendStatus(200)
     } catch (e) {
         response.sendStatus(404)
-    }
-}
-
-// Automatische Anmeldung anhand des Cookies
-function behandleGetAutoLogin(request, response) {
-    if (request.session && request.session.userId) {
-        response.sendStatus(200)
-    } else {
-        response.sendStatus(401)
-    }
-}
-
-// Datei oder Verzeichnisliste liefern
-async function behandleGetDateipfad(request, response) {
-    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
-    if (!fs.existsSync(absoluterPfad)) {
-        return response.sendStatus(404)
-    }
-    const pfadEigenschaften = await stat(absoluterPfad)
-    if (pfadEigenschaften.isDirectory()) {
-        const verzeichniseintraege = await readdir(absoluterPfad, { withFileTypes: true })
-        const verzeichnisliste = verzeichniseintraege.map(eintrag => { return {
-            name: eintrag.name,
-            type: eintrag.isDirectory() ? 'dir' : 'file'
-        }})
-        response.json(verzeichnisliste)
-    } else if (pfadEigenschaften.isFile()) {
-        response.sendFile(absoluterPfad)
-    } else {
-        return response.sendStatus(400)
     }
 }
 
@@ -275,7 +245,12 @@ export default class ExpressApplication {
     /**
      * Liste aller Benutzerinfos
      */
-    #alleBenutzer
+    #allUsers
+
+    /**
+     * Pfad zum Verzeichnis, welches alle Benutzerdateien enthält
+     */
+    #filesPath
 
     /**
      * Pfad zur JSON-Datei mit Benutzerinfos
@@ -296,13 +271,11 @@ export default class ExpressApplication {
      */
     constructor(dataPath, htmlPath, tokenSecret) {
 
-        // const DATENPFAD = process.env.ARRANGE_DATA_PATH
         this.#usersJsonPath = path.join(dataPath, 'users/users.json')
-        // const DATEIEN_PFAD = path.join(DATENPFAD, 'files') // Pfad zu den Dateien
-
+        this.#filesPath = path.join(dataPath, 'files')
 
         // Benutzerdatenbank laden
-        this.#ladeBenutzer()
+        this.#loadUsers()
 
         this.app = express()
 
@@ -324,7 +297,7 @@ export default class ExpressApplication {
         this.app.get('/api/logout', this.#handleGetLogout.bind(this))
         this.app.post('/api/register', this.#handlePostRegister.bind(this))
         // expressAnwendung.delete('/api/files/:benutzerId/*pfad', behandleDeleteDateipfad)
-        // expressAnwendung.get('/api/files/:benutzerId/*pfad', behandleGetDateipfad)
+        this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         // expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
         // expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
         // expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
@@ -336,27 +309,26 @@ export default class ExpressApplication {
 
     /********** Hilfsfunktionen **********/
 
-    #benutzerFuerBenutzername(benutzername) {
-        return this.#alleBenutzer.find(benutzer => benutzer.username === benutzername)
+    #getUserForUsername(username) {
+        return this.#allUsers.find(user => user.username === username)
     }
 
-    #erstelleBenutzersitzung(request, benutzerId) {
-        request.session.userId = benutzerId
+    #createUserSession(request, userId) {
+        request.session.userId = userId
     }
 
-    #ladeBenutzer() {
-        console.log(this.#usersJsonPath, fs.existsSync(this.#usersJsonPath))
+    #loadUsers() {
         if (!fs.existsSync(this.#usersJsonPath)) {
             fs.mkdirSync(path.dirname(this.#usersJsonPath), { recursive: true })
-            this.#alleBenutzer = []
-            this.#speichereBenutzer()
+            this.#allUsers = []
+            this.#saveUsers()
         } else {
-            this.#alleBenutzer = JSON.parse(fs.readFileSync(this.#usersJsonPath))
+            this.#allUsers = JSON.parse(fs.readFileSync(this.#usersJsonPath))
         }
     }
 
-    #speichereBenutzer() {
-        fs.writeFileSync(this.#usersJsonPath, JSON.stringify(this.#alleBenutzer, null, '\t'))
+    #saveUsers() {
+        fs.writeFileSync(this.#usersJsonPath, JSON.stringify(this.#allUsers, null, '\t'))
     }
 
     /********** API Funktionen **********/
@@ -381,20 +353,42 @@ export default class ExpressApplication {
     }
 
     /**
+     * Datei oder Verzeichnisinhalt liefern
+     */
+    async #handleGetPath(request, response) {
+        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+        console.log(absolutePath)
+        if (!fs.existsSync(absolutePath)) {
+            return response.sendStatus(404)
+        }
+        const pathStats = await stat(absolutePath)
+        if (pathStats.isDirectory()) {
+            const directoryEntries = fs.readdirSync(absolutePath, { withFileTypes: true })
+            const entryList = directoryEntries.map(entry => { return {
+                name: entry.name,
+                type: entry.isDirectory() ? 'dir' : 'file'
+            }})
+            response.json(entryList)
+        } else {
+            response.sendFile(absolutePath)
+        }
+    }
+
+    /**
      * Benutzer anmelden
      */
     #handlePostLogin(request, response) {
-        const benutzername = request.body.username
-        const passwort = request.body.password
-        if (!benutzername || !passwort) return response.sendStatus(400)
-        const benutzer = this.#benutzerFuerBenutzername(benutzername)
-        if (!benutzer) return response.sendStatus(401)
-        const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
-        if (benutzer.password !== passwortHash) return response.sendStatus(401)
-            this.#erstelleBenutzersitzung(request, benutzer.id)
+        const username = request.body.username
+        const password = request.body.password
+        if (!username || !password) return response.sendStatus(400)
+        const user = this.#getUserForUsername(username)
+        if (!user) return response.sendStatus(401)
+        const passwortHash = crypto.createHash('sha256').update(password).digest('hex')
+        if (user.password !== passwortHash) return response.sendStatus(401)
+            this.#createUserSession(request, user.id)
         response.json({
-            id: benutzer.id,
-            username: benutzer.username,
+            id: user.id,
+            username: user.username,
         })
     } 
 
@@ -402,23 +396,23 @@ export default class ExpressApplication {
      * Benutzer registrieren
      */
     #handlePostRegister(request, response) {
-        const benutzername = request.body.username
-        const passwort = request.body.password
-        if (!benutzername || !passwort) return response.sendStatus(400)
-        const existierenderBenutzer = this.#benutzerFuerBenutzername(benutzername)
-        if (existierenderBenutzer) return response.sendStatus(409)
-        const passwortHash = crypto.createHash('sha256').update(passwort).digest('hex')
-        const neuerBenutzer = {
+        const username = request.body.username
+        const password = request.body.password
+        if (!username || !password) return response.sendStatus(400)
+        const existingUser = this.#getUserForUsername(username)
+        if (existingUser) return response.sendStatus(409)
+        const passwortHash = crypto.createHash('sha256').update(password).digest('hex')
+        const newuser = {
             id: Date.now().toString() + Math.floor(Math.random() * 1000000),
             password: passwortHash,
-            username: benutzername,
+            username: username,
         }
-        this.#alleBenutzer.push(neuerBenutzer)
-        this.#speichereBenutzer()
-        this.#erstelleBenutzersitzung(request, neuerBenutzer.id)
+        this.#allUsers.push(newuser)
+        this.#saveUsers()
+        this.#createUserSession(request, newuser.id)
         response.json({
-            id: neuerBenutzer.id,
-            username: neuerBenutzer.username,
+            id: newuser.id,
+            username: newuser.username,
         })
     }
 

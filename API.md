@@ -4,6 +4,7 @@
 - [Benutzer anmelden - POST /api/login](#benutzer-anmelden---post-apilogin)
 - [Benutzer registrieren - POST /api/register](#benutzer-registrieren---post-apiregister)
 - [Benutzersitzung prüfen - GET /api/autologin](#benutzersitzung-prüfen---get-apiautologin)
+- [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
 
 
 ## Benutzer abmelden - `GET / api/logout`
@@ -87,6 +88,23 @@ Diese API dient der schnellen Prüfung, ob der Client auf die Anmeldeseite umlei
 |`200`|Eine aktive Sitzung existiert und enthält eine `userId`. Der Client kann davon ausgehen, dass der Benutzer angemeldet ist.|
 |`401`|Es existiert entweder keine aktive Sitzung oder diese enthält keine `userId`. Der Client sollte auf die Anmeldeseite umleiten.|
 
+
+## Datei abrufen oder Verzeichnis auflisten - `GET /api/files/:userId/*filePath`
+
+Lädt eine Datei unterhalb eines Benutzerverzeichnisses herunter oder listet den Inhalt des Verzeichnisses auf, wenn es sich beim Pfad um ein Verzeichnis handelt.
+
+Bei Dateien wird diese direkt als Ergebnis ausgeliefert, mit dem zur Erweiterung passenden Content-Type.
+
+Bei Verzeichnissen wird eine JSON-Struktur mit den Eintragsnamen und deren Typen (`file`= reguläre Datei, `dir` = Verzeichnis) zurückgegeben:
+
+```json
+[
+    { "name": "filename.ext", "type": "file" },
+    { "name": "directoryname", "type": "dir" }
+]
+```
+
+Wird der Pfad nicht gefunden, wird als HTTP Statuscode `404` zurückgegeben.
 
 
 

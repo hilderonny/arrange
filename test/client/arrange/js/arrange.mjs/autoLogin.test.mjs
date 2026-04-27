@@ -28,7 +28,7 @@ describe('arrange.js autoLogin()', () => {
         assert.strictEqual(fetchWasCalled, true)
     })
 
-    it('Es wird die API GET /api/login aufgerufen', async () => {
+    it('Es wird die API GET /api/login aufgerufen.', async () => {
         global.fetch = (url, options) => {
             assert.strictEqual(url, '/api/autologin')
             assert.strictEqual(options, undefined)

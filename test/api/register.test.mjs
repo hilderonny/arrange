@@ -1,7 +1,6 @@
 import path from 'node:path'
-import fs from 'fs'
+import fs from 'node:fs'
 import crypto from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
 import * as assert from 'node:assert'
 import supertest from 'supertest'
@@ -41,21 +40,21 @@ describe('GET /api/register', () => {
 
     it('Bei Erfolg wird der neue Benutzer in der Benutzerliste gespeichert.', async () => {
         await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' })
-        const benutzerliste = JSON.parse(readFileSync(path.resolve('./test/data/users/users.json')))
+        const benutzerliste = JSON.parse(fs.readFileSync(path.resolve('./test/data/users/users.json')))
         const testbenutzer = benutzerliste.find(benutzer => benutzer.username === 'testusername')
         assert.ok(testbenutzer)
     })
 
     it('Bei Erfolg bekommt der Benutzer eine Id.', async () => {
         await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' })
-        const benutzerliste = JSON.parse(readFileSync(path.resolve('./test/data/users/users.json')))
+        const benutzerliste = JSON.parse(fs.readFileSync(path.resolve('./test/data/users/users.json')))
         const testbenutzer = benutzerliste.find(benutzer => benutzer.username === 'testusername')
         assert.ok(testbenutzer.id)
     })
 
     it('Bei Erfolg wird das Passwort verschlüsselt gespeichert.', async () => {
         await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' })
-        const benutzerliste = JSON.parse(readFileSync(path.resolve('./test/data/users/users.json')))
+        const benutzerliste = JSON.parse(fs.readFileSync(path.resolve('./test/data/users/users.json')))
         const testbenutzer = benutzerliste.find(benutzer => benutzer.username === 'testusername')
         assert.strictEqual(testbenutzer.password, crypto.createHash('sha256').update('testpassword').digest('hex'))
     })
@@ -68,7 +67,7 @@ describe('GET /api/register', () => {
         const response = await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' })
         assert.strictEqual(response.body.username, 'testusername')
         assert.ok(response.body.id)
-        const benutzerliste = JSON.parse(readFileSync(path.resolve('./test/data/users/users.json')))
+        const benutzerliste = JSON.parse(fs.readFileSync(path.resolve('./test/data/users/users.json')))
         const testbenutzer = benutzerliste.find(benutzer => benutzer.username === 'testusername')
         assert.strictEqual(response.body.id, testbenutzer.id)
     })
