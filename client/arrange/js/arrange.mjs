@@ -52,25 +52,25 @@ async function connectWebSocket(messageCallback) {
     })
 }
 
-async function createPrivatePath(path) {
+async function createPrivatePath(directoryPath) {
     const userid = localStorage.getItem('userid')
-    const url = new URL(`/api/files/${userid}/${path}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${directoryPath}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
-async function createPublicPath(path) {
-    const url = new URL(`/api/files/public/${path}`, import.meta.url).href
+async function createPublicPath(directoryPath) {
+    const url = new URL(`/api/files/public/${directoryPath}`, import.meta.url).href
     return await fetch(url, { method: 'PUT' })
 }
 
-async function deletePrivatePath(path) {
+async function deletePrivatePath(filePath) {
     const userid = localStorage.getItem('userid')
-    const url = new URL(`/api/files/${userid}/${path}`, import.meta.url).href
+    const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 
-async function deletePublicPath(path) {
-    const url = new URL(`/api/files/public/${path}`, import.meta.url).href
+async function deletePublicPath(filePath) {
+    const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await fetch(url, { method: 'DELETE' })
 }
 

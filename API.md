@@ -6,7 +6,7 @@
 - [Benutzersitzung prüfen - GET /api/autologin](#benutzersitzung-prüfen---get-apiautologin)
 - [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
-
+- [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
 
 ## Benutzer abmelden - `GET / api/logout`
 
@@ -117,10 +117,18 @@ Wenn der angegebene Pfad nicht existiert, wird als HTTP Statuscode `404` zurück
 Bei Erfolg wird der HTTP Statuscode `200` ohne Inhalt zurückgegeben.
 
 
+## Verzeichnis erstellen - `PUT /api/files/:userId/*directoryPath`
+
+Erstellt ein Verzeichnis innerhalb eines Benutzerverzeichnisses.
+Die Erstellung erfolgt rekursiv, wobei nicht existierende Elternverzeichnisse automatisch erstellt werden.
+
+Sollte das Zielverzeichnis bereits existieren, oder der Zielpfad auf eine existierende Datei verweisen, passiert nichts weiter.
+
+Es wird immer der HTTP Statuscode `200` zurückgegeben.
+
 
 ```
 POST /api/files/{userid}/{filepath...}
-PUT /api/files/{userid}/{path...}
 
 PATCH /api/datenbank/{datenbankname}
 PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}

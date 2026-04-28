@@ -21,6 +21,7 @@
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
 - [Private Datei oder Verzeichnis laden - getPrivateFile(filePath)](#private-datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
 - [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
+- [Privates Verzeichnis erstellen - async createPrivatePath(directoryPath)](#privates-verzeichnis-erstellen---async-createprivatepathdirectorypath)
 
 
 ### Benutzer abmelden - `logout()`
@@ -63,6 +64,18 @@ await Arrange.deletePublicPath('path/to/directory/with/file.txt')
 ```
 
 
+### Öffentliches Verzeichnis erstellen - `async createPublicPath(directoryPath)`
+
+Erstellt ein Verzeichnis im öffentlichen Verzeichnis.
+Falls an dem Zielpfad bereits ein Verzeichnis oder eine Datei existiert, passiert nichts weiter.
+Alle übergeordneten Verzeichnisse qwerden bei bedarf ebenfalls automatisch erstellt.
+
+```js
+// Öffentliches Verzeichnis erstellen
+await Arrange.createPublicPath('path/to/directory')
+```
+
+
 ### Private Datei oder Verzeichnis laden - `async getPrivateFile(filePath)`
 
 Lädt eine Datei aus dem Benutzerverzeichnis des angemeldeten Benutzers oder listet ein Verzeichnis darin auf.
@@ -91,4 +104,16 @@ await Arrange.deletePrivatePath('path/to/directory')
 
 // Private Datei löschen
 await Arrange.deletePrivatePath('path/to/directory/with/file.txt')
+```
+
+
+### Privates Verzeichnis erstellen - `async createPrivatePath(directoryPath)`
+
+Erstellt ein Verzeichnis im Benutzerverzeichnis.
+Falls an dem Zielpfad bereits ein Verzeichnis oder eine Datei existiert, passiert nichts weiter.
+Alle übergeordneten Verzeichnisse qwerden bei bedarf ebenfalls automatisch erstellt.
+
+```js
+// Privates Verzeichnis erstellen
+await Arrange.createPrivatePath('path/to/directory')
 ```

@@ -1,9 +1,9 @@
 import express from 'express'
 import cookieSession from 'cookie-session'
 import crypto from 'node:crypto'
-import fs from 'fs'
+import fs from 'node:fs'
 import path from 'node:path'
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, stat, writeFile } from 'node:fs/promises'
 import sqlite from 'node:sqlite'
 
 /********** Konstanten und globale Variable **********/
@@ -92,17 +92,6 @@ async function behandlePostDateipfad(request, response) {
     await mkdir(path.dirname(absoluterPfad), { recursive: true })
     try {
         await writeFile(absoluterPfad, request.files[0].buffer)
-        response.sendStatus(200)
-    } catch (fehlermeldung) {
-        response.status(400).send(fehlermeldung)
-    }
-}
-
-// Verzeichnis erstellen
-async function behandlePutDateipfad(request, response) {
-    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
-    try {
-        await mkdir(absoluterPfad, { recursive: true })
         response.sendStatus(200)
     } catch (fehlermeldung) {
         response.status(400).send(fehlermeldung)
@@ -288,7 +277,7 @@ export default class ExpressApplication {
         this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         // expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
-        // expressAnwendung.put('/api/files/:benutzerId/*pfad', behandlePutDateipfad)
+        this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
         // expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
         // expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
         // expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
@@ -414,6 +403,17 @@ export default class ExpressApplication {
             id: newuser.id,
             username: newuser.username,
         })
+    }
+
+    /**
+     * Verzeichnis erstellen
+     */
+    #handlePutDirectoryPath(request, response) {
+        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.directoryPath)
+        if (!fs.existsSync(absolutePath)) {
+            fs.mkdirSync(absolutePath, { recursive: true })
+        }
+        response.sendStatus(200)
     }
 
 }
