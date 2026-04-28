@@ -5,6 +5,7 @@
 - [Benutzer registrieren - POST /api/register](#benutzer-registrieren---post-apiregister)
 - [Benutzersitzung prüfen - GET /api/autologin](#benutzersitzung-prüfen---get-apiautologin)
 - [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
+- [Datei hochladen - POST /api/files/:userId/*filePath](#datei-hochladen---post-apifilesuseridfilepath)
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
 - [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
 
@@ -108,6 +109,25 @@ Bei Verzeichnissen wird eine JSON-Struktur mit den Eintragsnamen und deren Typen
 Wird der Pfad nicht gefunden, wird als HTTP Statuscode `404` zurückgegeben.
 
 
+## Datei hochladen - `POST /api/files/:userId/*filePath`
+
+Lädt eine Datei in den angegebenen Pfad innerhalb des Benutzerverzeichnisses hoch.
+Dabei wird der Dateiname aus dem URL-Parameter `filePath` übernommen.
+Die Datei selbst muss als Feld `data` innerhalb eines `FormData` Objektes übertragen werden.
+
+```js
+FormData {
+  data: File { size: 17, type: '', name: 'blob', lastModified: 1777376379952 }
+}
+```
+
+Alternativ kann die Datei auch direkt als Binärstrom mit dem Content-Type `application/octet-stream` gesendet werden.
+
+Wenn an dem angegebenen Pfad bereits ein Verzeichnis mit demselben Namen existiert oder nicht genau eine Datei gesendet wird, wird der HTTP Statuscode `400` zurückgegeben.
+
+Falls an dem Zielpfad bereits eine Datei existiert, wird diese überschrieben.
+
+
 ## Datei oder Verzeichnis löschen - `DELETE /api/files/:userId/*filePath`
 
 Löscht einen Pfad (Datei oder Verzeichnis) unterhalb eines Benutzerverzeichnisses. Wenn der angegebene Pfad ein Verzeichnis ist, wird dieses samt Inhalt rekursiv gelöscht.
@@ -128,8 +148,6 @@ Es wird immer der HTTP Statuscode `200` zurückgegeben.
 
 
 ```
-POST /api/files/{userid}/{filepath...}
-
 PATCH /api/datenbank/{datenbankname}
 PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
 DELETE /api/datenbank/{datenbankname}/{tabellenname}

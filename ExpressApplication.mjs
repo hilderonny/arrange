@@ -5,13 +5,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { mkdir, stat, writeFile } from 'node:fs/promises'
 import sqlite from 'node:sqlite'
+import multer from 'multer'
 
 /********** Konstanten und globale Variable **********/
 
 // let NAECHSTE_WEBSOCKET_ID = 0
 
-// const PORT = process.env.ARRANGE_PORT
-// const UPLOAD_HANDLER = multer()
 // const WEBSOCKETS = {}
 // const WEBSOCKET_RAEUME = {}
 // const DATENBANKEN = {}
@@ -84,18 +83,6 @@ async function behandleLoescheDatensatz(request, response) {
     const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE Id = '${request.params.datensatzId}';`)
     abfrage.run()
     response.sendStatus(200)
-}
-
-// Datei speichern
-async function behandlePostDateipfad(request, response) {
-    const absoluterPfad = path.resolve(DATEIEN_PFAD, request.params.benutzerId, ...request.params.pfad)
-    await mkdir(path.dirname(absoluterPfad), { recursive: true })
-    try {
-        await writeFile(absoluterPfad, request.files[0].buffer)
-        response.sendStatus(200)
-    } catch (fehlermeldung) {
-        response.status(400).send(fehlermeldung)
-    }
 }
 
 // Websocket Verbindung wurde aufgebaut
@@ -263,11 +250,11 @@ export default class ExpressApplication {
         // JSON in POST Daten aktivieren
         this.app.use(express.json())
 
-        // // Statische HTML Seiten ausliefern, wird reingemountet
-        // expressAnwendung.use(express.static(process.env.ARRANGE_HTML_PATH))
+        // Statische HTML Seiten ausliefern, wird reingemountet
+        // this.app.use(express.static(process.env.ARRANGE_HTML_PATH))
 
-        // // Arrange-Client-Skripte und Seiten ausliefern
-        // expressAnwendung.use('/arrange', express.static('./client/arrange'))
+        // Arrange-Client-Skripte und Seiten ausliefern
+        // this.app.use('/arrange', express.static('./client/arrange'))
 
         // // API-Endpunkte
         this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
@@ -276,7 +263,7 @@ export default class ExpressApplication {
         this.app.post('/api/register', this.#handlePostRegister.bind(this))
         this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
-        // expressAnwendung.post('/api/files/:benutzerId/*pfad', UPLOAD_HANDLER.any(), behandlePostDateipfad)
+        this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
         // expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
         // expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
@@ -346,7 +333,6 @@ export default class ExpressApplication {
      */
     async #handleGetPath(request, response) {
         const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        console.log(absolutePath)
         if (!fs.existsSync(absolutePath)) {
             return response.sendStatus(404)
         }
@@ -360,6 +346,22 @@ export default class ExpressApplication {
             response.json(entryList)
         } else {
             response.sendFile(absolutePath)
+        }
+    }
+
+    /**
+     * Datei speichern
+     */
+    async #handlePostFile(request, response) {
+        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+        if (!request.files || request.files.length !== 1) {
+            response.sendStatus(400)
+        } else if (fs.existsSync(absolutePath) && !fs.statSync(absolutePath).isFile()) {
+            response.sendStatus(400)
+        } else {
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            fs.writeFileSync(absolutePath, request.files[0].buffer)
+            response.sendStatus(200)
         }
     }
 

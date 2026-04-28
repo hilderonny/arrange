@@ -5,7 +5,6 @@ import fs from 'fs'
 import https from 'https'
 // import path from 'node:path'
 // import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
-// import multer from 'multer'
 // import { WebSocketServer } from 'ws'
 // import sqlite from 'node:sqlite'
 import ExpressApplication from './ExpressApplication.mjs'
@@ -401,7 +400,7 @@ const expressApplication = new ExpressApplication(process.env.ARRANGE_DATA_PATH,
 const httpsServer = https.createServer({
     key: fs.readFileSync(process.env.ARRANGE_KEY_FILE),
     cert: fs.readFileSync(process.env.ARRANGE_CRT_FILE),
-}, expressApplication)
+}, expressApplication.app)
 
 // // Websocketverbindungen behandeln
 // const webSocketServer = new WebSocketServer({ server: httpsServer })

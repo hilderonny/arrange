@@ -135,7 +135,7 @@ async function macheDatenbankabfrage(datenbankname, abfrage) {
     }
 }
 
-async function postFile(url, fileContent) {
+async function postTextFile(url, fileContent) {
     const formData = new FormData()
     formData.append('data', new Blob([fileContent]))
     const result = await fetch(url, {
@@ -145,15 +145,15 @@ async function postFile(url, fileContent) {
     return result.ok
 }
 
-async function postPrivateFile(filePath, fileContent) {
+async function postPrivateTextFile(filePath, fileContent) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
-    return await postFile(url, fileContent)
+    return await postTextFile(url, fileContent)
 }
 
-async function postPublicFile(filePath, fileContent) {
+async function postPublicTextFile(filePath, fileContent) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
-    return await postFile(url, fileContent)
+    return await postTextFile(url, fileContent)
 }
 
 async function sendMessageToClient(clientId, textMessage) {
@@ -200,7 +200,9 @@ async function speichereDatensatz(datenbankname, tabellenname, datensatzId, feld
     }
 }
 
-async function uploadFile(url, file, progressCallback) {
+async function uploadFile(url, binaryFileContent, progressCallback) {
+    const formData = new FormData()
+    formData.append('data', new Blob([binaryFileContent]))
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
 
@@ -217,20 +219,19 @@ async function uploadFile(url, file, progressCallback) {
         xhr.onerror = () => reject()
 
         xhr.open('POST', url)
-        xhr.setRequestHeader('Content-Type', 'application/octet-stream')
-        xhr.send(file)
+        xhr.send(formData)
     })
 }
 
-async function uploadPrivateFile(filePath, file, progressCallback) {
+async function uploadPrivateBinaryFile(filePath, binaryFileContent, progressCallback) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
-    return await uploadFile(url, file, progressCallback)
+    return await uploadFile(url, binaryFileContent, progressCallback)
 }
 
-async function uploadPublicFile(filePath, file, progressCallback) {
+async function uploadPublicFile(filePath, binaryFileContent, progressCallback) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
-    return await uploadFile(url, file, progressCallback)
+    return await uploadFile(url, binaryFileContent, progressCallback)
 }
 
 await autoLogin()
@@ -250,11 +251,11 @@ export {
     loescheDatensatz,
     logout,
     macheDatenbankabfrage,
-    postPrivateFile,
-    postPublicFile,
+    postPrivateTextFile,
+    postPublicTextFile,
     sendMessageToClient,
     sendMessageToRoom,
     speichereDatensatz,
-    uploadPrivateFile,
+    uploadPrivateBinaryFile,
     uploadPublicFile,
 }

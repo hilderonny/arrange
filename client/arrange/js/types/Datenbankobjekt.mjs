@@ -1,4 +1,4 @@
-import * as Arrange from '../arrange.js'
+import * as Arrange from '../arrange.mjs'
 
 export default class Datenbankobjekt {
 

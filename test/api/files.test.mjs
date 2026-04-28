@@ -100,6 +100,62 @@ describe('API /api/files', () => {
     
     })
 
+    describe('POST /api/files/:userId/*filePath', () => {
+
+        it('Wenn der Zielpfad ein existierendes Verzeichnis ist, wird HTTP Statuscode 400 zurückgegeben.', async () => {
+            const parentPath = path.resolve(`./test/data/files/${userId}/existing/path/`)
+            fs.mkdirSync(parentPath, { recursive: true })
+            const fileContent = 'Inhalt der Datei'
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path`).attach('data', Buffer.from(fileContent), 'filename.txt').expect(400)
+        })
+
+        it('Wenn keine Datei gesendet wurde, wird HTTP Statuscode 400 zurückgegeben.', async () => {
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`).expect(400)
+        })
+
+        it('Wenn mehr als eine Datei gesendet wurde, wird HTTP Statuscode 400 zurückgegeben.', async () => {
+            const buffer = Buffer.from('Inhalt der Datei')
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`)
+                .attach('data', buffer, 'file1.txt')
+                .attach('data', buffer, 'file2.txt')
+                .expect(400)
+        })
+
+        it('Bei Erfolg wird HTTP Statuscode 200 zurückgegeben.', async () => {
+            const fileContent = 'Inhalt der Datei'
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`).attach('data', Buffer.from(fileContent), 'filename.txt').expect(200)
+        })
+
+        it('Bei Erfolg wird am Zielpfad eine Datei mit dem gesendeten Inhalt gespeichert.', async () => {
+            const fileContent = 'Inhalt der Datei'
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`).attach('data', Buffer.from(fileContent), 'filename.txt')
+            const filePath = path.resolve(`./test/data/files/${userId}/existing/path/filename.txt`)
+            assert.ok(fs.existsSync(filePath))
+            const writtenFileContent = fs.readFileSync(filePath).toString()
+            assert.strictEqual(fileContent, writtenFileContent)
+        })
+
+        it('Bei Erfolg werden für den Zielpfad alle übergeordneten Verzeichnisse erstellt.', async () => {
+            const fileContent = 'Inhalt der Datei'
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`).attach('data', Buffer.from(fileContent), 'filename.txt').expect(200)
+            assert.ok(fs.existsSync(path.resolve(`./test/data/files/${userId}`)))
+            assert.ok(fs.existsSync(path.resolve(`./test/data/files/${userId}/existing`)))
+            assert.ok(fs.existsSync(path.resolve(`./test/data/files/${userId}/existing/path`)))
+        })
+
+        it('Bei Erfolg wird eine eventuell existierende Datei am Zielpfad überschrieben.', async () => {
+            const parentPath = path.resolve(`./test/data/files/${userId}/existing/path/`)
+            fs.mkdirSync(parentPath, { recursive: true })
+            const filePath = path.resolve(parentPath, 'filename.txt')
+            fs.writeFileSync(filePath, 'Old file content')
+            const fileContent = 'New content of file'
+            await supertest(expressApplication.app).post(`/api/files/${userId}/existing/path/filename.txt`).attach('data', Buffer.from(fileContent), 'filename.txt').expect(200)
+            const writtenFileContent = fs.readFileSync(filePath).toString()
+            assert.strictEqual(fileContent, writtenFileContent)
+        })
+    
+    })
+
     describe('PUT /api/files/:userId/*directoryPath', () => {
 
         it('Es wird HTTP Status 200 zurückgegeben.', async () => {

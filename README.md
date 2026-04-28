@@ -126,12 +126,6 @@ Messages over websockets contain one byte of type information and the rest as pa
 # Bibliothek /arrange/js/arrange.js
 
 ```js
-
-createPrivatePath(path)
-createPublicPath(path)
-postPrivateFile(filePath, fileContent)
-postPublicFile(filePath, fileContent)
-
 connectWebSocket(serverMessageCallback({type, senderId, roomId, clientId, message}))
 joinRoom(roomNumber)
 leaveRoom(roomNumber)

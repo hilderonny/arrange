@@ -19,8 +19,10 @@
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
+- [Öffentliche Textdatei hochladen - async postPublicFile(filePath, fileContent)](#öffentliche-textdatei-hochladen---async-postpublictextfilefilepath-filecontent)
 - [Private Datei oder Verzeichnis laden - getPrivateFile(filePath)](#private-datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
 - [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
+- [Private Textdatei hochladen - async postPrivateFile(filePath, fileContent)](#private-textdatei-hochladen---async-postprivatetextfilefilepath-filecontent)
 - [Privates Verzeichnis erstellen - async createPrivatePath(directoryPath)](#privates-verzeichnis-erstellen---async-createprivatepathdirectorypath)
 
 
@@ -64,6 +66,18 @@ await Arrange.deletePublicPath('path/to/directory/with/file.txt')
 ```
 
 
+### Öffentliche Textdatei hochladen - `async postPublicTextFile(filePath, fileContent)`
+
+Lädt eine Textdatei in ein öffentliches Verzeichnis hoch.
+Falls die Verzeichnisstruktur noch nicht existiert, wird diese erstellt.
+Bestehende Dateien werden überschrieben.
+
+```js
+const textContent = 'neuer Dateiinhalt'
+await Arrange.postPublicTextFile('path/to/textfile.txt', textContent)
+```
+
+
 ### Öffentliches Verzeichnis erstellen - `async createPublicPath(directoryPath)`
 
 Erstellt ein Verzeichnis im öffentlichen Verzeichnis.
@@ -104,6 +118,18 @@ await Arrange.deletePrivatePath('path/to/directory')
 
 // Private Datei löschen
 await Arrange.deletePrivatePath('path/to/directory/with/file.txt')
+```
+
+
+### Private Textdatei hochladen - `async postPrivateTextFile(filePath, fileContent)`
+
+Lädt eine Textdatei in das Benutzerverzeichnis des angemeldeten Benutzers hoch.
+Falls die Verzeichnisstruktur noch nicht existiert, wird diese erstellt.
+Bestehende Dateien werden überschrieben.
+
+```js
+const textContent = 'neuer Dateiinhalt'
+await Arrange.postPrivateTextFile('path/to/textfile.txt', textContent)
 ```
 
 

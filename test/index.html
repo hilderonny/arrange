@@ -5,8 +5,8 @@
 
         <script type="module">
 
-            import * as Arrange from '/arrange/js/arrange.js'
-            import Datenbankobjekt from '/arrange/js/types/Datenbankobjekt.js'
+            import * as Arrange from '/arrange/js/arrange.mjs'
+            import Datenbankobjekt from '/arrange/js/types/Datenbankobjekt.mjs'
 
             // Benutzernamen anzeigen
             document.getElementById('username').innerHTML = localStorage.getItem('username')
@@ -17,10 +17,10 @@
             })
 
             // Private Datei im Benutzerordner speichern
-            await Arrange.postPrivateFile('/halli/galli.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/halli/berta/vogel.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/halli/traumato/pikachu.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/nochmehr/murks.html', 'trallala')
+            await Arrange.postPrivateTextFile('/halli/galli.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/halli/berta/vogel.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/halli/traumato/pikachu.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/nochmehr/murks.html', 'trallala')
 
             // Private Datei laden
             const fileContent = await (await Arrange.getPrivateFile('/halli/galli.txt')).text()
@@ -38,8 +38,8 @@
             await Arrange.deletePrivatePath('/halli')
 
             // Das gleiche mit öffentlichen Daten, die jeder Benutzer lesen und ändern kann
-            await Arrange.postPublicFile('/holla/die.txt', 'waldfee')
-            await Arrange.postPublicFile('/frumpf/hallalo.html', 'hornzpronz')
+            await Arrange.postPublicTextFile('/holla/die.txt', 'waldfee')
+            await Arrange.postPublicTextFile('/frumpf/hallalo.html', 'hornzpronz')
 
             // Leeres privates Verzeichnis erstellen
             await Arrange.createPublicPath('/holla/fronzel')
@@ -58,7 +58,7 @@
             const privateFileInput = document.getElementById('privatefile')
             privateFileInput.addEventListener('change', async () => {
                 const file = privateFileInput.files[0]
-                await Arrange.uploadPrivateFile('/nochmehr/' + file.name, file, (progress) => {
+                await Arrange.uploadPrivateBinaryFile('/nochmehr/' + file.name, file, (progress) => {
                     document.getElementById('progress').value = progress
                 })
             })
