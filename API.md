@@ -121,8 +121,6 @@ FormData {
 }
 ```
 
-Alternativ kann die Datei auch direkt als Binärstrom mit dem Content-Type `application/octet-stream` gesendet werden.
-
 Wenn an dem angegebenen Pfad bereits ein Verzeichnis mit demselben Namen existiert oder nicht genau eine Datei gesendet wird, wird der HTTP Statuscode `400` zurückgegeben.
 
 Falls an dem Zielpfad bereits eine Datei existiert, wird diese überschrieben.

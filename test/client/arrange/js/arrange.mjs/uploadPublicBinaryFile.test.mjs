@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 
-describe('arrange.js uploadPrivateBinaryFile()', () => {
+describe('arrange.js uploadPublicBinaryFile()', () => {
 
     let originalFetch
     let originalLocalStorage
@@ -27,9 +27,7 @@ describe('arrange.js uploadPrivateBinaryFile()', () => {
         global.XMLHttpRequest = class {
             constructor() {
                 this.type = undefined
-                this.upload = {
-                    onprogress: () => {}
-                }
+                this.upload = {}
                 this.url = undefined
             }
             onerror() {}
@@ -44,7 +42,7 @@ describe('arrange.js uploadPrivateBinaryFile()', () => {
         }
     })
 
-    it('Es wird die API POST /api/files/test_user_id/ mit dem gegebenen Pfad aufgerufen.', async () => {
+    it('Es wird die API POST /api/files/public/ mit dem gegebenen Pfad aufgerufen.', async () => {
         // Automatisch anmelden lassen
         const arrange = await import(arrangeLocation + Math.random())
         assert.ok(arrange)
@@ -53,11 +51,11 @@ describe('arrange.js uploadPrivateBinaryFile()', () => {
         const fileContent = 'neuer Dateiinhalt'
         global.XMLHttpRequest.prototype.send = function() {
             assert.strictEqual(this.type, 'POST')
-            assert.ok(this.url.endsWith('/api/files/test_user_id/path/to/private/file.txt'))
+            assert.ok(this.url.endsWith('/api/files/public/path/to/public/file.txt'))
             xmlHttpRequestWasSent = true
             this.onload()
         }
-        await arrange.uploadPrivateBinaryFile('path/to/private/file.txt', Buffer.from(fileContent))
+        await arrange.uploadPublicBinaryFile('path/to/public/file.txt', Buffer.from(fileContent))
         assert.strictEqual(xmlHttpRequestWasSent, true)
     })
 
@@ -76,26 +74,8 @@ describe('arrange.js uploadPrivateBinaryFile()', () => {
             xmlHttpRequestWasSent = true
             this.onload()
         }
-        await arrange.uploadPrivateBinaryFile('path/to/private/file.txt', Buffer.from(fileContent))
+        await arrange.uploadPublicBinaryFile('path/to/public/file.txt', Buffer.from(fileContent))
         assert.strictEqual(xmlHttpRequestWasSent, true)
-    })
-
-    it('Es wird der Fortschritt gemeldet.', async () => {
-        // Automatisch anmelden lassen
-        const arrange = await import(arrangeLocation + Math.random())
-        assert.ok(arrange)
-        // Abfruf simulieren
-        let progressSent = false
-        const fileContent = 'neuer Dateiinhalt'
-        global.XMLHttpRequest.prototype.send = function() {
-            this.upload.onprogress({ lengthComputable: true, loaded: 50, total: 100 })
-            this.onload()
-        }
-        await arrange.uploadPrivateBinaryFile('path/to/private/file.txt', Buffer.from(fileContent), (progress) => {
-            assert.strictEqual(progress, 50)
-            progressSent = true
-        })
-        assert.strictEqual(progressSent, true)
     })
 
 })

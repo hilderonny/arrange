@@ -229,7 +229,7 @@ async function uploadPrivateBinaryFile(filePath, binaryFileContent, progressCall
     return await uploadFile(url, binaryFileContent, progressCallback)
 }
 
-async function uploadPublicFile(filePath, binaryFileContent, progressCallback) {
+async function uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await uploadFile(url, binaryFileContent, progressCallback)
 }
@@ -257,5 +257,5 @@ export {
     sendMessageToRoom,
     speichereDatensatz,
     uploadPrivateBinaryFile,
-    uploadPublicFile,
+    uploadPublicBinaryFile,
 }

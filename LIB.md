@@ -17,9 +17,11 @@
 ## Funktionen
 
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
+- [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
 - [Öffentliche Textdatei hochladen - async postPublicFile(filePath, fileContent)](#öffentliche-textdatei-hochladen---async-postpublictextfilefilepath-filecontent)
+- [Private Binärdatei hochladen - async uploadPrivateBinaryFile(filePath, binaryFileContent, progressCallback)](#private-binärdatei-hochladen---async-uploadprivatebinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Private Datei oder Verzeichnis laden - getPrivateFile(filePath)](#private-datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
 - [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
 - [Private Textdatei hochladen - async postPrivateFile(filePath, fileContent)](#private-textdatei-hochladen---async-postprivatetextfilefilepath-filecontent)
@@ -32,6 +34,21 @@ Meldet den Benutzer ab und lädt die Seite neu, damit der Anmeldedialog wieder a
 
 ```js
 Arrange.logout()
+```
+
+
+### Öffentliche Binärdatei hochladen - `async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)`
+
+Lädt eine Binärdatei in ein öffentliches Verzeichnis hoch.
+Falls die Verzeichnisstruktur noch nicht existiert, wird diese erstellt.
+Bestehende Dateien werden überschrieben.
+
+```js
+const binaryContent = new Blob([])
+function progressCallback(progressInPercent) {
+    console.log(`Upload completed to ${progressInPercent}%`)
+}
+await Arrange.uploadPublicBinaryFile('/path/to/biraryfile.ext', binaryFileContent, progressCallback)
 ```
 
 
@@ -87,6 +104,21 @@ Alle übergeordneten Verzeichnisse qwerden bei bedarf ebenfalls automatisch erst
 ```js
 // Öffentliches Verzeichnis erstellen
 await Arrange.createPublicPath('path/to/directory')
+```
+
+
+### Private Binärdatei hochladen - `async uploadPrivateBinaryFile(filePath, binaryFileContent, progressCallback)`
+
+Lädt eine Binärdatei in das Benutzerverzeichnis des angemeldeten Benutzers hoch.
+Falls die Verzeichnisstruktur noch nicht existiert, wird diese erstellt.
+Bestehende Dateien werden überschrieben.
+
+```js
+const binaryContent = new Blob([])
+function progressCallback(progressInPercent) {
+    console.log(`Upload completed to ${progressInPercent}%`)
+}
+await Arrange.uploadPrivateBinaryFile('/path/to/biraryfile.ext', binaryFileContent, progressCallback)
 ```
 
 
