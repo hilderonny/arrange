@@ -265,10 +265,15 @@ export default class ExpressApplication {
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
+        // TODO Tests für API behandleAktualisiereDatenbankschema
         // expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
+        // TODO Tests für API behandleSpeichereDatensatz
         // expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
+        // TODO Tests für API behandleLoescheDatenbanktabelle
         // expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
+        // TODO Tests für API behandleLoescheDatensatz
         // expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
+        // TODO Tests für API behandleDatenbankabfrage
         // expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
     }
 

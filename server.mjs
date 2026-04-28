@@ -402,6 +402,8 @@ const httpsServer = https.createServer({
     cert: fs.readFileSync(process.env.ARRANGE_CRT_FILE),
 }, expressApplication.app)
 
+// TODO Websocketserver testbar implementieren
+// TODO Tests für Websockets
 // // Websocketverbindungen behandeln
 // const webSocketServer = new WebSocketServer({ server: httpsServer })
 // webSocketServer.on('connection', behandleWebSocketVerbindung)
