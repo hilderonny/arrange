@@ -1,9 +1,9 @@
 import * as Arrange from '../arrange.mjs'
 
-export default class Datenbankobjekt {
+export default class DatabaseObject {
 
-    static get datenbankname() { return undefined }
-    static get tabellenname() { return undefined }
+    static get databasename() { return undefined }
+    static get tablename() { return undefined }
 
     constructor(felder) {
         if (felder) {
@@ -16,12 +16,12 @@ export default class Datenbankobjekt {
         }
     }
 
-    static async aktualisiereDatensatz(id, felder) {
-        return await Arrange.speichereDatensatz(this.datenbankname, this.tabellenname, id, felder)
+    static async updateRecord(id, felder) {
+        return await Arrange.speichereDatensatz(this.databasename, this.tablename, id, felder)
     }
 
-    static async ladeAusDatenbank(id) {
-        const abfrageergebnis = await Arrange.macheDatenbankabfrage(this.datenbankname, `SELECT * FROM ${this.tabellenname} WHERE Id='${id}'`)
+    static async loadFromDatabase(id) {
+        const abfrageergebnis = await Arrange.macheDatenbankabfrage(this.databasename, `SELECT * FROM ${this.tablename} WHERE Id='${id}'`)
         if (!abfrageergebnis?.length) {
             return undefined
         }
@@ -32,16 +32,16 @@ export default class Datenbankobjekt {
         return instanz
     }
 
-    static async ladeListeMitAbfrage(abfrage) {
-        const listeAusDatenbank = await Arrange.macheDatenbankabfrage(this.datenbankname, abfrage)
+    static async loadListWithQuery(abfrage) {
+        const listeAusDatenbank = await Arrange.macheDatenbankabfrage(this.databasename, abfrage)
         return listeAusDatenbank.map(elementAusDatenbank => new this(elementAusDatenbank))
     }
     
-    async loescheAusDatenbank() {
+    async deleteFromDatabase() {
         return await Arrange.loescheDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
     }
 
-    async speichereInDatenbank() {
+    async storeInDatabase() {
         const zuSpeichernderDatensatz = {}
         for (const schluessel of Object.keys(this)) {
             if (schluessel !== 'Id') {

@@ -251,10 +251,10 @@ export default class ExpressApplication {
         this.app.use(express.json())
 
         // Statische HTML Seiten ausliefern, wird reingemountet
-        // this.app.use(express.static(process.env.ARRANGE_HTML_PATH))
+        this.app.use(express.static(htmlPath))
 
         // Arrange-Client-Skripte und Seiten ausliefern
-        // this.app.use('/arrange', express.static('./client/arrange'))
+        this.app.use('/arrange', express.static('./client/arrange'))
 
         // // API-Endpunkte
         this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))

@@ -6,7 +6,7 @@
         <script type="module">
 
             import * as Arrange from '/arrange/js/arrange.mjs'
-            import Datenbankobjekt from '/arrange/js/types/Datenbankobjekt.mjs'
+            import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
 
             // Benutzernamen anzeigen
             document.getElementById('username').innerHTML = localStorage.getItem('username')
@@ -131,24 +131,24 @@
             await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
 
             // Datenbankobjekte
-            class Testdatenbankobjekt extends Datenbankobjekt {
+            class Testdatenbankobjekt extends DatabaseObject {
 
-                static get datenbankname() { return 'Testdatenbank' }
+                static get databasename() { return 'Testdatenbank' }
 
             }
             class Vorgang extends Testdatenbankobjekt {
 
-                static get tabellenname() { return 'Vorgaenge' }
+                static get tablename() { return 'Vorgaenge' }
                 
             }
             class Spur extends Testdatenbankobjekt {
 
-                static get tabellenname() { return 'Spuren' }
+                static get tablename() { return 'Spuren' }
 
             }
             class Spurenaufgabe extends Testdatenbankobjekt {
 
-                static get tabellenname() { return 'Spurenaufgaben' }
+                static get tablename() { return 'Spurenaufgaben' }
 
             }
             const vorgang = new Vorgang({
