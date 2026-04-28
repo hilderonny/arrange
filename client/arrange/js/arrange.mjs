@@ -203,7 +203,7 @@ async function speichereDatensatz(datenbankname, tabellenname, datensatzId, feld
 async function uploadFile(url, binaryFileContent, progressCallback) {
     const formData = new FormData()
     formData.append('data', new Blob([binaryFileContent]))
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const xhr = new XMLHttpRequest()
 
         if (progressCallback) {
@@ -216,7 +216,6 @@ async function uploadFile(url, binaryFileContent, progressCallback) {
         }
 
         xhr.onload = () => resolve(xhr)
-        xhr.onerror = () => reject()
 
         xhr.open('POST', url)
         xhr.send(formData)
