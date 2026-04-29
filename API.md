@@ -146,9 +146,9 @@ Es wird immer der HTTP Statuscode `200` zurückgegeben.
 
 
 ```
-PATCH /api/datenbank/{datenbankname}
-PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-POST /api/datenbank/{datenbankname}
+PATCH /api/database/{datenbankname}
+PATCH /api/database/{datenbankname}/{tabellenname}/{datensatzId}
+DELETE /api/database/{datenbankname}/{tabellenname}
+DELETE /api/database/{datenbankname}/{tabellenname}/{datensatzId}
+POST /api/database/{datenbankname}
 ```

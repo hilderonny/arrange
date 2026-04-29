@@ -2,7 +2,7 @@ import path from 'node:path'
 import fs from 'fs'
 import { beforeEach, describe, it } from 'node:test'
 import supertest from 'supertest'
-import ExpressApplication from '../../ExpressApplication.mjs'
+import ExpressApplication from '../../../ExpressApplication.mjs'
 
 describe('GET /api/logout', () => {
 

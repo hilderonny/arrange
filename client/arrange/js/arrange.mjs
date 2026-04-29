@@ -1,7 +1,7 @@
 let WEB_SOCKET = undefined;
 
 async function aktualisiereDatenbankschema(datenbankname, schema) {
-    const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
+    const url = new URL(`/api/database/${datenbankname}`, import.meta.url).href
     const response = await fetch(url, {
         method: 'PATCH',
         headers: {
@@ -107,19 +107,19 @@ async function logout() {
 }
 
 async function loescheDatenbanktabelle(datenbankname, tabellenname) {
-    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}`, import.meta.url).href
+    const url = new URL(`/api/database/${datenbankname}/${tabellenname}`, import.meta.url).href
     const response = await fetch(url, { method: 'DELETE' })
     return response.ok
 }
 
 async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
-    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
+    const url = new URL(`/api/database/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, { method: 'DELETE' })
     return response.ok
 }
 
 async function macheDatenbankabfrage(datenbankname, abfrage) {
-    const url = new URL(`/api/datenbank/${datenbankname}`, import.meta.url).href
+    const url = new URL(`/api/database/${datenbankname}`, import.meta.url).href
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -184,7 +184,7 @@ async function speichereDatensatz(datenbankname, tabellenname, datensatzId, feld
     for (const key of Object.keys(felder)) {
         if (felder[key] == null) felder[key] = undefined
     }
-    const url = new URL(`/api/datenbank/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
+    const url = new URL(`/api/database/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, {
         method: 'PATCH',
         headers: {

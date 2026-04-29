@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
 import * as assert from 'node:assert'
 import supertest from 'supertest'
-import ExpressApplication from '../../ExpressApplication.mjs'
+import ExpressApplication from '../../../ExpressApplication.mjs'
 
 describe('GET /api/login', () => {
 

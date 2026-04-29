@@ -3,7 +3,7 @@ import cookieSession from 'cookie-session'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import { mkdir, stat, writeFile } from 'node:fs/promises'
+import { stat } from 'node:fs/promises'
 import sqlite from 'node:sqlite'
 import multer from 'multer'
 
@@ -13,47 +13,11 @@ import multer from 'multer'
 
 // const WEBSOCKETS = {}
 // const WEBSOCKET_RAEUME = {}
-// const DATENBANKEN = {}
-// const DATENBANKEN_PFAD = path.join(DATENPFAD, 'databases')
 
 
-
-async function ladeDatenbank(datenbankname) {
-    let datenbank = DATENBANKEN[datenbankname]
-    if (!datenbank) {
-        const absoluterPfad = path.resolve(DATENBANKEN_PFAD, datenbankname + '.sqlite')
-        fs.mkdirSync(path.dirname(absoluterPfad), { recursive: true })
-        datenbank = new sqlite.DatabaseSync(absoluterPfad)
-        DATENBANKEN[datenbankname] = datenbank
-    }
-    return datenbank
-}
 
 
 /********** API Funktionen **********/
-
-async function behandleAktualisiereDatenbankschema(request, response) {
-    if (!request.body.schema) {
-        return response.sendStatus(400)
-    }
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
-    for (const tabellenname of Object.keys(request.body.schema)) {
-        const erstellenStatement = `CREATE TABLE IF NOT EXISTS ${tabellenname} (Id TEXT PRIMARY KEY NOT NULL);`
-        datenbank.exec(erstellenStatement)
-    }
-    // Nochmal drüber iterieren und die Spalten aktualisieren
-    for (const [ tabellenname, tabellendefinition ] of Object.entries(request.body.schema)) {
-        for (const [ spaltenname, spaltendefinition ] of Object.entries(tabellendefinition)) {
-            // Spalte nur erstellen, wenn sie noch nicht existiert
-            if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM pragma_table_info('${tabellenname}') WHERE name='${spaltenname}';`).get().anzahl < 1) {
-                const updateStatement = `ALTER TABLE ${tabellenname} ADD COLUMN ${spaltenname} ${spaltendefinition};`
-                datenbank.exec(updateStatement)
-            }
-        }
-    }
-    response.sendStatus(200)
-}
 
 // Informationen aus Datenbank holen.
 // Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
@@ -213,6 +177,16 @@ export default class ExpressApplication {
     #allUsers
 
     /**
+     * Pfad zum Verzeichnis, in dem die Datenbanken liegen
+     */
+    #databasePath
+
+    /**
+     * Alle in den Speicher geladenen Datenbanken
+     */
+    #databases = []
+
+    /**
      * Pfad zum Verzeichnis, welches alle Benutzerdateien enthält
      */
     #filesPath
@@ -238,6 +212,7 @@ export default class ExpressApplication {
 
         this.#usersJsonPath = path.join(dataPath, 'users/users.json')
         this.#filesPath = path.join(dataPath, 'files')
+        this.#databasePath = path.join(dataPath, 'databases')
 
         // Benutzerdatenbank laden
         this.#loadUsers()
@@ -265,17 +240,28 @@ export default class ExpressApplication {
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
-        // TODO Tests für API behandleAktualisiereDatenbankschema
-        // expressAnwendung.patch('/api/datenbank/:datenbankname', behandleAktualisiereDatenbankschema)
+        this.app.patch('/api/database/:databasename', this.#handlePatchDatabase.bind(this))
         // TODO Tests für API behandleSpeichereDatensatz
-        // expressAnwendung.patch('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
+        // expressAnwendung.patch('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
         // TODO Tests für API behandleLoescheDatenbanktabelle
-        // expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
+        // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
         // TODO Tests für API behandleLoescheDatensatz
-        // expressAnwendung.delete('/api/datenbank/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
+        // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
         // TODO Tests für API behandleDatenbankabfrage
-        // expressAnwendung.post('/api/datenbank/:datenbankname', behandleDatenbankabfrage)
+        // expressAnwendung.post('/api/database/:datenbankname', behandleDatenbankabfrage)
     }
+
+    /**
+     * Schließt die Datenbanken sauber
+     */
+    shutDown() {
+        for (const database of Object.values(this.#databases)) {
+            if (database.isOpen) {
+                database.close()
+            }
+        }
+    }
+    
 
     /********** Hilfsfunktionen **********/
 
@@ -285,6 +271,17 @@ export default class ExpressApplication {
 
     #createUserSession(request, userId) {
         request.session.userId = userId
+    }
+    
+    async #loadDatabase(databaseName) {
+        let database = this.#databases[databaseName]
+        if (!database) {
+            const absolutePath = path.resolve(this.#databasePath, databaseName + '.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            this.#databases[databaseName] = database
+        }
+        return database
     }
 
     #loadUsers() {
@@ -353,6 +350,34 @@ export default class ExpressApplication {
             response.sendFile(absolutePath)
         }
     }
+
+
+    /**
+     * Datenbankschema aktualisieren
+     */
+    async #handlePatchDatabase(request, response) {
+        if (!request.body?.schema) {
+            return response.sendStatus(400)
+        }
+        const database = await this.#loadDatabase(request.params.databasename)
+        // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
+        for (const tableName of Object.keys(request.body.schema)) {
+            const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL);`
+            database.exec(createTableStatement)
+        }
+        // Nochmal drüber iterieren und die Spalten aktualisieren
+        for (const [ tableName, tableDefinition ] of Object.entries(request.body.schema)) {
+            for (const [ columnName, columnDefinition ] of Object.entries(tableDefinition)) {
+                // Spalte nur erstellen, wenn sie noch nicht existiert
+                if (database.prepare(`SELECT COUNT(*) AS columnCount FROM pragma_table_info('${tableName}') WHERE name='${columnName}';`).get().columnCount < 1) {
+                    const updateStatement = `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition};`
+                    database.exec(updateStatement)
+                }
+            }
+        }
+        response.sendStatus(200)
+    }
+
 
     /**
      * Datei speichern
