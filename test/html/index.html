@@ -121,10 +121,10 @@
             // Schema aktualisieren
             await Arrange.updateDatabase('Testdatenbank', datenbankschemaVorher)
             // Datensatz erstellen, undefined als id mitgeben
-            const neuerDatensatz = await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
+            const neuerDatensatz = await Arrange.saveDatabaseRecord('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
             console.log(neuerDatensatz)
             // Datensatz aktualisieren, nur die geänderten Felder
-            await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            await Arrange.saveDatabaseRecord('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
             // SQL-Abfrage machen
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Testtabelle'))
             // Datensatz löschen

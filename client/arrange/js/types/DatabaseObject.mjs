@@ -18,7 +18,7 @@ export default class DatabaseObject {
     }
 
     static async updateRecord(id, felder) {
-        return await Arrange.speichereDatensatz(this.databasename, this.tablename, id, felder)
+        return await Arrange.saveDatabaseRecord(this.databasename, this.tablename, id, felder)
     }
 
     static async loadFromDatabase(id) {
@@ -49,7 +49,7 @@ export default class DatabaseObject {
                 zuSpeichernderDatensatz[schluessel] = this[schluessel]
             }
         }
-        return await Arrange.speichereDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id, zuSpeichernderDatensatz)
+        return await Arrange.saveDatabaseRecord(this.constructor.datenbankname, this.constructor.tabellenname, this.Id, zuSpeichernderDatensatz)
     }
 
 }

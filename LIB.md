@@ -19,6 +19,7 @@
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
 - [Datenbank abfragen - async queryDatabase(databaseName, query)](#datenbank-abfragen---async-querydatabasedatabasename-query)
 - [Datenbankeintrag löschen - async deleteDatabaseRecord(databaseName, tableName, recordId)](#datenbankeintrag-löschen---async-deletedatabaserecorddatabasename-tablename-recordid)
+- [Datenbankeintrag speichern - saveDatabaseRecord(databaseName, tableName, recordId, fields)](#datenbankeintrag-speichern---savedatabaserecorddatabasename-tablename-recordid-fields)
 - [Datenbankschema aktualisieren - async updateDatabase(databaseName, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatabasename-schema)
 - [Datenbanktabelle löschen - async deleteDatabaseTable(databaseName, tableName)](#datenbanktabelle-löschen---async-deletedatabasetabledatabasename-tablename)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
@@ -65,6 +66,37 @@ Diese Funktion hat keinerlei Rückgabe.
 ```js
 await Arrange.deleteDatabaseRecord('Datenbank1', 'Table1', 'id1')
 ```
+
+
+## Datenbankeintrag speichern - `saveDatabaseRecord(databaseName, tableName, recordId, fields)`
+
+Speichert einen Datensatz in der Datenbank und erstellt diesen bei Bedarf.
+Auch die Datenbank selbst wird bei Bedarf erstellt.
+Es werden nur die Felder überschrieben, die mitgesendet werden, alle anderen bleiben unberührt.
+Als Ergebnis wird der vollständige Datensatz als JSON-Struktur zurückgegeben.
+
+```js
+const result = await Arrange.saveDatabaseRecord('database1', 'Table1', 'id1', {
+    Column1: 'text',
+    Column2: 42,
+    Column3: false,
+    Column4: null
+})
+// Rückgabewert result:
+// {
+//     Id: 'id1'
+//     Column1: 'text',
+//     Column2: 42,
+//     Column3: false,
+//     Column4: null,
+//     Column5: 'unverändert'
+// }
+```
+
+Wenn ein Feld geleert werden soll, muss dieses als `null` mitgesendet werden, `undefined` wird herausgefiltert.
+
+Bei Fehlern - etwa nicht existierende Tabellen oder nicht existierende Felder oder falsche Datentypen der Felder - wird `undefined` zurückgegeben.
+
 
 ## Datenbankschema aktualisieren - `async updateDatabase(databaseName, schema)`
 

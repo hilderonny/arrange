@@ -8,6 +8,8 @@
 - [Datei hochladen - POST /api/files/:userId/*filePath](#datei-hochladen---post-apifilesuseridfilepath)
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
 - [Datenbank abfragen - POST /api/database/:databasename](#datenbank-abfragen---post-apidatabasedatabasename)
+- [Datenbankeintrag löschen - DELETE /api/database/:databaseName/:tableName/:recordId](#datenbankeintrag-löschen---delete-apidatabasedatabasenametablenamerecordid)
+- [Datenbankeintrag speichern - PATCH /api/database/:databaseName/:tableName/:recordId](#datenbankeintrag-speichern---patch-apidatabasedatabasenametablenamerecordid)
 - [Datenbankschema aktualisieren - PATCH /api/database/:databasename](#datenbankschema-aktualisieren---patch-apidatabasedatabasename)
 - [Datenbanktabelle löschen - DELETE /api/database/:databaseName/:tableName](#datenbanktabelle-löschen---delete-apidatabasedatabasenametablename)
 - [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
@@ -173,6 +175,41 @@ Das Feld kann auch leer sein, wenn es keine zur Abfrage passenden Ergebnisse gib
 Löscht einen Record mit der angegeben `:recordId` aus der Tabelle `:tableName` der Datenbank `:databaseName`.
 
 Es wird stets der HTTP Statuscode `200` zurückgegeben. Fehler - etwa durch nicht existierende Datenbanken, Tabellen oder Records - werden stillschweigend ignoriert.
+
+
+## Datenbankeintrag speichern - `PATCH /api/database/:databaseName/:tableName/:recordId`
+
+Erstellt einen Datenbankeintrag oder aktualisiert diesen.
+Falls es keine Datenbank mit dem angegebenen Namen gibt, wird eine erstellt.
+Im body wird eine JSON-Struktur mit Property `fields` erwartet, welche die Inhalte der einzelnen Spalten enthalten.
+
+```json
+{
+    "fields": {
+        "Column1": "text1",
+        "Column2": 42,
+        "Column3": null
+    }
+}
+```
+
+Fehlt die angegebene Tabelle oder wird kein body mit Property `fields` übergeben oder treten sonstige SQL-Fehler auf, wird der HTTP Statuscode `400` zurückgegeben.
+
+Wenn noch kein Datensatz mit der gegebenen `:recordId` existiert, wird einer angelegt.
+Andernfalls werden der bestehende Datensatz mit den gelieferten Werten überschrieben.
+Spalten, die nicht explizit mitgegeben werden, bleiben unverändert.
+Ein nachträgliches Ändern der Id eines Datensatzes ist nicht möglich, das Feld `Id` wird beim Speichern herausgefiltert.
+
+Bei erfolgreichem Speichern wird im Response der gesamte Datensatz als JSON zurückgegeben.
+
+```json
+{
+    "Id": "id1",
+    "Column1": "text1",
+    "Column2": 42,
+    "Column3": null
+}
+```
 
 
 ## Datenbankschema aktualisieren - `PATCH /api/database/:databasename`

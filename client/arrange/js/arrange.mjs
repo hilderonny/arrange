@@ -58,7 +58,7 @@ async function deleteDatabaseRecord(databaseName, tableName, recordId) {
 
 async function deleteDatabaseTable(databaseName, tableName) {
     const url = new URL(`/api/database/${databaseName}/${tableName}`, import.meta.url).href
-    const response = await fetch(url, { method: 'DELETE' })
+    await fetch(url, { method: 'DELETE' })
 }
 
 async function deletePrivatePath(filePath) {
@@ -142,6 +142,26 @@ async function queryDatabase(databasename, query) {
     }
 }
 
+async function saveDatabaseRecord(databaseName, tableName, recordId, fields) {
+    if (!recordId) {
+        recordId = Math.floor((Date.now() + Math.random()) * 1000).toString()
+    }
+    const url = new URL(`/api/database/${databaseName}/${tableName}/${recordId}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ fields: fields })
+    })
+    if (response.ok) {
+        return await response.json()
+    } else {
+        return undefined
+    }
+}
+
 async function sendMessageToClient(clientId, textMessage) {
     const textBytes = new TextEncoder().encode(textMessage)
     const arrayBuffer = new ArrayBuffer(9 + textBytes.length)
@@ -160,30 +180,6 @@ async function sendMessageToRoom(roomNumber, textMessage) {
     dataView.setBigInt64(1, roomNumber, true)
     new Uint8Array(arrayBuffer).set(textBytes, 9)
     WEB_SOCKET.send(arrayBuffer)
-}
-
-async function speichereDatensatz(datenbankname, tabellenname, datensatzId, felder) {
-    if (!datensatzId) {
-        datensatzId = Math.floor((Date.now() + Math.random()) * 1000).toString()
-    }
-    // Null durch undefined ersetzen
-    for (const key of Object.keys(felder)) {
-        if (felder[key] == null) felder[key] = undefined
-    }
-    const url = new URL(`/api/database/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ felder: felder })
-    })
-    if (response.ok) {
-        return await response.json()
-    } else {
-        return undefined
-    }
 }
 
 async function updateDatabase(datenbankname, schema) {
@@ -249,9 +245,9 @@ export {
     queryDatabase,
     postPrivateTextFile,
     postPublicTextFile,
+    saveDatabaseRecord,
     sendMessageToClient,
     sendMessageToRoom,
-    speichereDatensatz,
     updateDatabase,
     uploadPrivateBinaryFile,
     uploadPublicBinaryFile,

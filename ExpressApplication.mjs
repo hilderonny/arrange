@@ -34,63 +34,6 @@ function behandleWebSocketVerbindung(webSocket) {
     webSocket.send(arrayBuffer)
 }
 
-async function behandleSpeichereDatensatz(request, response) {
-    if (!request.body.felder) {
-        return response.sendStatus(400)
-    }
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    // Prüfen, ob Datensatz bereits existiert
-    if (datenbank.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tabellenname} WHERE Id='${request.params.datensatzId}';`).get().anzahl < 1) {
-        // Existiert noch nicht, also neu anlegen
-        const zuErstellenderDatensatz = request.body.felder
-        zuErstellenderDatensatz.Id = request.params.datensatzId
-        const abfragezeichenkette = [
-            'INSERT INTO ',
-            request.params.tabellenname,
-            ' (',
-            Object.keys(zuErstellenderDatensatz).join(','),
-            ') VALUES (',
-            Object.values(zuErstellenderDatensatz).map(wert => {
-                if (wert === null) return 'NULL'
-                switch (typeof(wert)) {
-                    case 'undefined': return 'NULL'
-                    case 'boolean': return wert ? '1' : '0'
-                    case 'number': return wert
-                    default: return `'${('' + wert).toString().replaceAll(`'`, `''`)}'`
-                }
-            }).join(','),
-            ');'
-        ].join('')
-        const abfrage = datenbank.prepare(abfragezeichenkette)
-        abfrage.run()
-    } else {
-        // Existiert, also aktualisieren
-        const abfragezeichenkette = [
-            'UPDATE ',
-            request.params.tabellenname,
-            ' SET ',
-            Object.entries(request.body.felder).map(([ feldname, feldwert ]) => {
-                let zeichenkette = feldname + '='
-                switch (typeof(feldwert)) {
-                    case 'undefined': zeichenkette += 'NULL'; break
-                    case 'boolean': zeichenkette += feldwert ? '1' : '0'; break
-                    case 'number': zeichenkette += feldwert; break
-                    default: zeichenkette += `'${('' + feldwert).toString().replaceAll(`'`, `''`)}'`; break
-                }
-                return zeichenkette
-            }).join(', '),
-            ` WHERE Id='`,
-            request.params.datensatzId,
-            `';`
-        ].join('')
-        const abfrage = datenbank.prepare(abfragezeichenkette)
-        abfrage.run()
-    }
-    // Vollständigen Datensatz zurück geben
-    const datensatz = datenbank.prepare(`SELECT * FROM ${request.params.tabellenname} WHERE Id='${request.params.datensatzId}';`).get()
-    response.json(datensatz)
-}
-
 // Websocket Nachricht empfangen
 async function behandleWebSocketNachricht(webSocket, nachricht) {
     const type = nachricht[0]
@@ -211,8 +154,7 @@ export default class ExpressApplication {
         this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
         this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
-        // TODO Tests für API behandleSpeichereDatensatz
-        // expressAnwendung.patch('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
+        this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
         this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
         this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
         this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
@@ -352,7 +294,7 @@ export default class ExpressApplication {
         const database = await this.#loadDatabase(request.params.databaseName)
         // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
         for (const tableName of Object.keys(request.body.schema)) {
-            const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL);`
+            const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL) STRICT;`
             database.exec(createTableStatement)
         }
         // Nochmal drüber iterieren und die Spalten aktualisieren
@@ -367,6 +309,90 @@ export default class ExpressApplication {
         }
         response.sendStatus(200)
     }
+
+    /**
+     * Speichert einen Datensatz in der Datenbank
+     */
+    async #handlePatchDatabaseRecord(request, response) {
+        if (!request.body?.fields) {
+            return response.sendStatus(400)
+        }
+        const database = await this.#loadDatabase(request.params.databaseName)
+        // Prüfen, ob Tabelle existiert
+        const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
+        if (!existingTable) {
+            return response.sendStatus(400)
+        }
+        // Prüfen, ob Datensatz bereits existiert
+        if (database.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get().anzahl < 1) {
+            // Existiert noch nicht, also neu anlegen
+            const recordToCreate = request.body.fields
+            recordToCreate.Id = request.params.recordId
+            const queryString = [
+                'INSERT INTO ',
+                request.params.tableName,
+                ' (',
+                Object.keys(recordToCreate).join(','),
+                ') VALUES (',
+                Object.values(recordToCreate).map(value => {
+                    if (value === null) return 'NULL'
+                    switch (typeof(value)) {
+                        case 'undefined': return 'NULL'
+                        case 'boolean': return value ? '1' : '0'
+                        case 'number': return value
+                        default: return `'${('' + value).toString().replaceAll(`'`, `''`)}'`
+                    }
+                }).join(','),
+                ');'
+            ].join('')
+            try {
+                const query = database.prepare(queryString)
+                query.run()
+            } catch {
+                return response.sendStatus(400)
+            }
+        } else {
+            // Existiert, also ggf. aktualisieren
+            // Id rausfiltern, diese darf nicht verändert werden
+            delete request.body.fields.Id
+            // Wenn keine Felder gesendet werden, muss auch nicht aktualisiert werden
+            if (Object.keys(request.body.fields).length > 0) {
+                const queryString = [
+                    'UPDATE ',
+                    request.params.tableName,
+                    ' SET ',
+                    Object.entries(request.body.fields).map(([ columnName, value ]) => {
+                        let setString = columnName + '='
+                        if (value === null) {
+                            setString += 'NULL'
+                        } else {
+                            switch (typeof(value)) {
+                                case 'undefined': setString += 'NULL'; break
+                                case 'boolean': setString += value ? '1' : '0'; break
+                                case 'number': setString += value; break
+                                default: setString += `'${('' + value).toString().replaceAll(`'`, `''`)}'`; break
+                            }
+                        }
+                        return setString
+                    }).join(', '),
+                    ` WHERE Id='`,
+                    request.params.recordId,
+                    `';`
+                ].join('')
+                try {
+                    const query = database.prepare(queryString)
+                    query.run()
+                } catch {
+                    return response.sendStatus(400)
+                }
+            }
+        }
+        // Vollständigen Datensatz zurück geben
+        const record = database.prepare(`SELECT * FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get()
+        console.log(record)
+        response.json(record)
+    }
+
 
     /**
      * Informationen aus Datenbank holen.

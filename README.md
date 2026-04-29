@@ -131,8 +131,6 @@ joinRoom(roomNumber)
 leaveRoom(roomNumber)
 sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
-
-speichereDatensatz(datenbankname, tabellenname, datensatz)
 ```
 
 # SSL-Zertifikat erstellen
