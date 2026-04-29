@@ -17,7 +17,7 @@
 ## Funktionen
 
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
-- [Datenbankschema aktualisieren - async function updateDatabase(datenbankname, schema)](#datenbankschema-aktualisieren---async-function-updatedatabasedatenbankname-schema)
+- [Datenbankschema aktualisieren - async updateDatabase(datenbankname, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatenbankname-schema)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
@@ -38,18 +38,32 @@ Arrange.logout()
 ```
 
 
-## Datenbankschema aktualisieren - `async function updateDatabase(datenbankname, schema)`
+## Datenbank abfragen - `async queryDatabase(databasename, query)`
+
+Führt eine Abfrage auf der Datenbank aus und gibt das Ergebnis als Array zurück.
+
+```js
+const result = Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
+// [
+//     { Id: 'id1', Column1: 'text1', Column2: 42 },
+//     ...
+// ]
+```
+
+Bei Fehlern wird `undefined` zurückgegeben.
+
+## Datenbankschema aktualisieren - `async updateDatabase(datenbankname, schema)`
 
 Erstellt eine Datenbank oder aktualisiert deren Schema.
 Das Schema enthält Tabellennamen und Spaltennamen als Objekt-Keys und SQLite-Spaltendefinitionen als Values.
 
-```json
-{
-    "Tablename": { // Name der Tabelle als Key
-        "Column1name": "TEXT", // Name der Spalte als Key und Schemadefinition als Value
-        "Column2name": "INTEGER"
+```js
+Arrange.updateDatabase('Database1', { // Datenbankname
+    Table1: { // Name der Tabelle als Key
+        Column1: 'TEXT', // Name der Spalte als Key und Schemadefinition als Value
+        Column2: 'INTEGER'
     }
-}
+})
 ```
 
 Bei Bedarf werden die Datenbank, die Tabellen und Spalten erstellt.

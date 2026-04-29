@@ -134,7 +134,7 @@ sendMessageToRoom(roomNumber, textMessage)
 
 loescheDatenbanktabelle(datenbankname, tabellenname)
 loescheDatensatz(datenbankname, tabellenname, datensatzId)
-macheDatenbankabfrage(datenbankname, abfrage)
+queryDatabase(datenbankname, abfrage)
 speichereDatensatz(datenbankname, tabellenname, datensatz)
 ```
 

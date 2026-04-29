@@ -41,7 +41,6 @@ describe('arrange.mjs updateDatabase()', () => {
         let fetchWasCalled = false
         global.fetch = (_, options) => {
             assert.ok(options.body)
-            assert.ok(options.body)
             assert.strictEqual(options.body, JSON.stringify({ schema: { Table1: { Column1: 'TEXT' } } }))
             fetchWasCalled = true
             return { ok: true }

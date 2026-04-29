@@ -21,7 +21,7 @@ export default class DatabaseObject {
     }
 
     static async loadFromDatabase(id) {
-        const abfrageergebnis = await Arrange.macheDatenbankabfrage(this.databasename, `SELECT * FROM ${this.tablename} WHERE Id='${id}'`)
+        const abfrageergebnis = await Arrange.queryDatabase(this.databasename, `SELECT * FROM ${this.tablename} WHERE Id='${id}'`)
         if (!abfrageergebnis?.length) {
             return undefined
         }
@@ -33,7 +33,7 @@ export default class DatabaseObject {
     }
 
     static async loadListWithQuery(abfrage) {
-        const listeAusDatenbank = await Arrange.macheDatenbankabfrage(this.databasename, abfrage)
+        const listeAusDatenbank = await Arrange.queryDatabase(this.databasename, abfrage)
         return listeAusDatenbank.map(elementAusDatenbank => new this(elementAusDatenbank))
     }
     

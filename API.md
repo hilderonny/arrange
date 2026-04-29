@@ -7,6 +7,7 @@
 - [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
 - [Datei hochladen - POST /api/files/:userId/*filePath](#datei-hochladen---post-apifilesuseridfilepath)
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
+- [Datenbank abfragen - POST /api/database/:databasename](#datenbank-abfragen---post-apidatabasedatabasename)
 - [Datenbankschema aktualisieren - PATCH /api/database/:databasename](#datenbankschema-aktualisieren---patch-apidatabasedatabasename)
 - [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
 
@@ -135,6 +136,35 @@ Wenn der angegebene Pfad nicht existiert, wird als HTTP Statuscode `404` zurück
 
 Bei Erfolg wird der HTTP Statuscode `200` ohne Inhalt zurückgegeben.
 
+
+## Datenbank abfragen - `POST /api/database/:databasename`
+
+Macht eine Abfrage an die Datenbank.
+Die Abfrage wird direkt an die Datenbank durchgereicht.
+Die Abfrage muss mit `SELECT` beginnen und darf keine Semikola (`;`)  enthalten.
+
+```json
+{
+    "query": "SELECT * FROM Table1"
+}
+```
+
+Wenn im Body kein JSON-Objekt übergeben wird, oder dieses keine `query` Eigenschaft hat, oder die Abfrage nicht mit `SELECT` beginnt oder ein Semikolon enthält, wird der HTTP Statuscode `400` zurückgegeben.
+
+Bei erfolgreicher Abfrage wird ein JSON-Feld zurückgegeben, welches für jeden Record ein Objekt enthält. Die Keys der Objekte stellen dabei die Spaltennamen und die Values deren Inhalte dar.
+
+```JSON
+[
+    {
+        "Id": "id1",
+        "Column1": "text1",
+        "Column2": 42
+    },
+    ...
+]
+```
+
+Das Feld kann auch leer sein, wenn es keine zur Abfrage passenden Ergebnisse gibt.
 
 ## Datenbankschema aktualisieren - `PATCH /api/database/:databasename`
 

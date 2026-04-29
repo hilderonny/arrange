@@ -33,7 +33,7 @@ describe('API /api/database', () => {
     })
 
     afterEach(() => {
-        if (database) {
+        if (database && database.isOpen) {
             database.close()
         }
         expressApplication.shutDown()
@@ -95,7 +95,7 @@ describe('API /api/database', () => {
             // Datenbank vorbereiten
             fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
             database = new sqlite.DatabaseSync(absolutePath)
-            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL)`);
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL);`);
             // Schema aktualisieren
             await supertest(expressApplication.app).patch(`/api/database/testdatabase`).send({
                 schema: {
@@ -119,7 +119,7 @@ describe('API /api/database', () => {
             // Datenbank vorbereiten
             fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
             database = new sqlite.DatabaseSync(absolutePath)
-            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL)`);
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL);`);
             // Schema aktualisieren
             await supertest(expressApplication.app).patch(`/api/database/testdatabase`).send({
                 schema: {
@@ -146,7 +146,7 @@ describe('API /api/database', () => {
             // Datenbank vorbereiten
             fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
             database = new sqlite.DatabaseSync(absolutePath)
-            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT)`);
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
             // Schema aktualisieren
             await supertest(expressApplication.app).patch(`/api/database/testdatabase`).send({
                 schema: {
@@ -168,6 +168,96 @@ describe('API /api/database', () => {
             assert.strictEqual(column2Definition.type, 'INTEGER')
         })
     
+    })
+
+    describe('POST /api/database/:databasename', () => {
+
+        it('Wenn kein body gesendet wird, wird der HTTP Statuscode 400 zurückgegeben.', async() => {
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).expect(400)
+        })
+
+        it('Wenn der body keine Eigenschaft "query" enthält, wird der HTTP Statuscode 400 zurückgegeben.', async() => {
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({}).expect(400)
+        })
+
+        it('Wenn die Abfrage nicht mit "SELECT" beginnt, wird der HTTP Statuscode 400 zurückgegeben.', async() => {
+            // insert, update, create, OBJEKT, FELD
+            // INSERT
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1')` }).expect(400)
+            // UPDATE
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `UPDATE Table1 SET Column1='text1' WHERE Id='id1'` }).expect(400)
+            // CREATE
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Column1 Text)` }).expect(400)
+            // query ist keine Zeichenkette
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: 42 }).expect(400)
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: true }).expect(400)
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: {} }).expect(400)
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: [] }).expect(400)
+        })
+
+        it('Wenn die Abfrage ein Semikolon enthält, wird der HTTP Statuscode 400 zurückgegeben.', async() => {
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1; INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1')` }).expect(400)
+        })
+
+        it('Bei Erfolg wird der HTTP Statuscode 200 zurückgegeben.', async() => {
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            // Datenbank vorbereiten
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            // Abfrage absenden
+            await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1` }).expect(200)
+        })
+
+        it('Bei Erfolg wird ein JSON mit dem Abfrageergebnis als Feld zurückgegeben.', async() => {
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            // Datenbank vorbereiten
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id2', 'text2');`);
+            // Abfrage absenden
+            const response = await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1 ORDER BY Id` })
+            assert.ok(response.body)
+            assert.ok(Array.isArray(response.body))
+            assert.strictEqual(response.body.length, 2)
+            assert.strictEqual(response.body[0].Id, 'id1')
+            assert.strictEqual(response.body[0].Column1, 'text1')
+            assert.strictEqual(response.body[1].Id, 'id2')
+            assert.strictEqual(response.body[1].Column1, 'text2')
+        })
+
+        it('Wenn die Abfrage nur einen Eintrag enthält, wird trotzdem ein Feld zurückgegeben.', async() => {
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            // Datenbank vorbereiten
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            // Abfrage absenden
+            const response = await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1 ORDER BY Id` })
+            assert.ok(response.body)
+            assert.ok(Array.isArray(response.body))
+            assert.strictEqual(response.body.length, 1)
+            assert.strictEqual(response.body[0].Id, 'id1')
+            assert.strictEqual(response.body[0].Column1, 'text1')
+        })
+
+        it('Wenn die Abfrage kein Ergebnis enthält, wird ein leeres Feld zurückgegeben.', async() => {
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            // Datenbank vorbereiten
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            // Abfrage absenden
+            const response = await supertest(expressApplication.app).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1 ORDER BY Id` })
+            assert.ok(response.body)
+            assert.ok(Array.isArray(response.body))
+            assert.strictEqual(response.body.length, 0)
+        })
+        
     })
 
 })

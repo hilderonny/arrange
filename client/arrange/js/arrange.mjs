@@ -106,23 +106,6 @@ async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
     return response.ok
 }
 
-async function macheDatenbankabfrage(datenbankname, abfrage) {
-    const url = new URL(`/api/database/${datenbankname}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ abfrage: abfrage })
-    })
-    if (response.ok) {
-        return await response.json()
-    } else {
-        return undefined
-    }
-}
-
 async function postTextFile(url, fileContent) {
     const formData = new FormData()
     formData.append('data', new Blob([fileContent]))
@@ -142,6 +125,23 @@ async function postPrivateTextFile(filePath, fileContent) {
 async function postPublicTextFile(filePath, fileContent) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await postTextFile(url, fileContent)
+}
+
+async function queryDatabase(databasename, query) {
+    const url = new URL(`/api/database/${databasename}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    if (response.ok) {
+        return await response.json()
+    } else {
+        return undefined
+    }
 }
 
 async function sendMessageToClient(clientId, textMessage) {
@@ -248,7 +248,7 @@ export {
     loescheDatenbanktabelle,
     loescheDatensatz,
     logout,
-    macheDatenbankabfrage,
+    queryDatabase,
     postPrivateTextFile,
     postPublicTextFile,
     sendMessageToClient,

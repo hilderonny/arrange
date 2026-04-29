@@ -19,20 +19,6 @@ import multer from 'multer'
 
 /********** API Funktionen **********/
 
-// Informationen aus Datenbank holen.
-// Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
-async function behandleDatenbankabfrage(request, response) {
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    // Abfrage durchführen
-    const auszufuehrendeAbfrage = request.body.abfrage
-    if (!auszufuehrendeAbfrage || !auszufuehrendeAbfrage.toLowerCase().startsWith('select') || auszufuehrendeAbfrage.includes(';')) {
-        return response.sendStatus(400)
-    }
-    const ergebnis = datenbank.prepare(auszufuehrendeAbfrage).all()
-    // Ergebnisse als JSON zurück geben
-    response.json(ergebnis)
-}
-
 // Tabelle löschen
 async function behandleLoescheDatenbanktabelle(request, response) {
     const datenbank = await ladeDatenbank(request.params.datenbankname)
@@ -247,8 +233,7 @@ export default class ExpressApplication {
         // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
         // TODO Tests für API behandleLoescheDatensatz
         // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
-        // TODO Tests für API behandleDatenbankabfrage
-        // expressAnwendung.post('/api/database/:datenbankname', behandleDatenbankabfrage)
+        this.app.post('/api/database/:databasename', this.#handlePostDatabaseQuery.bind(this))
     }
 
     /**
@@ -378,6 +363,21 @@ export default class ExpressApplication {
         response.sendStatus(200)
     }
 
+    /**
+     * Informationen aus Datenbank holen.
+     * Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
+     */
+    async #handlePostDatabaseQuery(request, response) {
+        const database = await this.#loadDatabase(request.params.databasename)
+        // Abfrage durchführen
+        const query = request.body?.query?.toString()
+        if (!query || !query.toLowerCase().startsWith('select') || query.includes(';')) {
+            return response.sendStatus(400)
+        }
+        const result = database.prepare(query).all()
+        // Ergebnisse als JSON zurück geben
+        response.json(result)
+    }
 
     /**
      * Datei speichern

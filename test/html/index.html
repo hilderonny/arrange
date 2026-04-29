@@ -126,7 +126,7 @@
             // Datensatz aktualisieren, nur die geänderten Felder
             await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
             // SQL-Abfrage machen
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Testtabelle'))
             // Datensatz löschen
             await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
 
@@ -188,12 +188,12 @@
             })
             console.log(await spurenaufgabe.speichereInDatenbank())
             // Vor dem Löschen
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
             await vorgang.loescheAusDatenbank()
             // Auch Spur 2 und Spurwenaufgaben müssen gelöscht sein, wenn Vorgang weg ist
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
             // Und nochmal eine Spur einfügen, one dass es eine Referenz per Foreign Key gibt
             const spur3 = new Spur({
                 Name: 'Dritte Spur',
