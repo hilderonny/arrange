@@ -9,6 +9,7 @@
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
 - [Datenbank abfragen - POST /api/database/:databasename](#datenbank-abfragen---post-apidatabasedatabasename)
 - [Datenbankschema aktualisieren - PATCH /api/database/:databasename](#datenbankschema-aktualisieren---patch-apidatabasedatabasename)
+- [Datenbanktabelle löschen - DELETE /api/database/:databaseName/:tableName](#datenbanktabelle-löschen---delete-apidatabasedatabasenametablename)
 - [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
 
 ## Benutzer abmelden - `GET / api/logout`
@@ -197,6 +198,15 @@ Bestehende Spalten werden nicht überschrieben, auch wenn im angegebenen Schema 
 
 Wenn im Request kein Body angegeben wird, oder darin die Eigenschaft `schema` fehlt, wird der HTTP Statuscode `400` zurückgegeben.
 Bei erfolgreicher Ausführung wird einfach der HTTP Statuscode `200` zurückgegeben.
+
+
+## Datenbanktabelle löschen - `DELETE /api/database/:databaseName/:tableName`
+
+Löscht die Tabelle `:tableName` der Datenbank `:databaseName`.
+
+Es wird stets der HTTP Statuscode `200` zurückgegeben.
+Fehler - etwa durch nicht existierende Datenbanken oder Tabellen - werden stillschweigend ignoriert.
+
 
 ## Verzeichnis erstellen - `PUT /api/files/:userId/*directoryPath`
 

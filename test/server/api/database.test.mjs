@@ -39,6 +39,57 @@ describe('API /api/database', () => {
         expressApplication.shutDown()
     })
 
+    describe('DELETE /api/database/:databaseName/:tableName', () => {
+
+        it('Wenn die Datenbank nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
+            await supertest(expressApplication.app).delete(`/api/database/notexistingdatabase/Table1`).expect(200)
+        })
+
+        it('Wenn die Tabelle nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL);`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/notexistingtable`).expect(200)
+        })
+
+        it('Die angegebene Tabelle wird gelöscht.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1`).expect(200)
+            // Gucken, ob die Tabelle noch da ist
+            const table = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='Table1';`).get()
+            assert.strictEqual(table, undefined)
+        })
+
+        it('ForeignKey-Abhängigkeiten werden ebenfalls gelöscht.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id REFERENCES Table1(Id) ON DELETE CASCADE);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            database.exec(`INSERT INTO Table2 (Id, Table1Id) VALUES ('id2', 'id1');`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1`).expect(200)
+            // Gucken, ob die Tabelle noch da ist
+            const table = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='Table1';`).get()
+            assert.strictEqual(table, undefined)
+            // Gucken, ob der Record mit der Referenz noch da ist
+            const table2Record = database.prepare(`SELECT * FROM Table2 WHERE Id='id2';`).get()
+            assert.strictEqual(table2Record, undefined)
+        })
+
+    })
+
     describe('DELETE /api/database/:databaseName/:tableName/:recordId', () => {
 
         it('Wenn die Datenbank nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {

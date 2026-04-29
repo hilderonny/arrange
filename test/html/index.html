@@ -116,7 +116,7 @@
 
             // Erst mal alles Alte löschen
             for (const tabellenname of [ 'Testtabelle', 'AndereTabelle', 'TabelleOhneIrgendwas', 'Vorgaenge', 'Spuren', 'Spurenaufgaben']) {
-                await Arrange.loescheDatenbanktabelle('Testdatenbank', tabellenname)
+                await Arrange.deleteDatabaseTable('Testdatenbank', tabellenname)
             }
             // Schema aktualisieren
             await Arrange.updateDatabase('Testdatenbank', datenbankschemaVorher)

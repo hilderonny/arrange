@@ -56,6 +56,11 @@ async function deleteDatabaseRecord(databaseName, tableName, recordId) {
     await fetch(url, { method: 'DELETE' })
 }
 
+async function deleteDatabaseTable(databaseName, tableName) {
+    const url = new URL(`/api/database/${databaseName}/${tableName}`, import.meta.url).href
+    const response = await fetch(url, { method: 'DELETE' })
+}
+
 async function deletePrivatePath(filePath) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
@@ -97,12 +102,6 @@ async function leaveRoom(roomNumber) {
 async function logout() {
     await fetch('/api/logout')
     location.reload()
-}
-
-async function loescheDatenbanktabelle(datenbankname, tabellenname) {
-    const url = new URL(`/api/database/${datenbankname}/${tabellenname}`, import.meta.url).href
-    const response = await fetch(url, { method: 'DELETE' })
-    return response.ok
 }
 
 async function postTextFile(url, fileContent) {
@@ -239,13 +238,13 @@ export {
     createPrivatePath,
     createPublicPath,
     deleteDatabaseRecord,
+    deleteDatabaseTable,
     deletePrivatePath, 
     deletePublicPath, 
     getPrivateFile,
     getPublicFile,
     joinRoom,
     leaveRoom,
-    loescheDatenbanktabelle,
     logout,
     queryDatabase,
     postPrivateTextFile,

@@ -19,14 +19,6 @@ import multer from 'multer'
 
 /********** API Funktionen **********/
 
-// Tabelle löschen
-async function behandleLoescheDatenbanktabelle(request, response) {
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const abfrage = datenbank.prepare(`DROP TABLE IF EXISTS ${request.params.tabellenname};`)
-    abfrage.run()
-    response.sendStatus(200)
-}
-
 // Websocket Verbindung wurde aufgebaut
 function behandleWebSocketVerbindung(webSocket) {
     webSocket.on('message', nachricht => behandleWebSocketNachricht(webSocket, nachricht))
@@ -221,8 +213,7 @@ export default class ExpressApplication {
         this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
         // TODO Tests für API behandleSpeichereDatensatz
         // expressAnwendung.patch('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
-        // TODO Tests für API behandleLoescheDatenbanktabelle
-        // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
+        this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
         this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
         this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
     }
@@ -284,6 +275,16 @@ export default class ExpressApplication {
             const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
             query.run()
         }
+        response.sendStatus(200)
+    }
+
+    /**
+     * Datenbanktabelle löschen
+     */
+    async #handleDeleteDatabaseTable(request, response) {
+        const database = await this.#loadDatabase(request.params.databaseName)
+        const query = database.prepare(`DROP TABLE IF EXISTS ${request.params.tableName};`)
+        query.run()
         response.sendStatus(200)
     }
 

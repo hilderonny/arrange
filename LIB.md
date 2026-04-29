@@ -20,6 +20,7 @@
 - [Datenbank abfragen - async queryDatabase(databaseName, query)](#datenbank-abfragen---async-querydatabasedatabasename-query)
 - [Datenbankeintrag löschen - async deleteDatabaseRecord(databaseName, tableName, recordId)](#datenbankeintrag-löschen---async-deletedatabaserecorddatabasename-tablename-recordid)
 - [Datenbankschema aktualisieren - async updateDatabase(databaseName, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatabasename-schema)
+- [Datenbanktabelle löschen - async deleteDatabaseTable(databaseName, tableName)](#datenbanktabelle-löschen---async-deletedatabasetabledatabasename-tablename)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
@@ -54,6 +55,7 @@ const result = await Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
 
 Bei Fehlern wird `undefined` zurückgegeben.
 
+
 ## Datenbankeintrag löschen - `async deleteDatabaseRecord(databaseName, tableName, recordId)`
 
 Löscht einen Datenbankeintrag aus der Tabelle der angegebenen Datenbank.
@@ -81,6 +83,17 @@ await Arrange.updateDatabase('Database1', { // Datenbankname
 Bei Bedarf werden die Datenbank, die Tabellen und Spalten erstellt.
 Existierende Spalten werden jedoch nicht verändert, wenn sie einmal erstellt wurden.
 Jede Tabelle bekommt automatisch den Primärschlüssel `Id` (TEXT).
+
+
+## Datenbanktabelle löschen - `async deleteDatabaseTable(databaseName, tableName)`
+
+Löscht eine Tabelle der angegebenen Datenbank.
+Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
+Diese Funktion hat keinerlei Rückgabe.
+
+```js
+await Arrange.deleteDatabaseTable('Datenbank1', 'Table1')
+```
 
 
 ### Öffentliche Binärdatei hochladen - `async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)`

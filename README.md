@@ -132,7 +132,6 @@ leaveRoom(roomNumber)
 sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
-loescheDatenbanktabelle(datenbankname, tabellenname)
 speichereDatensatz(datenbankname, tabellenname, datensatz)
 ```
 
