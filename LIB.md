@@ -17,6 +17,7 @@
 ## Funktionen
 
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
+- [Datenbankschema aktualisieren - async function updateDatabase(datenbankname, schema)](#datenbankschema-aktualisieren---async-function-updatedatabasedatenbankname-schema)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
@@ -35,6 +36,25 @@ Meldet den Benutzer ab und lädt die Seite neu, damit der Anmeldedialog wieder a
 ```js
 Arrange.logout()
 ```
+
+
+## Datenbankschema aktualisieren - `async function updateDatabase(datenbankname, schema)`
+
+Erstellt eine Datenbank oder aktualisiert deren Schema.
+Das Schema enthält Tabellennamen und Spaltennamen als Objekt-Keys und SQLite-Spaltendefinitionen als Values.
+
+```json
+{
+    "Tablename": { // Name der Tabelle als Key
+        "Column1name": "TEXT", // Name der Spalte als Key und Schemadefinition als Value
+        "Column2name": "INTEGER"
+    }
+}
+```
+
+Bei Bedarf werden die Datenbank, die Tabellen und Spalten erstellt.
+Existierende Spalten werden jedoch nicht verändert, wenn sie einmal erstellt wurden.
+Jede Tabelle bekommt automatisch den Primärschlüssel `Id` (TEXT).
 
 
 ### Öffentliche Binärdatei hochladen - `async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)`

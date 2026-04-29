@@ -119,7 +119,7 @@
                 await Arrange.loescheDatenbanktabelle('Testdatenbank', tabellenname)
             }
             // Schema aktualisieren
-            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschemaVorher)
+            await Arrange.updateDatabase('Testdatenbank', datenbankschemaVorher)
             // Datensatz erstellen, undefined als id mitgeben
             const neuerDatensatz = await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
             console.log(neuerDatensatz)
@@ -165,7 +165,7 @@
             console.log(await spurAusDatenbank.speichereInDatenbank())
 
             // Datenbankschema erweitern
-            await Arrange.aktualisiereDatenbankschema('Testdatenbank', {
+            await Arrange.updateDatabase('Testdatenbank', {
                 Spuren: {
                     Nummer: 'TEXT',
                     VorgangsId: 'TEXT REFERENCES Vorgaenge(Id) ON DELETE CASCADE',

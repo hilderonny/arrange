@@ -7,6 +7,7 @@
 - [Datei abrufen oder Verzeichnis auflisten - GET /api/files/:userId/*filePath](#datei-abrufen-oder-verzeichnis-auflisten---get-apifilesuseridfilepath)
 - [Datei hochladen - POST /api/files/:userId/*filePath](#datei-hochladen---post-apifilesuseridfilepath)
 - [Datei oder Verzeichnis löschen - DELETE /api/files/:userId/*filePath](#datei-oder-verzeichnis-löschen---delete-apifilesuseridfilepath)
+- [Datenbankschema aktualisieren - PATCH /api/database/:databasename](#datenbankschema-aktualisieren---patch-apidatabasedatabasename)
 - [Verzeichnis erstellen - PUT /api/files/:userId/*directoryPath](#verzeichnis-erstellen---put-apifilesuseriddirectorypath)
 
 ## Benutzer abmelden - `GET / api/logout`
@@ -134,6 +135,30 @@ Wenn der angegebene Pfad nicht existiert, wird als HTTP Statuscode `404` zurück
 
 Bei Erfolg wird der HTTP Statuscode `200` ohne Inhalt zurückgegeben.
 
+
+## Datenbankschema aktualisieren - `PATCH /api/database/:databasename`
+
+Erstellt eine Datenbank oder aktualisiert ihr Schema.
+Der Datenbankname wird als URL-Parameter `:databasename` und das Schema als JSON-Struktur im Body des Requests übergeben.
+
+```json
+{
+    "schema": {
+        "Tablename": { // Name der Tabelle als Key
+            "Column1name": "TEXT", // Name der Spalte als Key und Schemadefinition als Value
+            "Column2name": "INTEGER"
+        }
+    }
+}
+```
+
+Die Datenbank, Tabellen und Spalten werden bei Bedarf automatisch erstellt.
+Dabei bekommt jede Tabelle automatisch als Primärschlüssel die Spalte `Id` (TEXT), die nicht in der Schemadefinition angegeben werden braucht.
+
+Bestehende Spalten werden nicht überschrieben, auch wenn im angegebenen Schema eine andere Spaltendefinition angegeben ist.
+
+Wenn im Request kein Body angegeben wird, oder darin die Eigenschaft `schema` fehlt, wird der HTTP Statuscode `400` zurückgegeben.
+Bei erfolgreicher Ausführung wird einfach der HTTP Statuscode `200` zurückgegeben.
 
 ## Verzeichnis erstellen - `PUT /api/files/:userId/*directoryPath`
 

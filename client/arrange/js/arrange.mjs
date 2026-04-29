@@ -1,17 +1,5 @@
 let WEB_SOCKET = undefined;
 
-async function aktualisiereDatenbankschema(datenbankname, schema) {
-    const url = new URL(`/api/database/${datenbankname}`, import.meta.url).href
-    const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ schema: schema })
-    })
-    return response.ok
-}
-
 async function autoLogin() {
     const autoLoginResponse = await fetch('/api/autologin')
     if (autoLoginResponse.status !== 200) {
@@ -200,6 +188,18 @@ async function speichereDatensatz(datenbankname, tabellenname, datensatzId, feld
     }
 }
 
+async function updateDatabase(datenbankname, schema) {
+    const url = new URL(`/api/database/${datenbankname}`, import.meta.url).href
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ schema: schema })
+    })
+    return response.ok
+}
+
 async function uploadFile(url, binaryFileContent, progressCallback) {
     const formData = new FormData()
     formData.append('data', new Blob([binaryFileContent]))
@@ -236,7 +236,6 @@ async function uploadPublicBinaryFile(filePath, binaryFileContent, progressCallb
 await autoLogin()
 
 export {
-    aktualisiereDatenbankschema,
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
@@ -255,6 +254,7 @@ export {
     sendMessageToClient,
     sendMessageToRoom,
     speichereDatensatz,
+    updateDatabase,
     uploadPrivateBinaryFile,
     uploadPublicBinaryFile,
 }

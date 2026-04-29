@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 
-describe('arrange.js getPublicFile()', () => {
+describe('arrange.mjs getPublicFile()', () => {
 
     let originalFetch
     let originalLocalStorage

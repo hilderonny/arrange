@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 
-describe('arrange.js uploadPublicBinaryFile()', () => {
+describe('arrange.mjs uploadPublicBinaryFile()', () => {
 
     let originalFetch
     let originalLocalStorage

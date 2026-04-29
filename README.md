@@ -123,7 +123,7 @@ Messages over websockets contain one byte of type information and the rest as pa
 |`0x31`|Broadcast message from client. `8` bytes sender client ID, `8` bytes room ID, followed by payload|
 |`0x41`|Direct message from client. `8` bytes sender client ID followed by payload|
 
-# Bibliothek /arrange/js/arrange.js
+# Bibliothek /arrange/js/arrange.mjs
 
 ```js
 connectWebSocket(serverMessageCallback({type, senderId, roomId, clientId, message}))
@@ -132,7 +132,6 @@ leaveRoom(roomNumber)
 sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
-aktualisiereDatenbankschema(datenbankname, schema)
 loescheDatenbanktabelle(datenbankname, tabellenname)
 loescheDatensatz(datenbankname, tabellenname, datensatzId)
 macheDatenbankabfrage(datenbankname, abfrage)
