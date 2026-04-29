@@ -39,7 +39,67 @@ describe('API /api/database', () => {
         expressApplication.shutDown()
     })
 
-    describe('PATCH /api/database/:databasename', () => {
+    describe('DELETE /api/database/:databaseName/:tableName/:recordId', () => {
+
+        it('Wenn die Datenbank nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
+            await supertest(expressApplication.app).delete(`/api/database/notexistingdatabase/Table1/id1`).expect(200)
+        })
+
+        it('Wenn die Tabelle nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL);`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/notexistingtable/id1`).expect(200)
+        })
+
+        it('Wenn kein Datensatz mit der gegebenen Id existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL);`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1/id1`).expect(200)
+        })
+
+        it('Der angegebene Datensatz wird gelöscht.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1/id1`).expect(200)
+            // Gucken, ob Record noch da ist
+            const record = database.prepare(`SELECT * FROM Table1 WHERE Id='id1';`).get()
+            assert.strictEqual(record, undefined)
+        })
+
+        it('ForeignKey-Abhängigkeiten werden ebenfalls gelöscht.', async () => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT);`);
+            database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id REFERENCES Table1(Id) ON DELETE CASCADE);`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
+            database.exec(`INSERT INTO Table2 (Id, Table1Id) VALUES ('id2', 'id1');`);
+            // Abfrage ausführen
+            await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1/id1`).expect(200)
+            // Gucken, ob Record noch da ist
+            const table1Record = database.prepare(`SELECT * FROM Table1 WHERE Id='id1';`).get()
+            assert.strictEqual(table1Record, undefined)
+            const table2Record = database.prepare(`SELECT * FROM Table2 WHERE Id='id2';`).get()
+            assert.strictEqual(table2Record, undefined)
+        })
+
+    })
+
+    describe('PATCH /api/database/:databaseName', () => {
 
         it('Wenn kein Body mitgesendet wird, wird HTTP Statuscode 400 zurückgegeben.', async () => {
             await supertest(expressApplication.app).patch(`/api/database/testdatabase`).expect(400)
@@ -170,7 +230,7 @@ describe('API /api/database', () => {
     
     })
 
-    describe('POST /api/database/:databasename', () => {
+    describe('POST /api/database/:databaseName', () => {
 
         it('Wenn kein body gesendet wird, wird der HTTP Statuscode 400 zurückgegeben.', async() => {
             await supertest(expressApplication.app).post(`/api/database/testdatabase`).expect(400)

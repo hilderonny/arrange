@@ -27,14 +27,6 @@ async function behandleLoescheDatenbanktabelle(request, response) {
     response.sendStatus(200)
 }
 
-// Datensatz löschen
-async function behandleLoescheDatensatz(request, response) {
-    const datenbank = await ladeDatenbank(request.params.datenbankname)
-    const abfrage = datenbank.prepare(`DELETE FROM ${request.params.tabellenname} WHERE Id = '${request.params.datensatzId}';`)
-    abfrage.run()
-    response.sendStatus(200)
-}
-
 // Websocket Verbindung wurde aufgebaut
 function behandleWebSocketVerbindung(webSocket) {
     webSocket.on('message', nachricht => behandleWebSocketNachricht(webSocket, nachricht))
@@ -226,14 +218,13 @@ export default class ExpressApplication {
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
         this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
-        this.app.patch('/api/database/:databasename', this.#handlePatchDatabase.bind(this))
+        this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
         // TODO Tests für API behandleSpeichereDatensatz
         // expressAnwendung.patch('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleSpeichereDatensatz)
         // TODO Tests für API behandleLoescheDatenbanktabelle
         // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname', behandleLoescheDatenbanktabelle)
-        // TODO Tests für API behandleLoescheDatensatz
-        // expressAnwendung.delete('/api/database/:datenbankname/:tabellenname/:datensatzId', behandleLoescheDatensatz)
-        this.app.post('/api/database/:databasename', this.#handlePostDatabaseQuery.bind(this))
+        this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
+        this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
     }
 
     /**
@@ -285,7 +276,20 @@ export default class ExpressApplication {
 
     /********** API Funktionen **********/
 
-    // Pfad löschen
+    // Datensatz löschen
+    async #handleDeleteDatabaseRecord(request, response) {
+        const database = await this.#loadDatabase(request.params.databaseName)
+        const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
+        if (existingTable) {
+            const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
+            query.run()
+        }
+        response.sendStatus(200)
+    }
+
+    /**
+     * Pfad im Dateisystem löschen
+     */
     async #handleDeletePath(request, response) {
         const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
         if (fs.existsSync(absolutePath)) {
@@ -344,7 +348,7 @@ export default class ExpressApplication {
         if (!request.body?.schema) {
             return response.sendStatus(400)
         }
-        const database = await this.#loadDatabase(request.params.databasename)
+        const database = await this.#loadDatabase(request.params.databaseName)
         // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
         for (const tableName of Object.keys(request.body.schema)) {
             const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL);`
@@ -368,7 +372,7 @@ export default class ExpressApplication {
      * Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
      */
     async #handlePostDatabaseQuery(request, response) {
-        const database = await this.#loadDatabase(request.params.databasename)
+        const database = await this.#loadDatabase(request.params.databaseName)
         // Abfrage durchführen
         const query = request.body?.query?.toString()
         if (!query || !query.toLowerCase().startsWith('select') || query.includes(';')) {

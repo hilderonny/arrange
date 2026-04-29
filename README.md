@@ -133,8 +133,6 @@ sendMessageToClient(clientId, textMessage)
 sendMessageToRoom(roomNumber, textMessage)
 
 loescheDatenbanktabelle(datenbankname, tabellenname)
-loescheDatensatz(datenbankname, tabellenname, datensatzId)
-queryDatabase(datenbankname, abfrage)
 speichereDatensatz(datenbankname, tabellenname, datensatz)
 ```
 

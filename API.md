@@ -166,6 +166,14 @@ Bei erfolgreicher Abfrage wird ein JSON-Feld zurückgegeben, welches für jeden 
 
 Das Feld kann auch leer sein, wenn es keine zur Abfrage passenden Ergebnisse gibt.
 
+
+## Datenbankeintrag löschen - `DELETE /api/database/:databaseName/:tableName/:recordId`
+
+Löscht einen Record mit der angegeben `:recordId` aus der Tabelle `:tableName` der Datenbank `:databaseName`.
+
+Es wird stets der HTTP Statuscode `200` zurückgegeben. Fehler - etwa durch nicht existierende Datenbanken, Tabellen oder Records - werden stillschweigend ignoriert.
+
+
 ## Datenbankschema aktualisieren - `PATCH /api/database/:databasename`
 
 Erstellt eine Datenbank oder aktualisiert ihr Schema.

@@ -1,5 +1,6 @@
 import * as Arrange from '../arrange.mjs'
 
+// TODO DatabaseObject testen
 export default class DatabaseObject {
 
     static get databasename() { return undefined }
@@ -38,7 +39,7 @@ export default class DatabaseObject {
     }
     
     async deleteFromDatabase() {
-        return await Arrange.loescheDatensatz(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
+        return await Arrange.deleteDatabaseRecord(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
     }
 
     async storeInDatabase() {

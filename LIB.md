@@ -17,7 +17,9 @@
 ## Funktionen
 
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
-- [Datenbankschema aktualisieren - async updateDatabase(datenbankname, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatenbankname-schema)
+- [Datenbank abfragen - async queryDatabase(databaseName, query)](#datenbank-abfragen---async-querydatabasedatabasename-query)
+- [Datenbankeintrag löschen - async deleteDatabaseRecord(databaseName, tableName, recordId)](#datenbankeintrag-löschen---async-deletedatabaserecorddatabasename-tablename-recordid)
+- [Datenbankschema aktualisieren - async updateDatabase(databaseName, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatabasename-schema)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
@@ -38,12 +40,12 @@ Arrange.logout()
 ```
 
 
-## Datenbank abfragen - `async queryDatabase(databasename, query)`
+## Datenbank abfragen - `async queryDatabase(databaseName, query)`
 
 Führt eine Abfrage auf der Datenbank aus und gibt das Ergebnis als Array zurück.
 
 ```js
-const result = Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
+const result = await Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
 // [
 //     { Id: 'id1', Column1: 'text1', Column2: 42 },
 //     ...
@@ -52,13 +54,23 @@ const result = Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
 
 Bei Fehlern wird `undefined` zurückgegeben.
 
-## Datenbankschema aktualisieren - `async updateDatabase(datenbankname, schema)`
+## Datenbankeintrag löschen - `async deleteDatabaseRecord(databaseName, tableName, recordId)`
+
+Löscht einen Datenbankeintrag aus der Tabelle der angegebenen Datenbank.
+Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
+Diese Funktion hat keinerlei Rückgabe.
+
+```js
+await Arrange.deleteDatabaseRecord('Datenbank1', 'Table1', 'id1')
+```
+
+## Datenbankschema aktualisieren - `async updateDatabase(databaseName, schema)`
 
 Erstellt eine Datenbank oder aktualisiert deren Schema.
 Das Schema enthält Tabellennamen und Spaltennamen als Objekt-Keys und SQLite-Spaltendefinitionen als Values.
 
 ```js
-Arrange.updateDatabase('Database1', { // Datenbankname
+await Arrange.updateDatabase('Database1', { // Datenbankname
     Table1: { // Name der Tabelle als Key
         Column1: 'TEXT', // Name der Spalte als Key und Schemadefinition als Value
         Column2: 'INTEGER'

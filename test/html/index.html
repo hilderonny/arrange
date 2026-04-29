@@ -128,7 +128,7 @@
             // SQL-Abfrage machen
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Testtabelle'))
             // Datensatz löschen
-            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
+            await Arrange.deleteDatabaseRecord('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
 
             // Datenbankobjekte
             class Testdatenbankobjekt extends DatabaseObject {

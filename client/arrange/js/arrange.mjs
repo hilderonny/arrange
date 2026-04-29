@@ -51,6 +51,11 @@ async function createPublicPath(directoryPath) {
     return await fetch(url, { method: 'PUT' })
 }
 
+async function deleteDatabaseRecord(databaseName, tableName, recordId) {
+    const url = new URL(`/api/database/${databaseName}/${tableName}/${recordId}`, import.meta.url).href
+    await fetch(url, { method: 'DELETE' })
+}
+
 async function deletePrivatePath(filePath) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
@@ -96,12 +101,6 @@ async function logout() {
 
 async function loescheDatenbanktabelle(datenbankname, tabellenname) {
     const url = new URL(`/api/database/${datenbankname}/${tabellenname}`, import.meta.url).href
-    const response = await fetch(url, { method: 'DELETE' })
-    return response.ok
-}
-
-async function loescheDatensatz(datenbankname, tabellenname, datensatzId) {
-    const url = new URL(`/api/database/${datenbankname}/${tabellenname}/${datensatzId}`, import.meta.url).href
     const response = await fetch(url, { method: 'DELETE' })
     return response.ok
 }
@@ -239,6 +238,7 @@ export {
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
+    deleteDatabaseRecord,
     deletePrivatePath, 
     deletePublicPath, 
     getPrivateFile,
@@ -246,7 +246,6 @@ export {
     joinRoom,
     leaveRoom,
     loescheDatenbanktabelle,
-    loescheDatensatz,
     logout,
     queryDatabase,
     postPrivateTextFile,
