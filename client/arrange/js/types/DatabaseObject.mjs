@@ -3,43 +3,42 @@ import * as Arrange from '../arrange.mjs'
 // TODO DatabaseObject testen
 export default class DatabaseObject {
 
-    static get databasename() { return undefined }
-    static get tablename() { return undefined }
+    static databaseName = undefined
+    static tableName = undefined
 
-    constructor(felder) {
-        if (felder) {
-            for (const schluessel of Object.keys(felder)) {
-                this[schluessel] = felder[schluessel]
+    constructor(fields) {
+        if (new.target === DatabaseObject) {
+            throw new Error('Cannot create an instance of abstract class DatabaseObject.')
+        }
+        if (fields) {
+            for (const schluessel of Object.keys(fields)) {
+                this[schluessel] = fields[schluessel]
             }
         }
         if (!this.Id) {
             this.Id = Math.floor((Date.now() + Math.random()) * 1000).toString()
         }
     }
-
-    static async updateRecord(id, felder) {
-        return await Arrange.saveDatabaseRecord(this.databasename, this.tablename, id, felder)
+    
+    async deleteFromDatabase() {
+        return await Arrange.deleteDatabaseRecord(this.constructor.databaseName, this.constructor.tableName, this.Id)
     }
 
-    static async loadFromDatabase(id) {
-        const abfrageergebnis = await Arrange.queryDatabase(this.databasename, `SELECT * FROM ${this.tablename} WHERE Id='${id}'`)
-        if (!abfrageergebnis?.length) {
+    static async loadFromDatabase(recordId) {
+        const result = await Arrange.queryDatabase(this.databaseName, `SELECT * FROM ${this.tableName} WHERE Id='${recordId}'`)
+        if (!result?.length) {
             return undefined
         }
         const instanz = new this()
-        for (const [schluessel, wert] of Object.entries(abfrageergebnis[0])) {
+        for (const [schluessel, wert] of Object.entries(result[0])) {
             instanz[schluessel] = wert
         }
         return instanz
     }
 
-    static async loadListWithQuery(abfrage) {
-        const listeAusDatenbank = await Arrange.queryDatabase(this.databasename, abfrage)
-        return listeAusDatenbank.map(elementAusDatenbank => new this(elementAusDatenbank))
-    }
-    
-    async deleteFromDatabase() {
-        return await Arrange.deleteDatabaseRecord(this.constructor.datenbankname, this.constructor.tabellenname, this.Id)
+    static async loadListWithQuery(query) {
+        const records = await Arrange.queryDatabase(this.databaseName, query)
+        return records.map(record => new this(record))
     }
 
     async storeInDatabase() {

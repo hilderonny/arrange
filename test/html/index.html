@@ -203,7 +203,7 @@
             console.log(await spur3.speichereInDatenbank())
             console.log(await Spur.ladeAusDatenbank(spur3.Id))
             // Mal nur ein Feld aktualisieren
-            await Spur.aktualisiereDatensatz(spur3.Id, { Nummer: '3 (Zahl)' })
+            await new Spur({ Id: spur3.Id, Nummer: '3 (Zahl)' }).speichereInDatenbank()
             console.log(await Spur.ladeAusDatenbank(spur3.Id))
             // Alle Spuren gemappt mit Abfrage
             console.log(await Spur.ladeListeMitAbfrage('SELECT * FROM Spuren'))
