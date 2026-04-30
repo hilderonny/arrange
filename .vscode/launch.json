@@ -6,7 +6,7 @@
             "env": {
                 "ARRANGE_PORT": "8443",
                 "ARRANGE_DATA_PATH": "./data",
-                "ARRANGE_HTML_PATH": "./test",
+                "ARRANGE_HTML_PATH": "./test/html",
                 "ARRANGE_CRT_FILE": "./server.crt",
                 "ARRANGE_KEY_FILE": "./server.key",
                 "ARRANGE_TOKEN_SECRET": "hubbelebubbele"

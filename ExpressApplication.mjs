@@ -330,7 +330,6 @@ export default class ExpressApplication {
         }
         // Vollständigen Datensatz zurück geben
         const record = database.prepare(`SELECT * FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get()
-        console.log(record)
         response.json(record)
     }
 

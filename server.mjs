@@ -28,7 +28,7 @@ const httpsServer = https.createServer({
 
 // Websocketverbindungen behandeln
 const webSocketServer = new WebSocketServer({ server: httpsServer })
-webSocketServer.on('connection', expressApplication.handleWebsocketConnection)
+webSocketServer.on('connection', expressApplication.handleWebsocketConnection.bind(expressApplication))
 
 // HTTP-Server starten, geht in Endlosschleife
 httpsServer.listen(process.env.ARRANGE_PORT, () => {
