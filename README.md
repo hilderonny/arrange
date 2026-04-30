@@ -4,6 +4,7 @@ Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien 
 
 - [API](API.md)
 - [Client-Bibliothek arrange.mjs](LIB.md)
+- [Basisklasse DatabaseObject](DATABASEOBJECT.md)
 
 # Entwicklung
 
@@ -25,7 +26,7 @@ In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `84
 
 Im Prinzip läuft Arrange als eigener Webserver.
 Man erstellt irgendwo ein Verzeichnisund platziert seine HTML-Seiten darin.
-Beispielsweise in `/var/www/index.html`:
+Beispielsweise in `/var/www/index.html`.
 
 ```html
 <html>

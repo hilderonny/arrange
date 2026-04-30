@@ -8,11 +8,26 @@
         <script type="module">
             import * as Arrange from '/arrange/js/arrange.mjs'
             // Beim ersten Aufruf wird automatisch die Anmeldeseite angezeigt bzw. es erfolgt das Auto-Login
+
+            // Datenbankobjekte definieren
+            import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
+
+            class Aufgabe extends DatabaseObject {
+                static databaseName = 'Database1' // Datenbank, in der Objekte dieser Art gespeichert werden
+                static tableName = 'Table1' // Tabellenname innerhalb der Datenbank für diese Datentypen
+                static columns = [ ...super.columns, 'Titel', 'Inhalt' ] // Spalten zusätzlich zu 'Id' der Basisklasse
+            }
+
+            // Datenbankobjektinstanzen verwenden
+            const neueAufgabe = new Aufgabe({ Titel: 'Dokumentation', Inhalt: 'Soweit vervollständigen, dass sie verständlich und nachvollziehbar ist' })
+            await neueAufgabe.save()
+
         </script>
     </head>
 </html>
 ```
 
+Zur vereinfachten objektorientierten Handhabung von Datenbanktabellen und -objekten kann [DatabaseObject.mjs](DATABASEOBJECT.md) verwendet werden.
 
 ## Funktionen
 

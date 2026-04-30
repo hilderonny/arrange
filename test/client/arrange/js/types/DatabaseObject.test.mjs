@@ -31,6 +31,22 @@ describe('DatabaseObject', () => {
             assert.ok(derivedInstance)
         })
 
+        it('Eine neue Instanz ohne vorgegebene Id bekommt eine generierte Id.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            class DerivedClass extends DatabaseObject {}
+            const derivedInstance = new DerivedClass()
+            assert.ok(derivedInstance)
+            assert.ok(derivedInstance.Id)
+        })
+
+        it('Eine vorgegebene Id wird übernommen.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            class DerivedClass extends DatabaseObject {}
+            const derivedInstance = new DerivedClass({ Id: 'id1' })
+            assert.ok(derivedInstance)
+            assert.strictEqual(derivedInstance.Id, 'id1')
+        })
+
     })
 
     describe('deleteFromDatabase()', () => {
@@ -137,7 +153,7 @@ describe('DatabaseObject', () => {
 
     describe('static loadListWithQuery()', () => {
 
-        it('Ruft API POST /api/database/:databasename auf.', async () => {
+        it('Ruft API POST /api/database/:databaseName auf.', async () => {
             const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
             // Datenbank und Tabelle in abgeleiteter Klasse definieren
             class DerivedClass extends DatabaseObject {
@@ -220,15 +236,83 @@ describe('DatabaseObject', () => {
 
     })
 
-    describe('storeInDatabase()', () => {
+    describe('save()', () => {
 
-        it('Ruft Arrange.saveDatabaseRecord() auf.', async () => {
+        it('Ruft API PATCH /api/database/:databaseName/:tableName/:recordId auf.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            // Abfruf simulieren
+            let fetchWasCalled = false
+            global.fetch = (url, options) => {
+                assert.ok(url.endsWith('/api/database/Database1/Table1/id1'))
+                assert.strictEqual(options.method, 'PATCH')
+                assert.ok(options.body)
+                const json = JSON.parse(options.body)
+                assert.ok(json.fields)
+                fetchWasCalled = true
+                return { ok: true, json() { return { Id: 'id1' } } }
+            }
+            const derivedInstance = new DerivedClass({ Id: 'id1' })
+            await derivedInstance.save()
+            assert.strictEqual(fetchWasCalled, true)
         })
 
-        it('Die Id der Instanz wird beim Aufruf nicht als Feld übergeben.', async () => {
+        it('Es erfolgt keine Rückgabe (void).', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            // Abfruf simulieren
+            global.fetch = () => {
+                return { ok: true, json() { return { Id: 'id1' } } }
+            }
+            const derivedInstance = new DerivedClass({ Id: 'id1' })
+            const result = await derivedInstance.save()
+            assert.strictEqual(result, undefined)
         })
 
-        it('Nur die Felder der Instanz werden an Arrange.saveDatabaseRecord() übergeben, die in der abgeleiteten Klasse definiert sind.', async () => {
+        it('Die Id der Instanz wird beim Aufruf nicht im Feld übergeben.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+                static columns = [ ...super.columns, 'Column1' ]
+            }
+            // Abfruf simulieren
+            global.fetch = (_, options) => {
+                const json = JSON.parse(options.body)
+                assert.strictEqual(json.fields.Id, undefined)
+                return { ok: true, json() { return { Id: 'id1', Column1: 'text1' } } }
+            }
+            const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1' })
+            const result = await derivedInstance.save()
+            assert.strictEqual(result, undefined)
+        })
+
+        it('Nur die Felder der Instanz werden übergeben, die in der abgeleiteten Klasse definiert sind.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+                static columns = [ ...super.columns, 'Column1' ]
+            }
+            // Abfruf simulieren
+            global.fetch = (_, options) => {
+                const json = JSON.parse(options.body)
+                assert.strictEqual(json.fields.UnknownColumn, undefined)
+                return { ok: true, json() { return { Id: 'id1', Column1: 'text1' } } }
+            }
+            const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1', UnknownColumn: 'text2' })
+            const result = await derivedInstance.save()
+            assert.strictEqual(result, undefined)
         })
 
     })

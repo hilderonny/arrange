@@ -1,18 +1,19 @@
 import * as Arrange from '../arrange.mjs'
 
-// TODO DatabaseObject testen
+// TODO DatabaseObject dokumentieren
 export default class DatabaseObject {
 
     static databaseName = undefined
     static tableName = undefined
+    static columns = [ 'Id' ]
 
     constructor(fields) {
         if (new.target === DatabaseObject) {
             throw new Error('Cannot create an instance of abstract class DatabaseObject.')
         }
         if (fields) {
-            for (const schluessel of Object.keys(fields)) {
-                this[schluessel] = fields[schluessel]
+            for (const key of Object.keys(fields)) {
+                this[key] = fields[key]
             }
         }
         if (!this.Id) {
@@ -41,14 +42,14 @@ export default class DatabaseObject {
         return records.map(record => new this(record))
     }
 
-    async storeInDatabase() {
-        const zuSpeichernderDatensatz = {}
-        for (const schluessel of Object.keys(this)) {
-            if (schluessel !== 'Id') {
-                zuSpeichernderDatensatz[schluessel] = this[schluessel]
+    async save() {
+        const recordToSave = {}
+        for (const key of this.constructor.columns) {
+            if (key !== 'Id') {
+                recordToSave[key] = this[key]
             }
         }
-        return await Arrange.saveDatabaseRecord(this.constructor.datenbankname, this.constructor.tabellenname, this.Id, zuSpeichernderDatensatz)
+        await Arrange.saveDatabaseRecord(this.constructor.databaseName, this.constructor.tableName, this.Id, recordToSave)
     }
 
 }
