@@ -15,71 +15,6 @@ import multer from 'multer'
 // const WEBSOCKET_RAEUME = {}
 
 
-
-
-/********** API Funktionen **********/
-
-// Websocket Verbindung wurde aufgebaut
-function behandleWebSocketVerbindung(webSocket) {
-    webSocket.on('message', nachricht => behandleWebSocketNachricht(webSocket, nachricht))
-    // Websocket-ID an Client senden
-    const webSocketId = BigInt(NAECHSTE_WEBSOCKET_ID++)
-    webSocket.id = webSocketId // Für Wiedererkennung
-    WEBSOCKETS[webSocketId] = webSocket
-    webSocket.on('close', () => { delete WEBSOCKETS[webSocketId] })
-    const arrayBuffer = new ArrayBuffer(9)
-    const dataView = new DataView(arrayBuffer)
-    dataView.setInt8(0, 0x01)
-    dataView.setBigInt64(1, webSocketId, true)
-    webSocket.send(arrayBuffer)
-}
-
-// Websocket Nachricht empfangen
-async function behandleWebSocketNachricht(webSocket, nachricht) {
-    const type = nachricht[0]
-    switch (type) {
-        case 0x10: { // Raum betreten
-            const raumnummer = nachricht.readBigUInt64LE(1)
-            if (!WEBSOCKET_RAEUME[raumnummer]) {
-                WEBSOCKET_RAEUME[raumnummer] = []
-            }
-            WEBSOCKET_RAEUME[raumnummer].push(webSocket)
-        } break
-        case 0x20: { // Raum verlassen
-            const raumnummer = nachricht.readBigUInt64LE(1)
-            if (WEBSOCKET_RAEUME[raumnummer]) {
-                WEBSOCKET_RAEUME[raumnummer].splice(WEBSOCKET_RAEUME[raumnummer].indexOf(webSocket), 1)
-            }
-        } break
-        case 0x30: { // Nachricht an Raum senden
-            const raumnummer = nachricht.readBigUInt64LE(1)
-            const raum = WEBSOCKET_RAEUME[raumnummer]
-            if (raum?.length) {
-                const nachrichteninhalt = nachricht.slice(9)
-                const ausgehendeNachricht = Buffer.alloc(17 + nachrichteninhalt.length)
-                ausgehendeNachricht[0] = 0x31
-                ausgehendeNachricht.writeBigUint64LE(webSocket.id, 1)
-                ausgehendeNachricht.writeBigUint64LE(raumnummer, 9)
-                nachrichteninhalt.copy(ausgehendeNachricht, 17)
-                for (const zielWebSocket of raum) {
-                    zielWebSocket.send(ausgehendeNachricht)
-                }
-            }
-        } break
-        case 0x40: { // Nachricht an anderen Client senden
-            const zielWebSocket = WEBSOCKETS[nachricht.readBigUInt64LE(1)]
-            if (zielWebSocket) {
-                const nachrichteninhalt = nachricht.slice(9)
-                const ausgehendeNachricht = Buffer.alloc(9 + nachrichteninhalt.length)
-                ausgehendeNachricht[0] = 0x41
-                ausgehendeNachricht.writeBigUint64LE(webSocket.id, 1)
-                nachrichteninhalt.copy(ausgehendeNachricht, 9)
-                zielWebSocket.send(ausgehendeNachricht)
-            }
-        } break
-    }
-}
-
 /********** Server **********/
 
 export default class ExpressApplication {
@@ -88,6 +23,11 @@ export default class ExpressApplication {
      * Liste aller Benutzerinfos
      */
     #allUsers
+
+    /**
+     * Liste aller verbundenen Websocket-Verbindungen
+     */
+    #allWebsockets = []
 
     /**
      * Pfad zum Verzeichnis, in dem die Datenbanken liegen
@@ -105,9 +45,19 @@ export default class ExpressApplication {
     #filesPath
 
     /**
+     * Nächste verfügbare Id für Websocket-Verbindung
+     */
+    #nextWebsocketId = 0
+
+    /**
      * Pfad zur JSON-Datei mit Benutzerinfos
      */
     #usersJsonPath
+
+    /**
+     * Websocket-Räume
+     */
+    #webSocketRooms = {}
 
     /**
      * Referenz zu Express app für UNIT-Tests
@@ -477,6 +427,71 @@ export default class ExpressApplication {
             fs.mkdirSync(absolutePath, { recursive: true })
         }
         response.sendStatus(200)
+    }
+
+    /**
+     * Websocket Nachricht empfangen
+     */
+    #handleWebsocketMessage(webSocket, message) {
+        const type = message[0]
+        switch (type) {
+            case 0x10: { // Raum betreten
+                const roomNumber = message.readBigUInt64LE(1)
+                if (!this.#webSocketRooms[roomNumber]) {
+                    this.#webSocketRooms[roomNumber] = []
+                }
+                this.#webSocketRooms[roomNumber].push(webSocket)
+            } break
+            case 0x20: { // Raum verlassen
+                const roomNumber = message.readBigUInt64LE(1)
+                if (this.#webSocketRooms[roomNumber]) {
+                    this.#webSocketRooms[roomNumber].splice(this.#webSocketRooms[roomNumber].indexOf(webSocket), 1)
+                }
+            } break
+            case 0x30: { // Nachricht an Raum senden
+                const roomNumber = message.readBigUInt64LE(1)
+                const roomParticipants = this.#webSocketRooms[roomNumber]
+                if (roomParticipants?.length) {
+                    const messageContent = message.slice(9)
+                    const outgoingMessage = Buffer.alloc(17 + messageContent.length)
+                    outgoingMessage[0] = 0x31
+                    outgoingMessage.writeBigUint64LE(webSocket.id, 1)
+                    outgoingMessage.writeBigUint64LE(roomNumber, 9)
+                    messageContent.copy(outgoingMessage, 17)
+                    for (const targetWebsocket of roomParticipants) {
+                        targetWebsocket.send(outgoingMessage)
+                    }
+                }
+            } break
+            case 0x40: { // Nachricht an anderen Client senden
+                const targetWebsocket = this.#allWebsockets[message.readBigUInt64LE(1)]
+                if (targetWebsocket) {
+                    const messageContent = message.slice(9)
+                    const outgoingMessage = Buffer.alloc(9 + messageContent.length)
+                    outgoingMessage[0] = 0x41
+                    outgoingMessage.writeBigUint64LE(webSocket.id, 1)
+                    messageContent.copy(outgoingMessage, 9)
+                    targetWebsocket.send(outgoingMessage)
+                }
+            } break
+        }
+    }
+
+    /**
+     * Websocket Verbindung wurde aufgebaut
+     */
+    handleWebsocketConnection(webSocket) {
+        webSocket.on('message', message => this.#handleWebsocketMessage(webSocket, message))
+        // Websocket-ID an Client senden
+        const webSocketId = BigInt(this.#nextWebsocketId++)
+        webSocket.id = webSocketId // Für Wiedererkennung
+        this.#allWebsockets[webSocketId] = webSocket
+        webSocket.on('close', () => { delete this.#allWebsockets[webSocketId] })
+        const arrayBuffer = new ArrayBuffer(9)
+        const dataView = new DataView(arrayBuffer)
+        dataView.setInt8(0, 0x01)
+        dataView.setBigInt64(1, webSocketId, true)
+        webSocket.send(arrayBuffer)
     }
 
 }

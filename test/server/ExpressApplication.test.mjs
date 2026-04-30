@@ -9,12 +9,30 @@ describe('ExpressApplication', () => {
 
     let expressApplication
     let userId
+    let websocketMock
 
     beforeEach(async () => {
         const dataPath = './test/data'
         const fullPath = path.resolve(dataPath)
         if (fs.existsSync(fullPath)) {
             fs.rmSync(fullPath, { recursive: true })
+        }
+        websocketMock = { // Immer wieder neu aufbauen, anstatt zentral zu verwenden. Ist sauberer.
+            eventListeners: {},
+            on: function (eventName, callback) {
+                if (!this.eventListeners[eventName]) {
+                    this.eventListeners[eventName] = []
+                }
+                this.eventListeners[eventName].push(callback)
+            },
+            send: () => {},
+            sendEvent: async function (eventName, message) {
+                if (this.eventListeners[eventName]) {
+                    for (const callback of this.eventListeners[eventName]) {
+                        await callback(message)
+                    }
+                }
+            },
         }
         expressApplication = new ExpressApplication(
             dataPath,
@@ -28,6 +46,7 @@ describe('ExpressApplication', () => {
 
     afterEach(() => {
         expressApplication.shutDown()
+        websocketMock.sendEvent('close')
     })
 
     describe('Statischer Webserver', () => {
@@ -60,6 +79,23 @@ describe('ExpressApplication', () => {
             const fileContent = fs.readFileSync(path.resolve(`./test/html/index.html`)).toString()
             const response = await supertest(expressApplication.app).get('/')
             assert.strictEqual(fileContent, response.text)
+        })
+
+    })
+
+    describe('Funktion handleWebsocketConnection()', () => {
+
+        it('Bei Verbindung wird eine 0x01-Nachricht mit einer vom Server generierten Wobsocket-Id erhalten', () => {
+            let websocketIdReceived = false
+            websocketMock.send = (message) => {
+                assert.ok(message)
+                assert.ok(message.byteLength > 1)
+                const buffer = Buffer.from(message)
+                assert.strictEqual(buffer[0], 0x01)
+                websocketIdReceived = true
+            }
+            expressApplication.handleWebsocketConnection(websocketMock)
+            assert.strictEqual(websocketIdReceived, true)
         })
 
     })
