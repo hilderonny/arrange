@@ -257,6 +257,7 @@ export default class ExpressApplication {
      * Speichert einen Datensatz in der Datenbank
      */
     async #handlePatchDatabaseRecord(request, response) {
+        // TODO Jedes Feld akzeptieren aber nur diejenigen in SQL-Query aufnehmen, die in Datenbankschema enthalten sind. Also vorher Schema abfragen. Das spart die Schemadefinition in DatabaseObject.mjs, die nur zur Validierung da ist und keinen weiteren Mehrwert bietet.
         if (!request.body?.fields) {
             return response.sendStatus(400)
         }
