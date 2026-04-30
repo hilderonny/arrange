@@ -3,7 +3,6 @@ import cookieSession from 'cookie-session'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import { stat } from 'node:fs/promises'
 import sqlite from 'node:sqlite'
 import multer from 'multer'
 
@@ -220,7 +219,7 @@ export default class ExpressApplication {
         if (!fs.existsSync(absolutePath)) {
             return response.sendStatus(404)
         }
-        const pathStats = await stat(absolutePath)
+        const pathStats = fs.statSync(absolutePath)
         if (pathStats.isDirectory()) {
             const directoryEntries = fs.readdirSync(absolutePath, { withFileTypes: true })
             const entryList = directoryEntries.map(entry => { return {

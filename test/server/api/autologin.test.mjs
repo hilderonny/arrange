@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { rm } from 'node:fs/promises'
+import fs from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
 import supertest from 'supertest'
 import ExpressApplication from '../../../ExpressApplication.mjs'
@@ -10,7 +10,7 @@ describe('GET /api/autologin', () => {
 
     beforeEach(async () => {
         const dataPath = './test/data'
-        await rm(path.resolve(dataPath), { recursive: true })
+        fs.rmSync(path.resolve(dataPath), { recursive: true })
         expressApplication = new ExpressApplication(
             dataPath,
             './test/html', // htmlPath

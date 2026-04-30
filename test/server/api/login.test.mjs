@@ -1,6 +1,5 @@
 import path from 'node:path'
 import fs from 'fs'
-import { readFileSync } from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
 import * as assert from 'node:assert'
 import supertest from 'supertest'
@@ -60,7 +59,7 @@ describe('GET /api/login', () => {
         const response = await supertest(expressApplication.app).post('/api/login').send({ username: 'testusername', password: 'testpassword' }).expect(200)
         assert.strictEqual(response.body.username, 'testusername')
         assert.ok(response.body.id)
-        const benutzerliste = JSON.parse(readFileSync(path.resolve('./test/data/users/users.json')))
+        const benutzerliste = JSON.parse(fs.readFileSync(path.resolve('./test/data/users/users.json')))
         const testbenutzer = benutzerliste.find(benutzer => benutzer.username === 'testusername')
         assert.strictEqual(response.body.id, testbenutzer.id)
     })
