@@ -16,7 +16,7 @@ describe('GET /api/logout', () => {
         }
         expressApplication = new ExpressApplication(
             dataPath,
-            './test/html', // htmlPath
+            { '/': './test/html/root' }, // htmlPaths
             'test_secret', // tokenSecret
         )
     })

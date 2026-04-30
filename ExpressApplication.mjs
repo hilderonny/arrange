@@ -59,10 +59,10 @@ export default class ExpressApplication {
      * Erstellt eine Express-Anwendung und registriert alle Routen.
      * 
      * @param {string} dataPath Pfad zum Stammverzeichnis für Dateien der `files` API
-     * @param {string} htmlPath Pfad zum Stammverzeichnis des Webservers, aus dem statisches HTML ausgeliefert wird.
+     * @param {object} htmlPaths Map von Web-Verzeichnispfaden
      * @param {string} tokenSecret Secret Key zur Verschlüsselung der Sitzungs-Cookies.
      */
-    constructor(dataPath, htmlPath, tokenSecret) {
+    constructor(dataPath, htmlPaths, tokenSecret) {
 
         this.#usersJsonPath = path.join(dataPath, 'users/users.json')
         this.#filesPath = path.join(dataPath, 'files')
@@ -80,7 +80,9 @@ export default class ExpressApplication {
         this.app.use(express.json())
 
         // Statische HTML Seiten ausliefern, wird reingemountet
-        this.app.use(express.static(htmlPath))
+        for (const [url, path] of Object.entries(htmlPaths)) {
+            this.app.use(url, express.static(path))
+        }
 
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static('./client/arrange'))

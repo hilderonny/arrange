@@ -27,7 +27,7 @@ describe('API /api/database', () => {
         }
         expressApplication = new ExpressApplication(
             dataPath,
-            './test/html', // htmlPath
+            { '/': './test/html/root' }, // htmlPaths
             'test_secret', // tokenSecret
         )
     })

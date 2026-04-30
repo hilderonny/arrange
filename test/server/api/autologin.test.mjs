@@ -13,7 +13,7 @@ describe('GET /api/autologin', () => {
         fs.rmSync(path.resolve(dataPath), { recursive: true })
         expressApplication = new ExpressApplication(
             dataPath,
-            './test/html', // htmlPath
+            { '/': './test/html/root' }, // htmlPaths
             'test_secret', // tokenSecret
         )
     })

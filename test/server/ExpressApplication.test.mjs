@@ -36,7 +36,11 @@ describe('ExpressApplication', () => {
         }
         expressApplication = new ExpressApplication(
             dataPath,
-            './test/html', // htmlPath
+            { // htmlPaths
+                '/': './test/html/root',
+                '/subfolder1': './test/html/subfolder1',
+                '/subfolder2': './test/html/subfolder2',
+            },
             'test_secret', // tokenSecret
         )
         // Benutzer anlegen
@@ -76,8 +80,20 @@ describe('ExpressApplication', () => {
         })
 
         it('Liefert /index.html aus', async () => {
-            const fileContent = fs.readFileSync(path.resolve(`./test/html/index.html`)).toString()
+            const fileContent = fs.readFileSync(path.resolve(`./test/html/root/index.html`)).toString()
             const response = await supertest(expressApplication.app).get('/')
+            assert.strictEqual(fileContent, response.text)
+        })
+
+        it('Liefert /subfolder1/index.html aus', async() => {
+            const fileContent = fs.readFileSync(path.resolve(`./test/html/subfolder1/index.html`)).toString()
+            const response = await supertest(expressApplication.app).get('/subfolder1/')
+            assert.strictEqual(fileContent, response.text)
+        })
+
+        it('Liefert /subfolder2/index.html aus', async() => {
+            const fileContent = fs.readFileSync(path.resolve(`./test/html/subfolder2/index.html`)).toString()
+            const response = await supertest(expressApplication.app).get('/subfolder2/')
             assert.strictEqual(fileContent, response.text)
         })
 
