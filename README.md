@@ -2,6 +2,11 @@
 
 Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien und SQLite-Datenbanken auf dem Server sowie Websockets mitbringt.
 
+- [API](API.md)
+- [Websockets](WEBSOCKEST.md)
+- [Client-Bibliothek arrange.mjs](LIB.md)
+- [Basisklasse DatabaseObject](DATABASEOBJECT.md)
+
 # Entwicklung
 
 ```sh
@@ -10,10 +15,10 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 \. "$HOME/.nvm/nvm.sh"
 nvm install 24
 
-# Arrange installieren
+# Arrange klonen und Abhängigkeiten installieren
 git clone http://192.168.178.138:8100/ronny/arrange.git
 cd arrange
-npm ci
+npm install
 ```
 
 In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `8443` starten.
@@ -21,14 +26,14 @@ In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `84
 # Verwendung
 
 Im Prinzip läuft Arrange als eigener Webserver.
-Man erstellt irgendwo ein Verzeichnisund platziert seine HTML-Seiten darin.
-Beispielsweise in `/var/www/index.html`:
+Man erstellt irgendwo ein Verzeichnis und platziert seine HTML-Seiten darin.
+Beispielsweise in `/var/www/index.html`.
 
 ```html
 <html>
     <head>
         <script type="module">
-            import * as Arrange from '/arrange/js/arrange.js'
+            import * as Arrange from '/arrange/js/arrange.mjs'
             // Beim ersten Aufruf wird automatisch die Anmeldeseite angezeigt
         </script>
     </head>
@@ -46,6 +51,22 @@ Dabei müssen folgende Umgebungsvariablen gesetzt sein:
 |ARRANGE_TOKEN_SECRET|Schlüssel für Anmeldetoken|
 |ARRANGE_CRT_FILE|Pfad zur SSL Zertifikatsdatei|
 |ARRANGE_KEY_FILE|Pfad zur SSL Schlüsseldatei|
+
+## SSL-Zertifikat erstellen
+
+Unter Windows habe ich [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) installiert und den OpenSSL Command Prompt geöffnet.
+In Linux uns MacOS ist `openssl` bereits installiert.
+
+```sh
+openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
+Country Name (2 letter code) [AU]: leer gelassen
+State or Province Name (full name) [Some-State]: leer gelassen
+Locality Name (eg, city) []: leer gelassen
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: leer gelassen
+Organizational Unit Name (eg, section) []: leer gelassen
+Common Name (e.g. server FQDN or YOUR name) []:arrange
+Email Address []: leer gelassen
+```
 
 ## Starten über Kommandozeile
 
@@ -98,87 +119,3 @@ The following URLs and sub paths are reserved and cannot be used by the applicat
 |`/api/`|REST APIs|
 |`/arrange/`|Arrange ressources|
 |`/ws/`|Websockets|
-
-# API
-
-```
-GET /api/autologin
-GET /api/logout
-POST /api/login
-POST /api/register
-
-DELETE /api/files/{userid}/{path...}
-GET /api/files/{userid}/{filepath...}
-POST /api/files/{userid}/{filepath...}
-PUT /api/files/{userid}/{path...}
-
-PATCH /api/datenbank/{datenbankname}
-PATCH /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}
-DELETE /api/datenbank/{datenbankname}/{tabellenname}/{datensatzId}
-POST /api/datenbank/{datenbankname}
-```
-
-# Websockets
-
-Messages over websockets contain one byte of type information and the rest as payload in any data structure (defined by application).
-
-## Messages from client to server
-
-|First byte|Meaning|
-|-|-|
-|`0x10`|Join room. `8` bytes room number|
-|`0x20`|Leave room. `8` bytes room number|
-|`0x30`|Send broadcast message into room. `8` bytes room number followed by payload|
-|`0x40`|Send direct message to client. `8` bytes client ID followed by payload|
-
-## Messages from server to client
-
-|First byte|Meaning|
-|-|-|
-|`0x01`|`8` bytes of assigned client ID. Sent directly after connecting|
-|`0x31`|Broadcast message from client. `8` bytes sender client ID, `8` bytes room ID, followed by payload|
-|`0x41`|Direct message from client. `8` bytes sender client ID followed by payload|
-
-# Bibliothek /arrange/js/arrange.js
-
-```js
-logout()
-
-createPrivatePath(path)
-createPublicPath(path)
-deletePrivatePath(path)
-deletePublicPath(path)
-getPrivateFile(filePath)
-getPublicFile(filePath)
-postPrivateFile(filePath, fileContent)
-postPublicFile(filePath, fileContent)
-
-connectWebSocket(serverMessageCallback({type, senderId, roomId, clientId, message}))
-joinRoom(roomNumber)
-leaveRoom(roomNumber)
-sendMessageToClient(clientId, textMessage)
-sendMessageToRoom(roomNumber, textMessage)
-
-aktualisiereDatenbankschema(datenbankname, schema)
-loescheDatenbanktabelle(datenbankname, tabellenname)
-loescheDatensatz(datenbankname, tabellenname, datensatzId)
-macheDatenbankabfrage(datenbankname, abfrage)
-speichereDatensatz(datenbankname, tabellenname, datensatz)
-```
-
-# SSL-Zertifikat erstellen
-
-Unter Windows habe ich [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) installiert und den OpenSSL Command Prompt geöffnet.
-In Linux uns MacOS ist `openssl` bereits installiert.
-
-```sh
-openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
-Country Name (2 letter code) [AU]: leer gelassen
-State or Province Name (full name) [Some-State]: leer gelassen
-Locality Name (eg, city) []: leer gelassen
-Organization Name (eg, company) [Internet Widgits Pty Ltd]: leer gelassen
-Organizational Unit Name (eg, section) []: leer gelassen
-Common Name (e.g. server FQDN or YOUR name) []:arrange
-Email Address []: leer gelassen
-```

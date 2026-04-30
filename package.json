@@ -8,5 +8,12 @@
     "multer": "^2.1.1",
     "sqlite": "^5.1.1",
     "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.0",
+    "supertest": "^7.2.2"
+  },
+  "scripts": {
+    "test": "node --experimental-sqlite --test --test-concurrency=1"
   }
 }

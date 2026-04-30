@@ -5,8 +5,8 @@
 
         <script type="module">
 
-            import * as Arrange from '/arrange/js/arrange.js'
-            import Datenbankobjekt from '/arrange/js/types/Datenbankobjekt.js'
+            import * as Arrange from '/arrange/js/arrange.mjs'
+            import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
 
             // Benutzernamen anzeigen
             document.getElementById('username').innerHTML = localStorage.getItem('username')
@@ -17,10 +17,10 @@
             })
 
             // Private Datei im Benutzerordner speichern
-            await Arrange.postPrivateFile('/halli/galli.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/halli/berta/vogel.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/halli/traumato/pikachu.txt', 'huiuiuiui')
-            await Arrange.postPrivateFile('/nochmehr/murks.html', 'trallala')
+            await Arrange.postPrivateTextFile('/halli/galli.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/halli/berta/vogel.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/halli/traumato/pikachu.txt', 'huiuiuiui')
+            await Arrange.postPrivateTextFile('/nochmehr/murks.html', 'trallala')
 
             // Private Datei laden
             const fileContent = await (await Arrange.getPrivateFile('/halli/galli.txt')).text()
@@ -38,8 +38,8 @@
             await Arrange.deletePrivatePath('/halli')
 
             // Das gleiche mit öffentlichen Daten, die jeder Benutzer lesen und ändern kann
-            await Arrange.postPublicFile('/holla/die.txt', 'waldfee')
-            await Arrange.postPublicFile('/frumpf/hallalo.html', 'hornzpronz')
+            await Arrange.postPublicTextFile('/holla/die.txt', 'waldfee')
+            await Arrange.postPublicTextFile('/frumpf/hallalo.html', 'hornzpronz')
 
             // Leeres privates Verzeichnis erstellen
             await Arrange.createPublicPath('/holla/fronzel')
@@ -58,7 +58,7 @@
             const privateFileInput = document.getElementById('privatefile')
             privateFileInput.addEventListener('change', async () => {
                 const file = privateFileInput.files[0]
-                await Arrange.uploadPrivateFile('/nochmehr/' + file.name, file, (progress) => {
+                await Arrange.uploadPrivateBinaryFile('/nochmehr/' + file.name, file, (progress) => {
                     document.getElementById('progress').value = progress
                 })
             })
@@ -66,7 +66,7 @@
             const publicFileInput = document.getElementById('publicfile')
             publicFileInput.addEventListener('change', async () => {
                 const file = publicFileInput.files[0]
-                await Arrange.uploadPublicFile('/frumpf/' + file.name, file, (progress) => {
+                await Arrange.uploadPublicBinaryFile('/frumpf/' + file.name, file, (progress) => {
                     document.getElementById('progress').value = progress
                 })
             })
@@ -97,13 +97,13 @@
             const datenbankschemaVorher = {
                 Testtabelle: {
                     Text: 'TEXT',
-                    Nummer: 'NUMBER',
-                    Wahrheit: 'NUMBER',
-                    AndereWahrheit: 'NUMBER',
+                    Nummer: 'INTEGER',
+                    Wahrheit: 'INTEGER',
+                    AndereWahrheit: 'INTEGER',
                     Nix: 'TEXT',
                 },
                 AndereTabelle: {
-                    Nummer: 'NUMBER',
+                    Nummer: 'INTEGER',
                 },
                 TabelleOhneIrgendwas: {},
                 Vorgaenge: {
@@ -116,56 +116,56 @@
 
             // Erst mal alles Alte löschen
             for (const tabellenname of [ 'Testtabelle', 'AndereTabelle', 'TabelleOhneIrgendwas', 'Vorgaenge', 'Spuren', 'Spurenaufgaben']) {
-                await Arrange.loescheDatenbanktabelle('Testdatenbank', tabellenname)
+                await Arrange.deleteDatabaseTable('Testdatenbank', tabellenname)
             }
             // Schema aktualisieren
-            await Arrange.aktualisiereDatenbankschema('Testdatenbank', datenbankschemaVorher)
+            await Arrange.updateDatabase('Testdatenbank', datenbankschemaVorher)
             // Datensatz erstellen, undefined als id mitgeben
-            const neuerDatensatz = await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
+            const neuerDatensatz = await Arrange.saveDatabaseRecord('Testdatenbank', 'Testtabelle', undefined, { Nummer: 1234, Wahrheit: true, AndereWahrheit: false, Text: `Hallo Welt`, Nix: undefined })
             console.log(neuerDatensatz)
             // Datensatz aktualisieren, nur die geänderten Felder
-            await Arrange.speichereDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
+            await Arrange.saveDatabaseRecord('Testdatenbank', 'Testtabelle', neuerDatensatz.Id, { Nummer: 987, Text: `Huhu, 'Du' "Wurstel" \`Holla\` da!` })
             // SQL-Abfrage machen
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Testtabelle'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Testtabelle'))
             // Datensatz löschen
-            await Arrange.loescheDatensatz('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
+            await Arrange.deleteDatabaseRecord('Testdatenbank', 'Testtabelle', neuerDatensatz.Id)
 
             // Datenbankobjekte
-            class Testdatenbankobjekt extends Datenbankobjekt {
 
-                static get datenbankname() { return 'Testdatenbank' }
-
+            class Testdatenbankobjekt extends DatabaseObject {
+                static databaseName = 'Testdatenbank'
             }
+
             class Vorgang extends Testdatenbankobjekt {
-
-                static get tabellenname() { return 'Vorgaenge' }
-                
+                static tableName = 'Vorgaenge'
+                static columns = [ ...super.columns, 'Name' ]
             }
+
             class Spur extends Testdatenbankobjekt {
-
-                static get tabellenname() { return 'Spuren' }
-
+                static tableName = 'Spuren'
+                static columns = [ ...super.columns, 'Name', 'Nummer', 'VorgangsId' ]
             }
+
             class Spurenaufgabe extends Testdatenbankobjekt {
-
-                static get tabellenname() { return 'Spurenaufgaben' }
-
+                static tableName = 'Spurenaufgaben'
+                static columns = [ ...super.columns, 'Text', 'SpurenId' ]
             }
+
             const vorgang = new Vorgang({
                 Name: 'Mein Vorgang',
             })
-            console.log(await vorgang.speichereInDatenbank())
+            console.log(await vorgang.save())
             const spur1 = new Spur({
                 Name: 'Meine Spur',
             })
-            console.log(await spur1.speichereInDatenbank())
-            const spurAusDatenbank = await Spur.ladeAusDatenbank(spur1.Id)
+            console.log(await spur1.save())
+            const spurAusDatenbank = await Spur.loadFromDatabase(spur1.Id)
             console.log('spurAusDatenbank:', spurAusDatenbank)
             spurAusDatenbank.Name = 'Meine tolle Spur'
-            console.log(await spurAusDatenbank.speichereInDatenbank())
+            console.log(await spurAusDatenbank.save())
 
             // Datenbankschema erweitern
-            await Arrange.aktualisiereDatenbankschema('Testdatenbank', {
+            await Arrange.updateDatabase('Testdatenbank', {
                 Spuren: {
                     Nummer: 'TEXT',
                     VorgangsId: 'TEXT REFERENCES Vorgaenge(Id) ON DELETE CASCADE',
@@ -175,39 +175,39 @@
                     SpurenId: 'TEXT REFERENCES Spuren(Id) ON DELETE CASCADE',
                 }
             })
-            await spurAusDatenbank.loescheAusDatenbank()
+            await spurAusDatenbank.deleteFromDatabase()
             const spur2 = new Spur({
                 VorgangsId: vorgang.Id,
                 Name: 'Meine zweite Spur',
                 Nummer: 'Spur 2',
             })
-            console.log(await spur2.speichereInDatenbank())
+            console.log(await spur2.save())
             const spurenaufgabe = new Spurenaufgabe({
                 Text: 'Mach was!',
                 SpurenId: spur2.Id,
             })
-            console.log(await spurenaufgabe.speichereInDatenbank())
+            console.log(await spurenaufgabe.save())
             // Vor dem Löschen
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
-            await vorgang.loescheAusDatenbank()
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            await vorgang.deleteFromDatabase()
             // Auch Spur 2 und Spurwenaufgaben müssen gelöscht sein, wenn Vorgang weg ist
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spuren'))
-            console.log(await Arrange.macheDatenbankabfrage('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
+            console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
             // Und nochmal eine Spur einfügen, one dass es eine Referenz per Foreign Key gibt
             const spur3 = new Spur({
                 Name: 'Dritte Spur',
                 Nummer: 'Drei',
                 VorgangsId: null, // Geht das auch mit Leertext? NÖ, Muss wirklich undefined oder null sein
             })
-            console.log(await spur3.speichereInDatenbank())
-            console.log(await Spur.ladeAusDatenbank(spur3.Id))
+            console.log(await spur3.save())
+            console.log(await Spur.loadFromDatabase(spur3.Id))
             // Mal nur ein Feld aktualisieren
-            await Spur.aktualisiereDatensatz(spur3.Id, { Nummer: '3 (Zahl)' })
-            console.log(await Spur.ladeAusDatenbank(spur3.Id))
+            await new Spur({ Id: spur3.Id, Nummer: '3 (Zahl)' }).save()
+            console.log(await Spur.loadFromDatabase(spur3.Id))
             // Alle Spuren gemappt mit Abfrage
-            console.log(await Spur.ladeListeMitAbfrage('SELECT * FROM Spuren'))
-            await spur3.loescheAusDatenbank()
+            console.log(await Spur.loadListWithQuery('SELECT * FROM Spuren'))
+            await spur3.deleteFromDatabase()
 
         </script>
 
