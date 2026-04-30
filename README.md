@@ -41,16 +41,6 @@ Beispielsweise in `/var/www/index.html`.
 ```
 
 Danach klont man das `arrange` - Repository und startet Arrange per Kommandozeile oder als Hintergrunddienst.
-Dabei müssen folgende Umgebungsvariablen gesetzt sein:
-
-|Umgebungsvariable|Bedeutung|
-|-|-|
-|ARRANGE_PORT|Port, an welchem der Webserver mit SSL lauschen soll, z.B. `8443`|
-|ARRANGE_DATA_PATH|Pfad, wo Arrange Anwendungsdateien und Datenbanken speichert|
-|ARRANGE_HTML_PATH|Pfad, wo Arrange Das HTML Stammverzeichnis sucht|
-|ARRANGE_TOKEN_SECRET|Schlüssel für Anmeldetoken|
-|ARRANGE_CRT_FILE|Pfad zur SSL Zertifikatsdatei|
-|ARRANGE_KEY_FILE|Pfad zur SSL Schlüsseldatei|
 
 ## SSL-Zertifikat erstellen
 
@@ -74,8 +64,20 @@ Email Address []: leer gelassen
 git clone http://192.168.178.138:8100/ronny/arrange.git
 cd arrange
 npm ci
-ARRANGE_PORT=8443 ARRANGE_DATA_PATH=./data ARRANGE_HTML_PATH=./test ARRANGE_TOKEN_SECRET=hubbelebubbele ARRANGE_CRT_FILE=./server.crt ARRANGE_KEY_FILE=./server.key node --experimental-sqlite ./server.mjs
+
+node ./server.mjs --port 8443 --datapath ./data --crtfile ./server.crt --keyfile ./server.key --tokensecret hubbelebubbele --htmlpath /=/html/root --htmlpath /subfolder1=/html/subfolder1 --htmlpath /subfolder2=/html/subfolder2
 ```
+
+Die Parameter haben folgende Bedeutung.
+
+|Parameter|Bedeutung|
+|-|-|
+|`port`|Port, an welchem der Webserver mit SSL lauschen soll, z.B. `8443`|
+|`datapath`|Pfad, wo Arrange Anwendungsdateien und Datenbanken speichert|
+|`htmlpath`|Mapping von Verzeichnis-Mounts (ähnlich Docker Volume Mounts)|
+|`tokensecret`|Schlüssel für Anmeldetoken|
+|`crtfile`|Pfad zur SSL Zertifikatsdatei|
+|`keyfile`|Pfad zur SSL Schlüsseldatei|
 
 ## Einrichtung als Hintergrunddienst
 
@@ -95,16 +97,10 @@ sudo systemctl start arrange
 Description=arrange
 
 [Service]
-ExecStart=/######PFAD_ZU_NODE###### --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs
+ExecStart=/######PFAD_ZU_NODE###### --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs --port 8443 --datapath /data --crtfile /server.crt --keyfile /server.key --tokensecret hubbelebubbele --htmlpath /=/html/root --htmlpath /subfolder1=/html/subfolder1 --htmlpath /subfolder2=/html/subfolder2
 WorkingDirectory=/######PFAD_ZU_ARRANGE######
 Restart=always
 RestartSec=10
-Environment="ARRANGE_PORT=8443"
-Environment="ARRANGE_DATA_PATH=######PFAD_ZUM_DATENVERZEICHNIS######"
-Environment="ARRANGE_HTML_PATH=######PFAD_ZUM_HTML-VERZEICHNIS######"
-Environment="ARRANGE_TOKEN_SECRET=hubbelebubbele"
-Environment="ARRANGE_CRT_FILE=######PFAD_ZUR_SSL_ZERTIFIKATSDATEI######"
-Environment="ARRANGE_KEY_FILE=######PFAD_ZUR_SSL_SCHLUESSELDATEI######"
 
 [Install]
 WantedBy=multi-user.target
