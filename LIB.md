@@ -41,13 +41,13 @@ Zur vereinfachten objektorientierten Handhabung von Datenbanktabellen und -objek
 - [Nachricht an Raum schicken - async sendMessageToRoom(roomNumber, textMessage)](#nachricht-an-raum-schicken---async-sendmessagetoroomroomnumber-textmessage)
 - [Nachricht an Teilnehmer schicken - async sendMessageToClient(clientId, textMessage)](#nachricht-an-teilnehmer-schicken---async-sendmessagetoclientclientid-textmessage)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
-- [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
+- [Öffentliche Datei oder Verzeichnis laden - async getPublicFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicfilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
-- [Öffentliche Textdatei hochladen - async postPublicFile(filePath, fileContent)](#öffentliche-textdatei-hochladen---async-postpublictextfilefilepath-filecontent)
+- [Öffentliche Textdatei hochladen - async postPublicTextFile(filePath, fileContent)](#öffentliche-textdatei-hochladen---async-postpublictextfilefilepath-filecontent)
 - [Private Binärdatei hochladen - async uploadPrivateBinaryFile(filePath, binaryFileContent, progressCallback)](#private-binärdatei-hochladen---async-uploadprivatebinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Private Datei oder Verzeichnis laden - getPrivateFile(filePath)](#private-datei-oder-verzeichnis-laden---async-getprivatefilefilepath)
 - [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
-- [Private Textdatei hochladen - async postPrivateFile(filePath, fileContent)](#private-textdatei-hochladen---async-postprivatetextfilefilepath-filecontent)
+- [Private Textdatei hochladen - async postPrivateTextFile(filePath, fileContent)](#private-textdatei-hochladen---async-postprivatetextfilefilepath-filecontent)
 - [Privates Verzeichnis erstellen - async createPrivatePath(directoryPath)](#privates-verzeichnis-erstellen---async-createprivatepathdirectorypath)
 - [Von Raum abmelden - async leaveRoom(roomNumber)](#von-raum-abmelden---async-leaveroomroomnumber)
 - [Websocket-Verbindung aufbauen - async connectWebSocket(messageCallback)](#websocket-verbindung-aufbauen---async-connectwebsocketmessagecallback)
@@ -204,7 +204,7 @@ await Arrange.uploadPublicBinaryFile('/path/to/biraryfile.ext', binaryFileConten
 ```
 
 
-### Öffentliche Datei oder Verzeichnis laden - `async getPubliceFile(filePath)`
+### Öffentliche Datei oder Verzeichnis laden - `async getPublicFile(filePath)`
 
 Lädt eine Datei aus dem öffentlich zugänglichen Verzeichnis oder listet ein Verzeichnis darin auf.
 
