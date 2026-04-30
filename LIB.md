@@ -76,7 +76,7 @@ Arrange.logout()
 ```
 
 
-## Datenbank abfragen - `async queryDatabase(databaseName, query)`
+### Datenbank abfragen - `async queryDatabase(databaseName, query)`
 
 Führt eine Abfrage auf der Datenbank aus und gibt das Ergebnis als Array zurück.
 
@@ -91,7 +91,7 @@ const result = await Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
 Bei Fehlern wird `undefined` zurückgegeben.
 
 
-## Datenbankeintrag löschen - `async deleteDatabaseRecord(databaseName, tableName, recordId)`
+### Datenbankeintrag löschen - `async deleteDatabaseRecord(databaseName, tableName, recordId)`
 
 Löscht einen Datenbankeintrag aus der Tabelle der angegebenen Datenbank.
 Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
@@ -102,7 +102,7 @@ await Arrange.deleteDatabaseRecord('Datenbank1', 'Table1', 'id1')
 ```
 
 
-## Datenbankeintrag speichern - `saveDatabaseRecord(databaseName, tableName, recordId, fields)`
+### Datenbankeintrag speichern - `saveDatabaseRecord(databaseName, tableName, recordId, fields)`
 
 Speichert einen Datensatz in der Datenbank und erstellt diesen bei Bedarf.
 Auch die Datenbank selbst wird bei Bedarf erstellt.
@@ -132,7 +132,7 @@ Wenn ein Feld geleert werden soll, muss dieses als `null` mitgesendet werden, `u
 Bei Fehlern - etwa nicht existierende Tabellen oder nicht existierende Felder oder falsche Datentypen der Felder - wird `undefined` zurückgegeben.
 
 
-## Datenbankschema aktualisieren - `async updateDatabase(databaseName, schema)`
+### Datenbankschema aktualisieren - `async updateDatabase(databaseName, schema)`
 
 Erstellt eine Datenbank oder aktualisiert deren Schema.
 Das Schema enthält Tabellennamen und Spaltennamen als Objekt-Keys und SQLite-Spaltendefinitionen als Values.
@@ -151,7 +151,7 @@ Existierende Spalten werden jedoch nicht verändert, wenn sie einmal erstellt wu
 Jede Tabelle bekommt automatisch den Primärschlüssel `Id` (TEXT).
 
 
-## Datenbanktabelle löschen - `async deleteDatabaseTable(databaseName, tableName)`
+### Datenbanktabelle löschen - `async deleteDatabaseTable(databaseName, tableName)`
 
 Löscht eine Tabelle der angegebenen Datenbank.
 Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
