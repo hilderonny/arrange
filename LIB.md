@@ -31,12 +31,15 @@ Zur vereinfachten objektorientierten Handhabung von Datenbanktabellen und -objek
 
 ## Funktionen
 
+- [An Raum anmelden - async joinRoom(roomNumber)](#an-raum-anmelden---async-joinroomroomnumber)
 - [Benutzer abmelden - logout()](#benutzer-abmelden---logout)
 - [Datenbank abfragen - async queryDatabase(databaseName, query)](#datenbank-abfragen---async-querydatabasedatabasename-query)
 - [Datenbankeintrag löschen - async deleteDatabaseRecord(databaseName, tableName, recordId)](#datenbankeintrag-löschen---async-deletedatabaserecorddatabasename-tablename-recordid)
 - [Datenbankeintrag speichern - saveDatabaseRecord(databaseName, tableName, recordId, fields)](#datenbankeintrag-speichern---savedatabaserecorddatabasename-tablename-recordid-fields)
 - [Datenbankschema aktualisieren - async updateDatabase(databaseName, schema)](#datenbankschema-aktualisieren---async-updatedatabasedatabasename-schema)
 - [Datenbanktabelle löschen - async deleteDatabaseTable(databaseName, tableName)](#datenbanktabelle-löschen---async-deletedatabasetabledatabasename-tablename)
+- [Nachricht an Raum schicken - async sendMessageToRoom(roomNumber, textMessage)](#nachricht-an-raum-schicken---async-sendmessagetoroomroomnumber-textmessage)
+- [Nachricht an Teilnehmer schicken - async sendMessageToClient(clientId, textMessage)](#nachricht-an-teilnehmer-schicken---async-sendmessagetoclientclientid-textmessage)
 - [Öffentliche Binärdatei hochladen - async uploadPublicBinaryFile(filePath, binaryFileContent, progressCallback)](#öffentliche-binärdatei-hochladen---async-uploadpublicbinaryfilefilepath-binaryfilecontent-progresscallback)
 - [Öffentliche Datei oder Verzeichnis laden - async getPubliceFile(filePath)](#öffentliche-datei-oder-verzeichnis-laden---async-getpublicefilefilepath)
 - [Öffentliche Datei oder Verzeichnis löschen - async deletePublicPath(filePath)](#öffentliche-datei-oder-verzeichnis-löschen---async-deletepublicpathfilepath)
@@ -46,6 +49,22 @@ Zur vereinfachten objektorientierten Handhabung von Datenbanktabellen und -objek
 - [Private Datei oder Verzeichnis löschen - async deletePrivatePath(filePath)](#private-datei-oder-verzeichnis-löschen---async-deleteprivatepathfilepath)
 - [Private Textdatei hochladen - async postPrivateFile(filePath, fileContent)](#private-textdatei-hochladen---async-postprivatetextfilefilepath-filecontent)
 - [Privates Verzeichnis erstellen - async createPrivatePath(directoryPath)](#privates-verzeichnis-erstellen---async-createprivatepathdirectorypath)
+- [Von Raum abmelden - async leaveRoom(roomNumber)](#von-raum-abmelden---async-leaveroomroomnumber)
+- [Websocket-Verbindung aufbauen - async connectWebSocket(messageCallback)](#websocket-verbindung-aufbauen---async-connectwebsocketmessagecallback)
+
+
+### An Raum anmelden - `async joinRoom(roomNumber)`
+
+Registriert den Benutzer als Teilnehmer eines Websocket-Raumes, woraufhin er künftig Nachrichten für diesen Raum erhält.
+Man kann sich für beliebig viele Räume registrieren.
+Wenn man sich mehrmals für einen Raum registriert, bekommt man die Nachrichten auch mehrfach.
+
+```js
+// Websocket-Verbindung herstellen
+await Arrange.connectWebSocket(messageHandler)
+// An Raum mit bestimmter Nummer anmelden
+await Arrange.joinRoom(13n)
+```
 
 
 ### Benutzer abmelden - `logout()`
@@ -140,6 +159,33 @@ Diese Funktion hat keinerlei Rückgabe.
 
 ```js
 await Arrange.deleteDatabaseTable('Datenbank1', 'Table1')
+```
+
+
+### Nachricht an Raum schicken - `async sendMessageToRoom(roomNumber, textMessage)`
+
+Schickt eine Textnachricht an alle Teilnehmer eines Raumes.
+Man muss nicht selbst Raumteilnehmer sein, um Nachrichten dort hin zu schicken.
+
+```js
+// Websocket-Verbindung herstellen
+await Arrange.connectWebSocket(messageHandler)
+// Nachricht an Raum mit bestimmter Nummer senden
+await Arrange.sendMessageToRoom(13n, 'Hallo Raum')
+```
+
+
+### Nachricht an Teilnehmer schicken - `async sendMessageToClient(clientId, textMessage)`
+
+Schickt eine Textnachricht an einen anderen Teilnehmer ohne Garantie.
+Wenn es einen Teilnehmer mit der Id gibt, wird er die Nachricht erhalten.
+Andernfalls wird die Nachricht verworfen.
+
+```js
+// Websocket-Verbindung herstellen
+await Arrange.connectWebSocket(messageHandler)
+// Nachricht an bestimmten Teilnehmer senden
+await Arrange.sendMessageToClient(42n, 'Hallo Teilnehmer')
 ```
 
 
@@ -280,4 +326,39 @@ Alle übergeordneten Verzeichnisse qwerden bei bedarf ebenfalls automatisch erst
 ```js
 // Privates Verzeichnis erstellen
 await Arrange.createPrivatePath('path/to/directory')
+```
+
+
+### Von Raum abmelden - `async leaveRoom(roomNumber)`
+
+Nach der Abmeldung werden keine Nachrichten mehr für diese Raumnummer erhalten.
+Wenn man mehrfach am Raum angemeldet ist, wird nur eine Anmeldung entfernt und die anderen bleiben bestehen, sodass man weiterhin Nachrichten aus dem Raum erhält.
+
+```js
+// Websocket-Verbindung herstellen
+await Arrange.connectWebSocket(messageHandler)
+// An Raum mit bestimmter Nummer verlassen
+await Arrange.leaveRoom(13n)
+```
+
+
+### Websocket-Verbindung aufbauen - `async connectWebSocket(messageCallback)`
+
+```js
+// Message-Handler definieren
+function messageHandler(messageEvent) {
+    if (messageEvent.type === 0x01) { // Nachricht mit eigener Websocket-Id
+        const ownWebsocketId = messageEvent.clientId // Eigene Websocket-Id
+    } else if (messageEvent.type === 0x31) { // Nachrichten an den Raum
+        const senderId = messageEvent.senderId // Absender
+        const roomId = messageEvent.roomId // Raumnummer
+        const message = messageEvent.message // Nachricht
+    } else if (messageEvent.type === 0x41) { // Direktnachrichten
+        const senderId = messageEvent.senderId // Absender
+        const message = messageEvent.message // Nachricht
+    }
+}
+// Websocket-Verbindung aufbauen
+await Arrange.connectWebSocket(messageHandler)
+// Sofort nach dem Aufbau kommt eine Nachricht 0x01 mit der eigenen Websocket-Id
 ```

@@ -152,7 +152,25 @@ describe('Websockets', () => {
         andererWebsocket.sendEvent('message', prepareMessageToRoom(13n, 'Hallo Raum'))
     })
     
-    it('Wenn anderer Teilnehmer 0x30 Nachricht sendet nachdem man einen Raum verlassen hat, wird 0x31 Nachricht erhalten.', async () => {
+    it('Wenn anderer Teilnehmer 0x30 Nachricht sendet und man im selben Raum mehrmals angemeldet ist, wird 0x31 Nachricht mehrmals erhalten.', async () => {
+        // Erhalt eigener Nachrichten prüfen
+        const meinWebsocket = createWebsocketMock()
+        expressApplication.handleWebsocketConnection(meinWebsocket)
+        meinWebsocket.sendEvent('message', prepareJoinRoomMessage(13n)) // Raum betreten
+        meinWebsocket.sendEvent('message', prepareJoinRoomMessage(13n)) // Raum nochmal betreten
+        let callCount = 0
+        meinWebsocket.send = (message) => {
+            assert.strictEqual(message[0], 0x31)
+            callCount++
+        }
+        // So tun, als ob anderer Websocket eine Nachricht schickt
+        const andererWebsocket = createWebsocketMock()
+        expressApplication.handleWebsocketConnection(andererWebsocket)
+        andererWebsocket.sendEvent('message', prepareMessageToRoom(13n, 'Hallo Raum'))
+        assert.strictEqual(callCount, 2)
+    })
+    
+    it('Wenn anderer Teilnehmer 0x30 Nachricht sendet nachdem man einen Raum verlassen hat, wird keine 0x31 Nachricht erhalten.', async () => {
         // Erhalt eigener Nachrichten prüfen
         const meinWebsocket = createWebsocketMock()
         expressApplication.handleWebsocketConnection(meinWebsocket)
@@ -165,6 +183,25 @@ describe('Websockets', () => {
         const andererWebsocket = createWebsocketMock()
         expressApplication.handleWebsocketConnection(andererWebsocket)
         andererWebsocket.sendEvent('message', prepareMessageToRoom(13n, 'Hallo Raum'))
+    })
+    
+    it('Wenn anderer Teilnehmer 0x30 Nachricht sendet und man im selben Raum mehrmals angemeldet war und sich einmal abgemeldet hat, wird 0x31 Nachricht nur noch einmal erhalten.', async () => {
+        // Erhalt eigener Nachrichten prüfen
+        const meinWebsocket = createWebsocketMock()
+        expressApplication.handleWebsocketConnection(meinWebsocket)
+        meinWebsocket.sendEvent('message', prepareJoinRoomMessage(13n)) // Raum betreten
+        meinWebsocket.sendEvent('message', prepareJoinRoomMessage(13n)) // Raum nochmal betreten
+        meinWebsocket.sendEvent('message', prepareLeaveRoomMessage(13n)) // Raum verlassen
+        let callCount = 0
+        meinWebsocket.send = (message) => {
+            assert.strictEqual(message[0], 0x31)
+            callCount++
+        }
+        // So tun, als ob anderer Websocket eine Nachricht schickt
+        const andererWebsocket = createWebsocketMock()
+        expressApplication.handleWebsocketConnection(andererWebsocket)
+        andererWebsocket.sendEvent('message', prepareMessageToRoom(13n, 'Hallo Raum'))
+        assert.strictEqual(callCount, 1)
     })
     
     it('Wenn anderer Teilnehmer 0x30 Nachricht sendet und man nicht im selben Raum ist, wird keine 0x31 Nachricht erhalten.', async () => {

@@ -15,6 +15,8 @@ for (const environmentVariable of [ 'ARRANGE_PORT', 'ARRANGE_DATA_PATH', 'ARRANG
 
 /********** Server **********/
 
+// TODO Live Test mit index.html
+
 // Express Anwendung vorbereiten
 const expressApplication = new ExpressApplication(process.env.ARRANGE_DATA_PATH, process.env.ARRANGE_HTML_PATH, process.env.ARRANGE_TOKEN_SECRET)
 
