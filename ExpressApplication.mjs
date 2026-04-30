@@ -6,14 +6,6 @@ import path from 'node:path'
 import sqlite from 'node:sqlite'
 import multer from 'multer'
 
-/********** Konstanten und globale Variable **********/
-
-// let NAECHSTE_WEBSOCKET_ID = 0
-
-// const WEBSOCKETS = {}
-// const WEBSOCKET_RAEUME = {}
-
-
 /********** Server **********/
 
 export default class ExpressApplication {
