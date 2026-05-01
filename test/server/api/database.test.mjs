@@ -291,17 +291,28 @@ describe('API /api/database', () => {
             await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: {} }).expect(400)
         })
 
-        it('Wenn beim Erstellen eine übergebene Spalte nicht existiert, wird HTTP Statuscode 400 zurückgegeben.', async () => {
+        it('Beim Erstellen werden nur die Spalten gespeichert, die in der Datenbank enthalten sind.', async () => {
             // Datenbank vorbereiten
             const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
             database = new sqlite.DatabaseSync(absolutePath)
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
-            await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Unknowncolumn: 'text' } }).expect(400)
+            const result = await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text1', Unknowncolumn: 'unknowntext' } }).expect(200)
+            // Ergebnis darf unbekannte Spalte nicht enthalten
+            assert.ok(result)
+            assert.ok(result.body)
+            assert.strictEqual(result.body.Id, 'id1')
+            assert.strictEqual(result.body.Column1, 'text1')
+            assert.ok(!result.body.Unknowncolumn)
+            // Datensatz muss in Datenbank angekommen sein
+            const record = database.prepare(`SELECT * FROM Table1 WHERE Id='id1';`).get()
+            assert.ok(record)
+            assert.strictEqual(record.Column1, 'text1')
+            assert.ok(!record.Unknowncolumn)
         })
 
-        it('Wenn beim Aktualisieren eine übergebene Spalte nicht existiert, wird HTTP Statuscode 400 zurückgegeben.', async () => {
+        it('Beim Aktualisieren werden nur die Spalten gespeichert, die in der Datenbank enthalten sind.', async () => {
             // Datenbank vorbereiten
             const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
@@ -309,7 +320,18 @@ describe('API /api/database', () => {
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
-            await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Unknowncolumn: 'text' } }).expect(400)
+            const result = await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text2', Unknowncolumn: 'unknowntext' } }).expect(200)
+            // Ergebnis darf unbekannte Spalte nicht enthalten
+            assert.ok(result)
+            assert.ok(result.body)
+            assert.strictEqual(result.body.Id, 'id1')
+            assert.strictEqual(result.body.Column1, 'text2')
+            assert.ok(!result.body.Unknowncolumn)
+            // Datensatz muss in Datenbank angekommen sein
+            const record = database.prepare(`SELECT * FROM Table1 WHERE Id='id1';`).get()
+            assert.ok(record)
+            assert.strictEqual(record.Column1, 'text2')
+            assert.ok(!record.Unknowncolumn)
         })
 
         it('Wenn beim Erstellen ein inkompatibler Spaltenwert übergeben wird, wird HTTP Statuscode 400 zurückgegeben.', async () => {

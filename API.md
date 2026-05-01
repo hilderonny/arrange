@@ -198,6 +198,8 @@ Fehlt die angegebene Tabelle oder wird kein body mit Property `fields` übergebe
 Wenn noch kein Datensatz mit der gegebenen `:recordId` existiert, wird einer angelegt.
 Andernfalls werden der bestehende Datensatz mit den gelieferten Werten überschrieben.
 Spalten, die nicht explizit mitgegeben werden, bleiben unverändert.
+Es werden nur solche Felder in der Datenbank gespeichert, für die eine Datenbankspalte existiert.
+Alle unbekannten Spalten werden ignoriert.
 Ein nachträgliches Ändern der Id eines Datensatzes ist nicht möglich, das Feld `Id` wird beim Speichern herausgefiltert.
 
 Bei erfolgreichem Speichern wird im Response der gesamte Datensatz als JSON zurückgegeben.

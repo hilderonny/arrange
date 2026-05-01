@@ -257,7 +257,6 @@ export default class ExpressApplication {
      * Speichert einen Datensatz in der Datenbank
      */
     async #handlePatchDatabaseRecord(request, response) {
-        // TODO Jedes Feld akzeptieren aber nur diejenigen in SQL-Query aufnehmen, die in Datenbankschema enthalten sind. Also vorher Schema abfragen. Das spart die Schemadefinition in DatabaseObject.mjs, die nur zur Validierung da ist und keinen weiteren Mehrwert bietet.
         if (!request.body?.fields) {
             return response.sendStatus(400)
         }
@@ -267,10 +266,18 @@ export default class ExpressApplication {
         if (!existingTable) {
             return response.sendStatus(400)
         }
+        // Existierende Spalten laden
+        const columns = database.prepare(`SELECT name FROM pragma_table_info('${request.params.tableName}');`).all().map(column => column.name)
         // Prüfen, ob Datensatz bereits existiert
         if (database.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get().anzahl < 1) {
             // Existiert noch nicht, also neu anlegen
             const recordToCreate = request.body.fields
+            // Existierende Spalten filtern
+            for (const columnName of Object.keys(recordToCreate)) {
+                if (!columns.includes(columnName)) {
+                    delete recordToCreate[columnName]
+                }
+            }
             recordToCreate.Id = request.params.recordId
             const queryString = [
                 'INSERT INTO ',
@@ -297,15 +304,22 @@ export default class ExpressApplication {
             }
         } else {
             // Existiert, also ggf. aktualisieren
+            const recordToChange = request.body.fields
             // Id rausfiltern, diese darf nicht verändert werden
-            delete request.body.fields.Id
-            // Wenn keine Felder gesendet werden, muss auch nicht aktualisiert werden
-            if (Object.keys(request.body.fields).length > 0) {
+            delete recordToChange.Id
+            // Existierende Spalten filtern
+            for (const columnName of Object.keys(recordToChange)) {
+                if (!columns.includes(columnName)) {
+                    delete recordToChange[columnName]
+                }
+            }
+            // Wenn keine Felder oder keine passenden gesendet werden, muss auch nicht aktualisiert werden
+            if (Object.keys(recordToChange).length > 0) {
                 const queryString = [
                     'UPDATE ',
                     request.params.tableName,
                     ' SET ',
-                    Object.entries(request.body.fields).map(([ columnName, value ]) => {
+                    Object.entries(recordToChange).map(([ columnName, value ]) => {
                         let setString = columnName + '='
                         if (value === null) {
                             setString += 'NULL'

@@ -1,11 +1,9 @@
 import * as Arrange from '../arrange.mjs'
 
-// TODO DatabaseObject dokumentieren
 export default class DatabaseObject {
 
     static databaseName = undefined
     static tableName = undefined
-    static columns = [ 'Id' ]
 
     constructor(fields) {
         if (new.target === DatabaseObject) {
@@ -44,7 +42,7 @@ export default class DatabaseObject {
 
     async save() {
         const recordToSave = {}
-        for (const key of this.constructor.columns) {
+        for (const key of Object.keys(this)) {
             if (key !== 'Id') {
                 recordToSave[key] = this[key]
             }

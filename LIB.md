@@ -15,7 +15,6 @@
             class Aufgabe extends DatabaseObject {
                 static databaseName = 'Database1' // Datenbank, in der Objekte dieser Art gespeichert werden
                 static tableName = 'Table1' // Tabellenname innerhalb der Datenbank für diese Datentypen
-                static columns = [ ...super.columns, 'Titel', 'Inhalt' ] // Spalten zusätzlich zu 'Id' der Basisklasse
             }
 
             // Datenbankobjektinstanzen verwenden

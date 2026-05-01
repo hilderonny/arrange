@@ -17,7 +17,6 @@ class ApplicationObject extends DatabaseObject {
 // Class for specific object type which represents a database table
 class Task extends ApplicationObject {
     static tableName = 'Tasks' // Table name for this kind of objects
-    static columns = [ ...super.columns, 'Title', 'Content' ] // Define type specific table columns (additionally to 'Id' from base class)
 }
 
 // Create and save an object
@@ -48,7 +47,7 @@ await task.deleteFromDatabase()
 ### Klassendefinition
 
 Datentypen müssen `DatabaseObject` beerben, da diese Basisklasse alle Grundfunktionen bereitstellt.
-Dabei müssen abgeleitete Klassen festlegen, in welcher Datenbank und in welcher Tabelle sie gespeichert werden und welche Spalten sie haben.
+Dabei müssen abgeleitete Klassen festlegen, in welcher Datenbank und in welcher Tabelle sie gespeichert werden.
 
 ```js
 import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
@@ -56,7 +55,6 @@ import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
 class Aufgabe extends DatabaseObject {
     static databaseName = 'Database1' // Datenbank, in der Objekte dieser Art gespeichert werden
     static tableName = 'Table1' // Tabellenname innerhalb der Datenbank für diese Datentypen
-    static columns = [ ...super.columns, 'Titel', 'Inhalt' ] // Spalten zusätzlich zu 'Id' der Basisklasse
 }
 ```
 

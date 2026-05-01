@@ -283,7 +283,6 @@ describe('DatabaseObject', () => {
             class DerivedClass extends DatabaseObject {
                 static databaseName = 'Database1'
                 static tableName = 'Table1'
-                static columns = [ ...super.columns, 'Column1' ]
             }
             // Abfruf simulieren
             global.fetch = (_, options) => {
@@ -296,18 +295,18 @@ describe('DatabaseObject', () => {
             assert.strictEqual(result, undefined)
         })
 
-        it('Nur die Felder der Instanz werden übergeben, die in der abgeleiteten Klasse definiert sind.', async () => {
+        it('Alle Felder werden übertragen.', async () => {
             const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
             // Datenbank und Tabelle in abgeleiteter Klasse definieren
             class DerivedClass extends DatabaseObject {
                 static databaseName = 'Database1'
                 static tableName = 'Table1'
-                static columns = [ ...super.columns, 'Column1' ]
             }
             // Abfruf simulieren
             global.fetch = (_, options) => {
                 const json = JSON.parse(options.body)
-                assert.strictEqual(json.fields.UnknownColumn, undefined)
+                assert.strictEqual(json.fields.Column1, 'text1')
+                assert.strictEqual(json.fields.UnknownColumn, 'text2')
                 return { ok: true, json() { return { Id: 'id1', Column1: 'text1' } } }
             }
             const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1', UnknownColumn: 'text2' })
