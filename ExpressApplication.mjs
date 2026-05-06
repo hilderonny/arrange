@@ -77,7 +77,7 @@ export default class ExpressApplication {
         this.app.use(cookieSession({ name: 'session', secret: tokenSecret }))
 
         // JSON in POST Daten aktivieren
-        this.app.use(express.json())
+        this.app.use(express.json({ limit: '100MB' }))
 
         // Statische HTML Seiten ausliefern, wird reingemountet
         for (const [url, path] of Object.entries(htmlPaths)) {

@@ -715,6 +715,35 @@ describe('API /api/database', () => {
             assert.ok(result.body)
             assert.strictEqual(result.body.Id, 'id1')
         })
+
+        it('Beim Erstellen sind Request mit Payloads bis 100 MB möglich.', async() => {
+            const payload = 'x'.repeat(99*1024*1024) // 99 MB + Puffer
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
+            // Abfrage absenden
+            const result = await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: payload } }).expect(200)
+            assert.ok(result)
+            assert.ok(result.body)
+            assert.strictEqual(result.body.Column1, payload)
+        })
+
+        it('Beim Aktualisieren sind Request mit Payloads bis 100 MB möglich.', async() => {
+            const payload = 'x'.repeat(99*1024*1024) // 99 MB + Puffer
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
+            // Abfrage absenden
+            const result = await supertest(expressApplication.app).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: payload } }).expect(200)
+            assert.ok(result)
+            assert.ok(result.body)
+            assert.strictEqual(result.body.Column1, payload)
+        })
         
     })
 
