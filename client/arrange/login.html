@@ -46,8 +46,6 @@
         backLink.href = backurl
         if(!backurl) backLink.style.display = 'none'
         registerLink.href = 'register.html' + location.search
-
-        console.log(loginForm)
         
         loginForm.addEventListener('submit', async (event) => {
             console.log('submit:', event)
