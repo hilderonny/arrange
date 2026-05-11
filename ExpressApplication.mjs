@@ -87,7 +87,7 @@ export default class ExpressApplication {
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static('./client/arrange'))
 
-        // // API-Endpunkte
+        // API-Endpunkte
         this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
         this.app.post('/api/login', this.#handlePostLogin.bind(this))
         this.app.get('/api/logout', this.#handleGetLogout.bind(this))
