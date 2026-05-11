@@ -19,11 +19,11 @@ export default class DatabaseObject {
         }
     }
     
-    async deleteFromDatabase() {
+    async delete() {
         return await Arrange.deleteDatabaseRecord(this.constructor.databaseName, this.constructor.tableName, this.Id)
     }
 
-    static async loadFromDatabase(recordId) {
+    static async load(recordId) {
         const result = await Arrange.queryDatabase(this.databaseName, `SELECT * FROM ${this.tableName} WHERE Id='${recordId}'`)
         if (!result?.length) {
             return undefined
@@ -35,7 +35,7 @@ export default class DatabaseObject {
         return instanz
     }
 
-    static async loadListWithQuery(query) {
+    static async query(query) {
         const records = await Arrange.queryDatabase(this.databaseName, query)
         return records.map(record => new this(record))
     }

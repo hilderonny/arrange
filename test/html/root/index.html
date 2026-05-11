@@ -156,7 +156,7 @@
                 Name: 'Meine Spur',
             })
             console.log(await spur1.save())
-            const spurAusDatenbank = await Spur.loadFromDatabase(spur1.Id)
+            const spurAusDatenbank = await Spur.load(spur1.Id)
             console.log('spurAusDatenbank:', spurAusDatenbank)
             spurAusDatenbank.Name = 'Meine tolle Spur'
             console.log(await spurAusDatenbank.save())
@@ -172,7 +172,7 @@
                     SpurenId: 'TEXT REFERENCES Spuren(Id) ON DELETE CASCADE',
                 }
             })
-            await spurAusDatenbank.deleteFromDatabase()
+            await spurAusDatenbank.delete()
             const spur2 = new Spur({
                 VorgangsId: vorgang.Id,
                 Name: 'Meine zweite Spur',
@@ -187,7 +187,7 @@
             // Vor dem Löschen
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
-            await vorgang.deleteFromDatabase()
+            await vorgang.delete()
             // Auch Spur 2 und Spurwenaufgaben müssen gelöscht sein, wenn Vorgang weg ist
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spuren'))
             console.log(await Arrange.queryDatabase('Testdatenbank', 'SELECT * FROM Spurenaufgaben'))
@@ -198,13 +198,13 @@
                 VorgangsId: null, // Geht das auch mit Leertext? NÖ, Muss wirklich undefined oder null sein
             })
             console.log(await spur3.save())
-            console.log(await Spur.loadFromDatabase(spur3.Id))
+            console.log(await Spur.load(spur3.Id))
             // Mal nur ein Feld aktualisieren
             await new Spur({ Id: spur3.Id, Nummer: '3 (Zahl)' }).save()
-            console.log(await Spur.loadFromDatabase(spur3.Id))
+            console.log(await Spur.load(spur3.Id))
             // Alle Spuren gemappt mit Abfrage
-            console.log(await Spur.loadListWithQuery('SELECT * FROM Spuren'))
-            await spur3.deleteFromDatabase()
+            console.log(await Spur.query('SELECT * FROM Spuren'))
+            await spur3.delete()
 
         </script>
 

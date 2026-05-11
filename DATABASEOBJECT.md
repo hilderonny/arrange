@@ -24,13 +24,13 @@ const newTask = new Task({ Title: 'Dokumentation', Content: 'Soweit vervollstän
 await newTask.save()
 
 // Load an object by its Id
-const task = await Task.loadFromDatabase('id1')
+const task = await Task.load('id1')
 
 // Load a list of objects via SQL Query
-const allTasks = await Task.loadListWithQuery('SELECT * FROM Tasks')
+const allTasks = await Task.query('SELECT * FROM Tasks')
 
 // Delete an object from the database
-await task.deleteFromDatabase()
+await task.delete()
 ```
 
 
@@ -38,9 +38,9 @@ await task.deleteFromDatabase()
 
 - [Klassendefinition](#klassendefinition)
 - [Konstruktor](#konstruktor)
-- [Datensätze anhand einer SQL-Abfrage laden - static loadListWithQuery()](#datensätze-anhand-einer-sql-abfrage-laden---static-loadlistwithquery)
-- [Datensatz laden - static loadFromDatabase()](#datensatz-laden---static-loadfromdatabase)
-- [Datensatz löschen - deleteFromDatabase()](#datensatz-löschen---deletefromdatabase)
+- [Datensätze anhand einer SQL-Abfrage laden - static query()](#datensätze-anhand-einer-sql-abfrage-laden---static-query)
+- [Datensatz laden - static load()](#datensatz-laden---static-load)
+- [Datensatz löschen - delete()](#datensatz-löschen---delete)
 - [Datensatz speichern - save()](#datensatz-speichern---save)
 
 
@@ -73,7 +73,7 @@ const aufgabeMitVordefiniertenFeldern = new Aufgabe({ Id: 'id1', Titel: 'Mach wa
 ```
 
 
-### Datensätze anhand einer SQL-Abfrage laden - `static loadListWithQuery()`
+### Datensätze anhand einer SQL-Abfrage laden - `static query()`
 
 Mit dieser Funktion können beliebige SQL-Abfragen ausgeführt werden, die Listen liefern.
 Dabei werden die Ergebnisse in die Datentypen der jeweiligen Klasse gemappt, um sie später einfacher bearbeiten zu können.
@@ -83,7 +83,7 @@ Dadurch können auch komplizierte Abfragen mit `JOIN`s ausgeführt werden.
 
 ```js
 const query = 'SELECT Aufgabe.Id, Aufgabe.Titel, Benutzer.Name AS Benutzername FROM Aufgabe JOIN Benutzer ON Aufgabe.BenutzerId = Benutzer.Id'
-const aufgabenAllerBenutzer = await Aufgabe.loadListWithQuery(query)
+const aufgabenAllerBenutzer = await Aufgabe.query(query)
 for (const aufgabe of aufgabenAllerBenutzer) {
     // aufgabe hat den Typ 'Aufgabe' und alle darin enthaltenen Funktionen
     aufgabe.Id // Aus Tabelle 'Aufgabe'
@@ -93,23 +93,23 @@ for (const aufgabe of aufgabenAllerBenutzer) {
 ```
 
 
-### Datensatz laden - `static loadFromDatabase()`
+### Datensatz laden - `static load()`
 
 Lädt einen Datensatz mit allen Inhalten anhand seiner Id.
 
 ```js
-const aufgabe = await Aufgabe.loadFromDatabase('id1')
+const aufgabe = await Aufgabe.load('id1')
 ```
 
 
-### Datensatz löschen - `deleteFromDatabase()`
+### Datensatz löschen - `delete()`
 
 Löscht einen Datensatz aus der Datenbank.
 Die Objektinstanz selbst bleibt dabei unangetastet.
 Würde man anschließend `save()` aufrufen, wird ein neuer Datensatz mit den Informationen der Instanz in der Datenbank abgelegt.
 
 ```js
-await aufgabe.deleteFromDatabase()
+await aufgabe.delete()
 ```
 
 
@@ -126,18 +126,18 @@ const neueAufgabe = new Aufgabe({ Titel: 'Mach was' })
 await neueAufgabe.save()
 
 // Existierenden Datensatz verändern
-const existierendeAufgabe = await Aufgabe.loadFromDatabase('id1')
+const existierendeAufgabe = await Aufgabe.load('id1')
 existierendeAufgabe.Titel = 'Anderer Titel'
 await existierendeAufgabe.save()
 
 // Datensatz verändern, aber Felder explizit NICHT überschreiben
-const existierendeAufgabe = await Aufgabe.loadFromDatabase('id1')
+const existierendeAufgabe = await Aufgabe.load('id1')
 existierendeAufgabe.Titel = undefined // Durch das Setzen auf "undefined" wird dieses Feld nicht beim Speichern übertragen
 existierendeAufgabe.Inhalt = 'Denk Dir was aus'
 await existierendeAufgabe.save()
 
 // Inhalt eines Feldes löschen
-const existierendeAufgabe = await Aufgabe.loadFromDatabase('id1')
+const existierendeAufgabe = await Aufgabe.load('id1')
 existierendeAufgabe.Titel = null // null wird zur Datenbank übertragen und führt zur Leerung des entsprechenden Feldes
 await existierendeAufgabe.save()
 

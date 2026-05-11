@@ -49,7 +49,7 @@ describe('DatabaseObject', () => {
 
     })
 
-    describe('deleteFromDatabase()', () => {
+    describe('delete()', () => {
 
         it('Ruft API DELETE /api/database/:databaseName/:tableName/:recordId auf.', async () => {
             const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
@@ -66,13 +66,13 @@ describe('DatabaseObject', () => {
                 assert.deepStrictEqual(options, { method: 'DELETE' })
                 fetchWasCalled = true
             }
-            await derivedInstance.deleteFromDatabase()
+            await derivedInstance.delete()
             assert.strictEqual(fetchWasCalled, true)
         })
 
     })
 
-    describe('static loadFromDatabase(id)', () => {
+    describe('static load(id)', () => {
 
         it('Ruft API POST /api/database/:databasename auf.', async () => {
             const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
@@ -93,7 +93,7 @@ describe('DatabaseObject', () => {
                 fetchWasCalled = true
                 return { ok: true, json() { return [] } }
             }
-            await DerivedClass.loadFromDatabase('id1')
+            await DerivedClass.load('id1')
             assert.strictEqual(fetchWasCalled, true)
         })
 
@@ -110,7 +110,7 @@ describe('DatabaseObject', () => {
                     Id: 'id1'
                 }] } }
             }
-            const result = await DerivedClass.loadFromDatabase('id1')
+            const result = await DerivedClass.load('id1')
             assert.ok(result)
             assert.ok(result instanceof DerivedClass)
         })
@@ -129,7 +129,7 @@ describe('DatabaseObject', () => {
                     UnknownColumn: 'text1'
                 }] } }
             }
-            const result = await DerivedClass.loadFromDatabase('id1')
+            const result = await DerivedClass.load('id1')
             assert.strictEqual(result.Id, 'id1')
             assert.strictEqual(result.UnknownColumn, 'text1')
         })
@@ -145,13 +145,13 @@ describe('DatabaseObject', () => {
             global.fetch = () => {
                 return { ok: true, json() { return [] } }
             }
-            const result = await DerivedClass.loadFromDatabase('id1')
+            const result = await DerivedClass.load('id1')
             assert.strictEqual(result, undefined)
         })
 
     })
 
-    describe('static loadListWithQuery()', () => {
+    describe('static query()', () => {
 
         it('Ruft API POST /api/database/:databaseName auf.', async () => {
             const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
@@ -172,7 +172,7 @@ describe('DatabaseObject', () => {
                 fetchWasCalled = true
                 return { ok: true, json() { return [] } }
             }
-            await DerivedClass.loadListWithQuery('SELECT * FROM Table1')
+            await DerivedClass.query('SELECT * FROM Table1')
             assert.strictEqual(fetchWasCalled, true)
         })
 
@@ -190,7 +190,7 @@ describe('DatabaseObject', () => {
                     { Id: 'id2' },
                 ] } }
             }
-            const records = await DerivedClass.loadListWithQuery('SELECT * FROM Table1')
+            const records = await DerivedClass.query('SELECT * FROM Table1')
             assert.ok(records)
             assert.strictEqual(records.length, 2)
             for (const record of records) {
@@ -211,7 +211,7 @@ describe('DatabaseObject', () => {
                     { Id: 'id1', UnknownColumn: 'text1' }
                 ] } }
             }
-            const records = await DerivedClass.loadListWithQuery('SELECT * FROM Table1')
+            const records = await DerivedClass.query('SELECT * FROM Table1')
             assert.ok(records)
             assert.strictEqual(records.length, 1)
             assert.strictEqual(records[0].Id, 'id1')
@@ -229,7 +229,7 @@ describe('DatabaseObject', () => {
             global.fetch = () => {
                 return { ok: true, json() { return [] } }
             }
-            const records = await DerivedClass.loadListWithQuery('SELECT * FROM Table1')
+            const records = await DerivedClass.query('SELECT * FROM Table1')
             assert.ok(records)
             assert.strictEqual(records.length, 0)
         })
