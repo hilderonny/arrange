@@ -81,4 +81,22 @@ describe('arrange.mjs saveDatabaseRecord()', () => {
         assert.deepEqual(result, { Id: 'id1', Column1: 'text1', Column2: 42, Column3: 1 })
     })
 
+    it('Bei 500er-Serverfehlern wird eine Exception geworfen.', async() => {
+        // Automatisch anmelden lassen
+        const arrange = await import(arrangeLocation + Math.random())
+        assert.ok(arrange)
+        // Abfruf simulieren
+        global.fetch = (url, options) => {
+            return { status: 500 }
+        }
+        await assert.rejects(
+            async () => { 
+                await arrange.saveDatabaseRecord('test_database', 'test_table', 'test_record_id', { Column1: 'text1', Column2: 42 })
+            }, 
+            {
+                message: 'Cannot save database record'
+            }
+        )
+    })
+
 })

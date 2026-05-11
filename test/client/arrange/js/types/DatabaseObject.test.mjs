@@ -81,12 +81,12 @@ describe('DatabaseObject', () => {
             const derivedInstance = new DerivedClass({ Id: 'id1' })
             // Abfruf simulieren
             global.fetch = (url, options) => {
-                return { status: 500, async text() { return 'Fehler vom Server' } }
+                return { status: 500 }
             }
             await assert.rejects(
                 async () => { await derivedInstance.delete() }, 
                 {
-                    message: 'Fehler vom Server'
+                    message: 'Cannot delete database record'
                 }
             )
         })
@@ -168,6 +168,27 @@ describe('DatabaseObject', () => {
             }
             const result = await DerivedClass.load('id1')
             assert.strictEqual(result, undefined)
+        })
+
+        it('Wirft eine Exception mit Textinhalt ohne Stacktrace, wenn der Server mit Statuscode 500 antwortet.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            // Abfruf simulieren
+            global.fetch = (url, options) => {
+                return { status: 500 }
+            }
+            await assert.rejects(
+                async () => { 
+                    await DerivedClass.load('id1')
+                }, 
+                {
+                    message: 'Cannot load database record'
+                }
+            )
         })
 
     })
@@ -255,6 +276,27 @@ describe('DatabaseObject', () => {
             assert.strictEqual(records.length, 0)
         })
 
+        it('Wirft eine Exception mit Textinhalt ohne Stacktrace, wenn der Server mit Statuscode 500 antwortet.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            // Abfruf simulieren
+            global.fetch = (url, options) => {
+                return { status: 500 }
+            }
+            await assert.rejects(
+                async () => { 
+                    await DerivedClass.query('SELECT * FROM Table1')
+                }, 
+                {
+                    message: 'Cannot query database'
+                }
+            )
+        })
+
     })
 
     describe('save()', () => {
@@ -333,6 +375,28 @@ describe('DatabaseObject', () => {
             const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1', UnknownColumn: 'text2' })
             const result = await derivedInstance.save()
             assert.strictEqual(result, undefined)
+        })
+
+        it('Wirft eine Exception mit Textinhalt ohne Stacktrace, wenn der Server mit Statuscode 500 antwortet.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            // Abfruf simulieren
+            global.fetch = (url, options) => {
+                return { status: 500 }
+            }
+            await assert.rejects(
+                async () => { 
+                    const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1', UnknownColumn: 'text2' })
+                    await derivedInstance.save()
+                }, 
+                {
+                    message: 'Cannot save database record'
+                }
+            )
         })
 
     })

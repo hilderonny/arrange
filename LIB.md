@@ -79,15 +79,19 @@ Arrange.logout()
 
 Führt eine Abfrage auf der Datenbank aus und gibt das Ergebnis als Array zurück.
 
-```js
-const result = await Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
-// [
-//     { Id: 'id1', Column1: 'text1', Column2: 42 },
-//     ...
-// ]
-```
+Bei Fehlern wird eine Exception mit dem Text `Cannot query database` geworfen.
 
-Bei Fehlern wird `undefined` zurückgegeben.
+```js
+try {
+    const result = await Arrange.queryDatabase('Database1', 'SELECT * FROM Table1')
+    // [
+    //     { Id: 'id1', Column1: 'text1', Column2: 42 },
+    //     ...
+    // ]
+} catch (error) {
+    // error.message = 'Cannot query database'
+}
+```
 
 
 ### Datenbankeintrag löschen - `async deleteDatabaseRecord(databaseName, tableName, recordId)`
@@ -96,8 +100,14 @@ Löscht einen Datenbankeintrag aus der Tabelle der angegebenen Datenbank.
 Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
 Diese Funktion hat keinerlei Rückgabe.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot delete database record` geworfen.
+
 ```js
-await Arrange.deleteDatabaseRecord('Datenbank1', 'Table1', 'id1')
+try {
+    await Arrange.deleteDatabaseRecord('Datenbank1', 'Table1', 'id1')
+} catch (error) {
+    // error.message = 'Cannot delete database record'
+}
 ```
 
 
@@ -108,27 +118,31 @@ Auch die Datenbank selbst wird bei Bedarf erstellt.
 Es werden nur die Felder überschrieben, die mitgesendet werden, alle anderen bleiben unberührt.
 Als Ergebnis wird der vollständige Datensatz als JSON-Struktur zurückgegeben.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot save database record` geworfen.
+
 ```js
-const result = await Arrange.saveDatabaseRecord('database1', 'Table1', 'id1', {
-    Column1: 'text',
-    Column2: 42,
-    Column3: false,
-    Column4: null
-})
-// Rückgabewert result:
-// {
-//     Id: 'id1'
-//     Column1: 'text',
-//     Column2: 42,
-//     Column3: false,
-//     Column4: null,
-//     Column5: 'unverändert'
-// }
+try {
+    const result = await Arrange.saveDatabaseRecord('database1', 'Table1', 'id1', {
+        Column1: 'text',
+        Column2: 42,
+        Column3: false,
+        Column4: null
+    })
+    // Rückgabewert result:
+    // {
+    //     Id: 'id1'
+    //     Column1: 'text',
+    //     Column2: 42,
+    //     Column3: false,
+    //     Column4: null,
+    //     Column5: 'unverändert'
+    // }
+} catch (error) {
+    // error.message = 'Cannot save database record'
+}
 ```
 
 Wenn ein Feld geleert werden soll, muss dieses als `null` mitgesendet werden, `undefined` wird herausgefiltert.
-
-Bei Fehlern - etwa nicht existierende Tabellen oder nicht existierende Felder oder falsche Datentypen der Felder - wird `undefined` zurückgegeben.
 
 
 ### Datenbankschema aktualisieren - `async updateDatabase(databaseName, schema)`
@@ -136,13 +150,19 @@ Bei Fehlern - etwa nicht existierende Tabellen oder nicht existierende Felder od
 Erstellt eine Datenbank oder aktualisiert deren Schema.
 Das Schema enthält Tabellennamen und Spaltennamen als Objekt-Keys und SQLite-Spaltendefinitionen als Values.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot update database` geworfen.
+
 ```js
-await Arrange.updateDatabase('Database1', { // Datenbankname
-    Table1: { // Name der Tabelle als Key
-        Column1: 'TEXT', // Name der Spalte als Key und Schemadefinition als Value
-        Column2: 'INTEGER'
-    }
-})
+try {
+    await Arrange.updateDatabase('Database1', { // Datenbankname
+        Table1: { // Name der Tabelle als Key
+            Column1: 'TEXT', // Name der Spalte als Key und Schemadefinition als Value
+            Column2: 'INTEGER'
+        }
+    })
+} catch (error) {
+    // error.message = 'Cannot update database'
+}
 ```
 
 Bei Bedarf werden die Datenbank, die Tabellen und Spalten erstellt.
@@ -156,8 +176,14 @@ Löscht eine Tabelle der angegebenen Datenbank.
 Fremdschlüssel werden ebenfalls beachtet und bei Bedarf die abhängigen Datensätze ebenfalls gelöscht.
 Diese Funktion hat keinerlei Rückgabe.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot delete database table` geworfen.
+
 ```js
-await Arrange.deleteDatabaseTable('Datenbank1', 'Table1')
+try {
+    await Arrange.deleteDatabaseTable('Datenbank1', 'Table1')
+} catch (error) {
+    // error.message = 'Cannot delete database table'
+}
 ```
 
 

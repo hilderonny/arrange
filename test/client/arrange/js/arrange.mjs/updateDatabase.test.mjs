@@ -49,4 +49,22 @@ describe('arrange.mjs updateDatabase()', () => {
         assert.strictEqual(fetchWasCalled, true)
     })
 
+    it('Bei 500er-Serverfehlern wird eine Exception geworfen.', async() => {
+        // Automatisch anmelden lassen
+        const arrange = await import(arrangeLocation + Math.random())
+        assert.ok(arrange)
+        // Abfruf simulieren
+        global.fetch = (url, options) => {
+            return { status: 500 }
+        }
+        await assert.rejects(
+            async () => { 
+                await arrange.updateDatabase('test_database', { Table1: { Column1: 'TEXT' }})
+            }, 
+            {
+                message: 'Cannot update database'
+            }
+        )
+    })
+
 })

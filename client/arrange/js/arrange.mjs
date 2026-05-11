@@ -55,13 +55,16 @@ async function deleteDatabaseRecord(databaseName, tableName, recordId) {
     const url = new URL(`/api/database/${databaseName}/${tableName}/${recordId}`, import.meta.url).href
     const response = await fetch(url, { method: 'DELETE' })
     if (response.status === 500) {
-        throw new Error(await response.text())
+        throw new Error('Cannot delete database record')
     }
 }
 
 async function deleteDatabaseTable(databaseName, tableName) {
     const url = new URL(`/api/database/${databaseName}/${tableName}`, import.meta.url).href
-    await fetch(url, { method: 'DELETE' })
+    const response = await fetch(url, { method: 'DELETE' })
+    if (response.status === 500) {
+        throw new Error('Cannot delete database table')
+    }
 }
 
 async function deletePrivatePath(filePath) {
@@ -138,7 +141,9 @@ async function queryDatabase(databasename, query) {
         },
         body: JSON.stringify({ query: query })
     })
-    if (response.ok) {
+    if (response.status === 500) {
+        throw new Error('Cannot query database')
+    } else if (response.ok) {
         return await response.json()
     } else {
         return undefined
@@ -158,7 +163,9 @@ async function saveDatabaseRecord(databaseName, tableName, recordId, fields) {
         },
         body: JSON.stringify({ fields: fields })
     })
-    if (response.ok) {
+    if (response.status === 500) {
+        throw new Error('Cannot save database record')
+    } else if (response.ok) {
         return await response.json()
     } else {
         return undefined
@@ -194,7 +201,11 @@ async function updateDatabase(datenbankname, schema) {
         },
         body: JSON.stringify({ schema: schema })
     })
-    return response.ok
+    if (response.status === 500) {
+        throw new Error('Cannot update database')
+    } else {
+        return response.ok
+    }
 }
 
 async function uploadFile(url, binaryFileContent, progressCallback) {

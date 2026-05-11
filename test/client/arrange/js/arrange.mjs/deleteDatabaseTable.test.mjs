@@ -27,9 +27,28 @@ describe('arrange.mjs deleteDatabaseTable()', () => {
             assert.ok(url.endsWith('/api/database/test_database/test_table'))
             assert.strictEqual(options.method, 'DELETE')
             fetchWasCalled = true
+            return { status: 200 }
         }
         await arrange.deleteDatabaseTable('test_database', 'test_table')
         assert.strictEqual(fetchWasCalled, true)
+    })
+
+    it('Bei 500er-Serverfehlern wird eine Exception geworfen.', async() => {
+        // Automatisch anmelden lassen
+        const arrange = await import(arrangeLocation + Math.random())
+        assert.ok(arrange)
+        // Abfruf simulieren
+        global.fetch = (url, options) => {
+            return { status: 500 }
+        }
+        await assert.rejects(
+            async () => { 
+                await arrange.deleteDatabaseTable('test_database', 'test_table')
+            }, 
+            {
+                message: 'Cannot delete database table'
+            }
+        )
     })
 
 })

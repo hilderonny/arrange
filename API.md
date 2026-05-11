@@ -169,6 +169,8 @@ Bei erfolgreicher Abfrage wird ein JSON-Feld zurückgegeben, welches für jeden 
 
 Das Feld kann auch leer sein, wenn es keine zur Abfrage passenden Ergebnisse gibt.
 
+Bei Fehlern - etwa durch nicht existierende Datenbanken oder Tabellen oder Records - wird der HTTP Statuscode `500` mit dem Text `Cannot query database` als Inhalt zurückgegeben.
+
 
 ## Datenbankeintrag löschen - `DELETE /api/database/:databaseName/:tableName/:recordId`
 
@@ -195,7 +197,9 @@ Im body wird eine JSON-Struktur mit Property `fields` erwartet, welche die Inhal
 }
 ```
 
-Fehlt die angegebene Tabelle oder wird kein body mit Property `fields` übergeben oder treten sonstige SQL-Fehler auf, wird der HTTP Statuscode `400` zurückgegeben.
+Fehlt die angegebene Tabelle oder wird kein body mit Property `fields` übergeben, wird der HTTP Statuscode `400` zurückgegeben.
+
+Bei anderen Fehlern - etwa durch nicht existierende Datenbanken, Tabellen oder Records - wird der HTTP Statuscode `500` mit dem Text `Cannot save database record` als Inhalt zurückgegeben.
 
 Wenn noch kein Datensatz mit der gegebenen `:recordId` existiert, wird einer angelegt.
 Andernfalls werden der bestehende Datensatz mit den gelieferten Werten überschrieben.
@@ -240,13 +244,17 @@ Bestehende Spalten werden nicht überschrieben, auch wenn im angegebenen Schema 
 Wenn im Request kein Body angegeben wird, oder darin die Eigenschaft `schema` fehlt, wird der HTTP Statuscode `400` zurückgegeben.
 Bei erfolgreicher Ausführung wird einfach der HTTP Statuscode `200` zurückgegeben.
 
+Bei Fehlern - etwa durch fehlerhafte Schemadefinitionen - wird der HTTP Statuscode `500` mit dem Text `Cannot update database` als Inhalt zurückgegeben.
+
 
 ## Datenbanktabelle löschen - `DELETE /api/database/:databaseName/:tableName`
 
 Löscht die Tabelle `:tableName` der Datenbank `:databaseName`.
 
 Es wird stets der HTTP Statuscode `200` zurückgegeben.
-Fehler - etwa durch nicht existierende Datenbanken oder Tabellen - werden stillschweigend ignoriert.
+
+Bei Fehlern - etwa durch nicht existierende Datenbanken, Tabellen oder Foregin Key Constraints - wird der HTTP Statuscode `500` mit dem Text `Cannot delete database table` als Inhalt zurückgegeben.
+
 
 
 ## Verzeichnis erstellen - `PUT /api/files/:userId/*directoryPath`

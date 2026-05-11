@@ -81,14 +81,20 @@ Dabei werden die Ergebnisse in die Datentypen der jeweiligen Klasse gemappt, um 
 Es werden auch solche Felder in den Ergebnissen geliefert, die nicht Bestandteil der Klassendefinition sind.
 Dadurch können auch komplizierte Abfragen mit `JOIN`s ausgeführt werden.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot query database` geworfen.
+
 ```js
-const query = 'SELECT Aufgabe.Id, Aufgabe.Titel, Benutzer.Name AS Benutzername FROM Aufgabe JOIN Benutzer ON Aufgabe.BenutzerId = Benutzer.Id'
-const aufgabenAllerBenutzer = await Aufgabe.query(query)
-for (const aufgabe of aufgabenAllerBenutzer) {
-    // aufgabe hat den Typ 'Aufgabe' und alle darin enthaltenen Funktionen
-    aufgabe.Id // Aus Tabelle 'Aufgabe'
-    aufgabe.Titel // Aus Tabelle 'Aufgabe'
-    aufgabe.Benutzername // Aus Tabelle 'Benutzer'
+try {
+    const query = 'SELECT Aufgabe.Id, Aufgabe.Titel, Benutzer.Name AS Benutzername FROM Aufgabe JOIN Benutzer ON Aufgabe.BenutzerId = Benutzer.Id'
+    const aufgabenAllerBenutzer = await Aufgabe.query(query)
+    for (const aufgabe of aufgabenAllerBenutzer) {
+        // aufgabe hat den Typ 'Aufgabe' und alle darin enthaltenen Funktionen
+        aufgabe.Id // Aus Tabelle 'Aufgabe'
+        aufgabe.Titel // Aus Tabelle 'Aufgabe'
+        aufgabe.Benutzername // Aus Tabelle 'Benutzer'
+    }
+} catch (error) {
+    // error.message = 'Cannot query database'
 }
 ```
 
@@ -97,8 +103,14 @@ for (const aufgabe of aufgabenAllerBenutzer) {
 
 Lädt einen Datensatz mit allen Inhalten anhand seiner Id.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot load database record` geworfen.
+
 ```js
-const aufgabe = await Aufgabe.load('id1')
+try {
+    const aufgabe = await Aufgabe.load('id1')
+} catch (error) {
+    // error.message = 'Cannot load database record'
+}
 ```
 
 
@@ -108,7 +120,7 @@ Löscht einen Datensatz aus der Datenbank.
 Die Objektinstanz selbst bleibt dabei unangetastet.
 Würde man anschließend `save()` aufrufen, wird ein neuer Datensatz mit den Informationen der Instanz in der Datenbank abgelegt.
 
-Wenn das Löschen fehlgeschlagen ist - zum Beispiel durch Foreign Key Constraints - wird ein Fehler geworfen.
+Bei Fehlern wird eine Exception mit dem Text `Cannot delete database record` geworfen.
 
 ```js
 try {
@@ -126,29 +138,37 @@ Wenn noch kein Datensatz mit der entsprechenden `Id` existiert, wird einer angel
 
 Existiert bereits ein Datensatz mit der entsprechenden `Id`, werden darin diejenigen Felder überschrieben, die in der Instanz mit Werten belegt sind.
 
+Bei Fehlern wird eine Exception mit dem Text `Cannot save database record` geworfen.
+
 ```js
-// Neuen Datensatz speichern
-const neueAufgabe = new Aufgabe({ Titel: 'Mach was' })
-await neueAufgabe.save()
+try {
+    // Neuen Datensatz speichern
+    const neueAufgabe = new Aufgabe({ Titel: 'Mach was' })
+    await neueAufgabe.save()
 
-// Existierenden Datensatz verändern
-const existierendeAufgabe = await Aufgabe.load('id1')
-existierendeAufgabe.Titel = 'Anderer Titel'
-await existierendeAufgabe.save()
+    // Existierenden Datensatz verändern
+    const existierendeAufgabe = await Aufgabe.load('id1')
+    existierendeAufgabe.Titel = 'Anderer Titel'
+    await existierendeAufgabe.save()
 
-// Datensatz verändern, aber Felder explizit NICHT überschreiben
-const existierendeAufgabe = await Aufgabe.load('id1')
-existierendeAufgabe.Titel = undefined // Durch das Setzen auf "undefined" wird dieses Feld nicht beim Speichern übertragen
-existierendeAufgabe.Inhalt = 'Denk Dir was aus'
-await existierendeAufgabe.save()
+    // Datensatz verändern, aber Felder explizit NICHT überschreiben
+    const existierendeAufgabe = await Aufgabe.load('id1')
+    existierendeAufgabe.Titel = undefined // Durch das Setzen auf "undefined" wird dieses Feld nicht beim Speichern übertragen
+    existierendeAufgabe.Inhalt = 'Denk Dir was aus'
+    await existierendeAufgabe.save()
 
-// Inhalt eines Feldes löschen
-const existierendeAufgabe = await Aufgabe.load('id1')
-existierendeAufgabe.Titel = null // null wird zur Datenbank übertragen und führt zur Leerung des entsprechenden Feldes
-await existierendeAufgabe.save()
+    // Inhalt eines Feldes löschen
+    const existierendeAufgabe = await Aufgabe.load('id1')
+    existierendeAufgabe.Titel = null // null wird zur Datenbank übertragen und führt zur Leerung des entsprechenden Feldes
+    await existierendeAufgabe.save()
 
-// Nur in der Klasse definierte Felder werden gespeichert
-const neueAufgabe = new Aufgabe()
-neueAufgabe.Titel = 'Mach was' // Feld "Titel" existiert in Klasse "Aufgabe" und wird daher gespeichert
-neueAufgabe.UnbekannteEigenschaft = 'Was genau?' // Feld "UnbekannteEigenschaft" existiert NICHT in Klasse "Aufgabe" und wird daher auch NICHT gespeichert
-await neueAufgabe.save()
+    // Nur in der Klasse definierte Felder werden gespeichert
+    const neueAufgabe = new Aufgabe()
+    neueAufgabe.Titel = 'Mach was' // Feld "Titel" existiert in Klasse "Aufgabe" und wird daher gespeichert
+    neueAufgabe.UnbekannteEigenschaft = 'Was genau?' // Feld "UnbekannteEigenschaft" existiert NICHT in Klasse "Aufgabe" und wird daher auch NICHT gespeichert
+    await neueAufgabe.save()
+} catch (error) {
+    // error.message = 'Cannot save database record'
+}
+```
+

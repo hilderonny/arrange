@@ -39,14 +39,14 @@ describe('arrange.mjs deleteDatabaseRecord()', () => {
         assert.ok(arrange)
         // Abfruf simulieren
         global.fetch = (url, options) => {
-            return { status: 500, async text() { return 'Fehler vom Server' } }
+            return { status: 500 }
         }
         await assert.rejects(
             async () => { 
                 await arrange.deleteDatabaseRecord('test_database', 'test_table', 'test_record_id')
             }, 
             {
-                message: 'Fehler vom Server'
+                message: 'Cannot delete database record'
             }
         )
     })

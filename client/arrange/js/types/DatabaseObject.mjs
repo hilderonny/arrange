@@ -24,15 +24,19 @@ export default class DatabaseObject {
     }
 
     static async load(recordId) {
-        const result = await Arrange.queryDatabase(this.databaseName, `SELECT * FROM ${this.tableName} WHERE Id='${recordId}'`)
-        if (!result?.length) {
-            return undefined
+        try {
+            const result = await Arrange.queryDatabase(this.databaseName, `SELECT * FROM ${this.tableName} WHERE Id='${recordId}'`)
+            if (!result?.length) {
+                return undefined
+            }
+            const instanz = new this()
+            for (const [schluessel, wert] of Object.entries(result[0])) {
+                instanz[schluessel] = wert
+            }
+            return instanz
+        } catch {
+            throw new Error('Cannot load database record')
         }
-        const instanz = new this()
-        for (const [schluessel, wert] of Object.entries(result[0])) {
-            instanz[schluessel] = wert
-        }
-        return instanz
     }
 
     static async query(query) {

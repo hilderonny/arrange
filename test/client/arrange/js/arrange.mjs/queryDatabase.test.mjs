@@ -75,4 +75,22 @@ describe('arrange.mjs queryDatabase()', () => {
         assert.deepEqual(result, { Column1: 'text1' })
     })
 
+    it('Bei 500er-Serverfehlern wird eine Exception geworfen.', async() => {
+        // Automatisch anmelden lassen
+        const arrange = await import(arrangeLocation + Math.random())
+        assert.ok(arrange)
+        // Abfruf simulieren
+        global.fetch = (url, options) => {
+            return { status: 500 }
+        }
+        await assert.rejects(
+            async () => { 
+                await arrange.queryDatabase('test_database', 'SELECT * FROM Table1')
+            }, 
+            {
+                message: 'Cannot query database'
+            }
+        )
+    })
+
 })
