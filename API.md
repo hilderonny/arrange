@@ -174,7 +174,9 @@ Das Feld kann auch leer sein, wenn es keine zur Abfrage passenden Ergebnisse gib
 
 Löscht einen Record mit der angegeben `:recordId` aus der Tabelle `:tableName` der Datenbank `:databaseName`.
 
-Es wird stets der HTTP Statuscode `200` zurückgegeben. Fehler - etwa durch nicht existierende Datenbanken, Tabellen oder Records - werden stillschweigend ignoriert.
+Bei Erfolgt wird der HTTP Statuscode `200` zurückgegeben.
+
+Bei Fehlern - etwa durch nicht existierende Datenbanken, Tabellen oder Records - wird der HTTP Statuscode `500` mit dem Text `Cannot delete database record` als Inhalt zurückgegeben.
 
 
 ## Datenbankeintrag speichern - `PATCH /api/database/:databaseName/:tableName/:recordId`

@@ -148,6 +148,26 @@ describe('API /api/database', () => {
             assert.strictEqual(table2Record, undefined)
         })
 
+        it('Wenn Foreign Key Constraints nicht aufgelöst werden können, wird ein 500er-Serverfehler zurückgeschickt und der Datenssatz wird nicht gelöscht.', async() => {
+            // Datenbank vorbereiten
+            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
+            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+            database = new sqlite.DatabaseSync(absolutePath)
+            database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
+            database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id TEXT REFERENCES Table1(Id)) STRICT;`) //. Nicht automatisch löschen
+            database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
+            database.exec(`INSERT INTO Table2 (Id, Table1Id) VALUES ('id2', 'id1');`)
+            // Abfrage ausführen
+            const result = await supertest(expressApplication.app).delete(`/api/database/testdatabase/Table1/id1`).expect(500)
+            assert.ok(result)
+            assert.strictEqual(result.text, 'Cannot delete database record')
+            // Gucken, ob Record noch da ist
+            const table1Record = database.prepare(`SELECT * FROM Table1 WHERE Id='id1';`).get()
+            assert.ok(table1Record)
+            const table2Record = database.prepare(`SELECT * FROM Table2 WHERE Id='id2';`).get()
+            assert.ok(table2Record)
+        })
+
     })
 
     describe('PATCH /api/database/:databaseName', () => {

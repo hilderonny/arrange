@@ -65,9 +65,30 @@ describe('DatabaseObject', () => {
                 assert.ok(url.endsWith('/api/database/Database1/Table1/id1'))
                 assert.deepStrictEqual(options, { method: 'DELETE' })
                 fetchWasCalled = true
+                return { status: 200 }
             }
             await derivedInstance.delete()
             assert.strictEqual(fetchWasCalled, true)
+        })
+
+        it('Wirft eine Exception mit Textinhalt ohne Stacktrace, wenn der Server mit Statuscode 500 antwortet.', async () => {
+            const DatabaseObject = (await import(databaseObjectLocation + Math.random())).default
+            // Datenbank und Tabelle in abgeleiteter Klasse definieren
+            class DerivedClass extends DatabaseObject {
+                static databaseName = 'Database1'
+                static tableName = 'Table1'
+            }
+            const derivedInstance = new DerivedClass({ Id: 'id1' })
+            // Abfruf simulieren
+            global.fetch = (url, options) => {
+                return { status: 500, async text() { return 'Fehler vom Server' } }
+            }
+            await assert.rejects(
+                async () => { await derivedInstance.delete() }, 
+                {
+                    message: 'Fehler vom Server'
+                }
+            )
         })
 
     })
@@ -91,7 +112,7 @@ describe('DatabaseObject', () => {
                 assert.ok(json.query)
                 assert.strictEqual(json.query, `SELECT * FROM Table1 WHERE Id='id1'`)
                 fetchWasCalled = true
-                return { ok: true, json() { return [] } }
+                return { ok: true, async json() { return [] } }
             }
             await DerivedClass.load('id1')
             assert.strictEqual(fetchWasCalled, true)
@@ -106,7 +127,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [{
+                return { ok: true, async json() { return [{
                     Id: 'id1'
                 }] } }
             }
@@ -124,7 +145,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [{
+                return { ok: true, async json() { return [{
                     Id: 'id1',
                     UnknownColumn: 'text1'
                 }] } }
@@ -143,7 +164,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [] } }
+                return { ok: true, async json() { return [] } }
             }
             const result = await DerivedClass.load('id1')
             assert.strictEqual(result, undefined)
@@ -170,7 +191,7 @@ describe('DatabaseObject', () => {
                 assert.ok(json.query)
                 assert.strictEqual(json.query, 'SELECT * FROM Table1')
                 fetchWasCalled = true
-                return { ok: true, json() { return [] } }
+                return { ok: true, async json() { return [] } }
             }
             await DerivedClass.query('SELECT * FROM Table1')
             assert.strictEqual(fetchWasCalled, true)
@@ -185,7 +206,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [
+                return { ok: true, async json() { return [
                     { Id: 'id1' },
                     { Id: 'id2' },
                 ] } }
@@ -207,7 +228,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [
+                return { ok: true, async json() { return [
                     { Id: 'id1', UnknownColumn: 'text1' }
                 ] } }
             }
@@ -227,7 +248,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return [] } }
+                return { ok: true, async json() { return [] } }
             }
             const records = await DerivedClass.query('SELECT * FROM Table1')
             assert.ok(records)
@@ -254,7 +275,7 @@ describe('DatabaseObject', () => {
                 const json = JSON.parse(options.body)
                 assert.ok(json.fields)
                 fetchWasCalled = true
-                return { ok: true, json() { return { Id: 'id1' } } }
+                return { ok: true, async json() { return { Id: 'id1' } } }
             }
             const derivedInstance = new DerivedClass({ Id: 'id1' })
             await derivedInstance.save()
@@ -270,7 +291,7 @@ describe('DatabaseObject', () => {
             }
             // Abfruf simulieren
             global.fetch = () => {
-                return { ok: true, json() { return { Id: 'id1' } } }
+                return { ok: true, async json() { return { Id: 'id1' } } }
             }
             const derivedInstance = new DerivedClass({ Id: 'id1' })
             const result = await derivedInstance.save()
@@ -288,7 +309,7 @@ describe('DatabaseObject', () => {
             global.fetch = (_, options) => {
                 const json = JSON.parse(options.body)
                 assert.strictEqual(json.fields.Id, undefined)
-                return { ok: true, json() { return { Id: 'id1', Column1: 'text1' } } }
+                return { ok: true, async json() { return { Id: 'id1', Column1: 'text1' } } }
             }
             const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1' })
             const result = await derivedInstance.save()
@@ -307,7 +328,7 @@ describe('DatabaseObject', () => {
                 const json = JSON.parse(options.body)
                 assert.strictEqual(json.fields.Column1, 'text1')
                 assert.strictEqual(json.fields.UnknownColumn, 'text2')
-                return { ok: true, json() { return { Id: 'id1', Column1: 'text1' } } }
+                return { ok: true, async json() { return { Id: 'id1', Column1: 'text1' } } }
             }
             const derivedInstance = new DerivedClass({ Id: 'id1', Column1: 'text1', UnknownColumn: 'text2' })
             const result = await derivedInstance.save()

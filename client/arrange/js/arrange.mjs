@@ -53,7 +53,10 @@ async function createPublicPath(directoryPath) {
 
 async function deleteDatabaseRecord(databaseName, tableName, recordId) {
     const url = new URL(`/api/database/${databaseName}/${tableName}/${recordId}`, import.meta.url).href
-    await fetch(url, { method: 'DELETE' })
+    const response = await fetch(url, { method: 'DELETE' })
+    if (response.status === 500) {
+        throw new Error(await response.text())
+    }
 }
 
 async function deleteDatabaseTable(databaseName, tableName) {

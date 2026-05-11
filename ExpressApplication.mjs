@@ -157,8 +157,13 @@ export default class ExpressApplication {
         const database = await this.#loadDatabase(request.params.databaseName)
         const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
         if (existingTable) {
-            const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
-            query.run()
+            try {
+                const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
+                query.run()
+            } catch {
+                response.status(500).send('Cannot delete database record')
+                return
+            }
         }
         response.sendStatus(200)
     }

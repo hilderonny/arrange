@@ -108,8 +108,14 @@ Löscht einen Datensatz aus der Datenbank.
 Die Objektinstanz selbst bleibt dabei unangetastet.
 Würde man anschließend `save()` aufrufen, wird ein neuer Datensatz mit den Informationen der Instanz in der Datenbank abgelegt.
 
+Wenn das Löschen fehlgeschlagen ist - zum Beispiel durch Foreign Key Constraints - wird ein Fehler geworfen.
+
 ```js
-await aufgabe.delete()
+try {
+    await aufgabe.delete()
+} catch (error) {
+    // error.message = 'Cannot delete database record'
+}
 ```
 
 
