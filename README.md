@@ -16,7 +16,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 nvm install 24
 
 # Arrange klonen und Abhängigkeiten installieren
-git clone http://192.168.178.138:8100/ronny/arrange.git
+git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm install
 ```
@@ -61,7 +61,7 @@ Email Address []: leer gelassen
 ## Starten über Kommandozeile
 
 ```sh
-git clone http://192.168.178.138:8100/ronny/arrange.git
+git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm ci
 
@@ -82,7 +82,7 @@ Die Parameter haben folgende Bedeutung.
 ## Einrichtung als Hintergrunddienst
 
 ```sh
-git clone http://192.168.178.138:8100/ronny/arrange.git
+git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm ci
 sudo nano /etc/systemd/system/arrange.service
