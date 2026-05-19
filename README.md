@@ -23,6 +23,7 @@ cd arrange
 npm install
 
 # NPM Paket veröffentlichen
+npm adduser
 npm publish --access public
 ```
 
@@ -30,22 +31,34 @@ In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `84
 
 # Verwendung
 
-Im Prinzip läuft Arrange als eigener Webserver.
-Man erstellt irgendwo ein Verzeichnis und platziert seine HTML-Seiten darin.
-Beispielsweise in `/var/www/index.html`.
+Arrange selbst ist "nur" ein NPM-Modul, welches für einen eigenen Webserver benutzt werden kann.
+Folgende Beispiele zeigen, wie man Arrange einsetzen kann.
 
-```html
-<html>
-    <head>
-        <script type="module">
-            import * as Arrange from '/arrange/js/arrange.mjs'
-            // Beim ersten Aufruf wird automatisch die Anmeldeseite angezeigt
-        </script>
-    </head>
-</html>
+- [lokaler Demo Server](./DemoServer.mjs)
+- [Forensics](https://github.com/hilderonny/forensics)
+
+Hier mal als Quellcodeausschnitt:
+
+```js
+import ArrangeServer from './ArrangeServer.mjs'
+
+const server = new ArrangeServer({
+    crtFile: './server.crt',
+    htmlPaths: {
+        '/' : './test/html/root',
+        '/subfolder1' : './test/html/subfolder1',
+        '/subfolder2' : './test/html/subfolder2',
+    },
+    keyFile: './server.key',
+    name: 'Arrange Demo Server',
+    port: 8443,
+    useSSL: true,
+    useWebsockets: true
+})
+
+// Server starten
+server.start()
 ```
-
-Danach klont man das `arrange` - Repository und startet Arrange per Kommandozeile oder als Hintergrunddienst.
 
 ## SSL-Zertifikat erstellen
 
