@@ -85,7 +85,6 @@ export default class ExpressApplication {
         }
 
         // Arrange-Client-Skripte und Seiten ausliefern
-        console.log(path.resolve(import.meta.dirname, './client/arrange'))
         this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))
 
         // API-Endpunkte

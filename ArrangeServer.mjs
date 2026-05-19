@@ -1,10 +1,10 @@
 import fs from 'fs'
-import http from 'http'
-import https from 'https'
+import http from 'node:http'
+import https from 'node:https'
 import { WebSocketServer } from 'ws'
 import ExpressApplication from './ExpressApplication.mjs'
 
-export default {
+export default class ArrangeServer {
 
     /**
      * createServer - options
@@ -22,50 +22,60 @@ export default {
      */
 
     /**
-     * createServer - return value
-     *
-     * @typedef {Object} CreateServerReturn
-     * @property {typeof ExpressApplication.prototype.serveStatic} serveStatic
-     * @property {() => void} start Startet den Server und geht in eine Endlosschleife
+     * Optionen
      */
+    #options
+    
+    /**
+     * HTTP-Serverinstanz
+     */
+    #server
 
     /**
      * Erstellt einen Arrange-Server.
-     * Der Server wird noch nicht gestartet, um noch zusätzliche Routen definieren zu können.
+     * Der Server wird noch nicht gestartet.
      * 
      * @param {CreateServerOptions} [options] - Einstellungen
-     * @returns {CreateServerReturn} Serverinstanz
     */
-    createServer(options) {
+    constructor(options = {}) {
+        this.#options = options
+        // Default-Werte festlegen
+        if (!options.dataPath) options.dataPath = './data'
+        if (!options.htmlPaths) options.htmlPaths = {}
+        if (!options.name) options.name = 'Arrange'
+        if (!options.htmlPaths) options.htmlPaths = {}
+        if (!options.port) options.port = 8080
+        if (!options.tokenSecret) options.tokenSecret = Math.random().toString()
         // Express Anwendung vorbereiten
         const expressApplication = new ExpressApplication(
-            options.dataPath || './data',
-            options.htmlPaths || [],
-            options.tokenSecret || Math.random().toString()
+            options.dataPath,
+            options.htmlPaths,
+            options.tokenSecret
         )
         // Server vorbereiten
-        let server
         if (options.useSSL) {
-            server = https.createServer({
+            this.#server = https.createServer({
                 key: fs.readFileSync(options.keyFile),
                 cert: fs.readFileSync(options.crtFile),
             }, expressApplication.app)
         } else {
-            server = http.createServer(expressApplication.app)
+            this.#server = http.createServer(expressApplication.app)
         }
         // Websocketverbindungen behandeln
         if (options.useWebsockets) {
-            const webSocketServer = new WebSocketServer({ server: server })
+            const webSocketServer = new WebSocketServer({ server: this.#server })
             webSocketServer.on('connection', expressApplication.handleWebsocketConnection.bind(expressApplication))
         }
-        return {
-            start() {
-                // HTTP-Server starten, geht in Endlosschleife
-                server.listen(options.port, () => {
-                    console.log(`${options.name} läuft an PORT ${options.port}`)
-                })
-            }
-        }
+    }
+
+    /**
+     * Startet den Server und geht in eine Endlosschleife
+     */
+    start() {
+        // HTTP-Server starten, geht in Endlosschleife
+        this.#server.listen(this.#options.port, () => {
+            console.log(`${this.#options.name} läuft an PORT ${this.#options.port}`)
+        })
     }
 
 }
