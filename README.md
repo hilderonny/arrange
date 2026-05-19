@@ -19,6 +19,9 @@ nvm install 24
 git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm install
+
+# NPM Paket veröffentlichen
+npm publish --access public
 ```
 
 In Visual Studio Code kann man mit **F5** einen lokalen HTTPS-Server an Port `8443` starten.

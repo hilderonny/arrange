@@ -79,13 +79,14 @@ export default class ExpressApplication {
         // JSON in POST Daten aktivieren
         this.app.use(express.json({ limit: '100MB' }))
 
-        // Statische HTML Seiten ausliefern, wird reingemountet
+        // Statische HTML Seiten ausliefern, muss vor /arrange erfolgen, damit es nicht überschrieben wird
         for (const [url, path] of Object.entries(htmlPaths)) {
             this.app.use(url, express.static(path))
         }
 
         // Arrange-Client-Skripte und Seiten ausliefern
-        this.app.use('/arrange', express.static('./client/arrange'))
+        console.log(path.resolve(import.meta.dirname, './client/arrange'))
+        this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))
 
         // API-Endpunkte
         this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
