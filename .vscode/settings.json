@@ -2,20 +2,5 @@
     "nodejs-testing.env": {
         "NODE_OPTIONS": "--experimental-sqlite"
     },
-    "nodejs-testing.testSpecifiers": [
-        {
-            "import": "node:test",
-            "name": [
-                "default",
-                "it",
-                "test",
-                "describe",
-                "suite"
-            ]
-        }
-    ],
-    "node.test.shellArgs": [
-        "--experimental-test-module-mocks"
-    ],
     "nodejs-testing.concurrency": 1
 }
