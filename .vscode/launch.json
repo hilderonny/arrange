@@ -2,25 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "NodeJS",
-            "args": [
-                "--port", "8443",
-                "--datapath", "./data",
-                "--crtfile", "./server.crt",
-                "--keyfile", "./server.key",
-                "--tokensecret", "hubbelebubbele",
-                "--htmlpath", "/=./test/html/root",
-                "--htmlpath", "/subfolder1=./test/html/subfolder1",
-                "--htmlpath", "/subfolder2=./test/html/subfolder2"
-            ],
-            "program": "${workspaceFolder}/server.mjs",
+            "name": "Demo Server",
+            "program": "${workspaceFolder}/DemoServer.mjs",
             "runtimeExecutable": "node",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "type": "node"
-        },
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@hilderonny/arrange",
   "version": "7.0.0",
-  "main": "arrange.mjs",
+  "main": "ArrangeServer.mjs",
   "dependencies": {
     "argparse": "^2.0.1",
     "cookie-session": "^2.1.1",

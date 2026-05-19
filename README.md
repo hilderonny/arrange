@@ -63,26 +63,15 @@ Common Name (e.g. server FQDN or YOUR name) []:arrange
 Email Address []: leer gelassen
 ```
 
-## Starten über Kommandozeile
+## Starten über Kommandozeile (Demo)
 
 ```sh
 git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm ci
 
-node ./server.mjs --port 8443 --datapath ./data --crtfile ./server.crt --keyfile ./server.key --tokensecret hubbelebubbele --htmlpath /=/html/root --htmlpath /subfolder1=/html/subfolder1 --htmlpath /subfolder2=/html/subfolder2
+node --experimental-sqlite ./DemoServer.mjs
 ```
-
-Die Parameter haben folgende Bedeutung.
-
-|Parameter|Bedeutung|
-|-|-|
-|`port`|Port, an welchem der Webserver mit SSL lauschen soll, z.B. `8443`|
-|`datapath`|Pfad, wo Arrange Anwendungsdateien und Datenbanken speichert|
-|`htmlpath`|Mapping von Verzeichnis-Mounts (ähnlich Docker Volume Mounts)|
-|`tokensecret`|Schlüssel für Anmeldetoken|
-|`crtfile`|Pfad zur SSL Zertifikatsdatei|
-|`keyfile`|Pfad zur SSL Schlüsseldatei|
 
 ## Einrichtung als Hintergrunddienst
 
@@ -102,7 +91,7 @@ sudo systemctl start arrange
 Description=arrange
 
 [Service]
-ExecStart=/######PFAD_ZU_NODE###### --experimental-sqlite /######PFAD_ZU_ARRANGE######/server.mjs --port 8443 --datapath /data --crtfile /server.crt --keyfile /server.key --tokensecret hubbelebubbele --htmlpath /=/html/root --htmlpath /subfolder1=/html/subfolder1 --htmlpath /subfolder2=/html/subfolder2
+ExecStart=/######PFAD_ZU_NODE###### --experimental-sqlite /######PFAD_ZU_ARRANGE######/DemoServer.mjs
 WorkingDirectory=/######PFAD_ZU_ARRANGE######
 Restart=always
 RestartSec=10
