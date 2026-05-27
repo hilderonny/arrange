@@ -24,6 +24,7 @@ npm install
 
 # NPM Paket veröffentlichen
 npm adduser
+npm version 26.5.27
 npm publish --access public
 ```
 
