@@ -25,11 +25,6 @@ export default class ArrangeServer {
      * Optionen
      */
     #options
-    
-    /**
-     * HTTP-Serverinstanz
-     */
-    #server
 
     /**
      * Erstellt einen Arrange-Server.
@@ -47,24 +42,24 @@ export default class ArrangeServer {
         if (!options.port) options.port = 8080
         if (!options.tokenSecret) options.tokenSecret = Math.random().toString()
         // Express Anwendung vorbereiten
-        const expressApplication = new ExpressApplication(
+        this.expressApplication = new ExpressApplication(
             options.dataPath,
             options.htmlPaths,
             options.tokenSecret
         )
         // Server vorbereiten
         if (options.useSSL) {
-            this.#server = https.createServer({
+            this.httpServer = https.createServer({
                 key: fs.readFileSync(options.keyFile),
                 cert: fs.readFileSync(options.crtFile),
-            }, expressApplication.app)
+            }, this.expressApplication.app)
         } else {
-            this.#server = http.createServer(expressApplication.app)
+            this.httpServer = http.createServer(this.expressApplication.app)
         }
         // Websocketverbindungen behandeln
         if (options.useWebsockets) {
-            const webSocketServer = new WebSocketServer({ server: this.#server })
-            webSocketServer.on('connection', expressApplication.handleWebsocketConnection.bind(expressApplication))
+            this.webSocketServer = new WebSocketServer({ server: this.httpServer })
+            this.webSocketServer.on('connection', this.expressApplication.handleWebsocketConnection.bind(this.expressApplication))
         }
     }
 
@@ -73,7 +68,7 @@ export default class ArrangeServer {
      */
     start() {
         // HTTP-Server starten, geht in Endlosschleife
-        this.#server.listen(this.#options.port, () => {
+        this.httpServer.listen(this.#options.port, () => {
             console.log(`${this.#options.name} läuft an PORT ${this.#options.port}`)
         })
     }

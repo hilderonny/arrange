@@ -49,6 +49,26 @@ describe('ArrangeServer', () => {
             assert.ok(arrangeServer.start)
         })
 
+        it('Rückgabeobjekt enthält expressApplication - Objekt', () => {
+            const arrangeServer = new ArrangeServer()
+            assert.ok(arrangeServer.expressApplication)
+        })
+
+        it('Rückgabeobjekt enthält httpServer - Objekt', () => {
+            const arrangeServer = new ArrangeServer()
+            assert.ok(arrangeServer.httpServer)
+        })
+
+        it('Rückgabeobjekt enthält webSocketServer - Objekt', () => {
+            http.createServer = () => {
+                return {
+                    on() {}
+                }
+            }
+            const arrangeServer = new ArrangeServer({ useWebsockets: true })
+            assert.ok(arrangeServer.webSocketServer)
+        })
+
         it('Wenn Option crtFile fehlt, wird undefined angenommen', () => {
             let crtFileWasSetCorrectly = false
             fs.readFileSync = (filePath) => {

@@ -84,6 +84,27 @@ export default class ExpressApplication {
             this.app.use(url, express.static(path))
         }
 
+        // Uploads landen direkt im Dateisystem ohne RAM-Zwischenspeicherung
+        this.fileUpload = multer({
+            storage: multer.diskStorage({
+                destination: (request, file, callback) => {
+                    const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+                    if (fs.existsSync(absoluteFilePath) && !fs.statSync(absoluteFilePath).isFile()) {
+                        callback('Requested path is an existing directory')
+                        return
+                    }
+                    const dirPath = path.dirname(absoluteFilePath)
+                    fs.mkdirSync(dirPath, { recursive: true })
+                    callback(null, dirPath)
+                },
+                filename: (request, file, callback) => {
+                    const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+                    callback(null, path.basename(absoluteFilePath))
+                },
+                
+            })
+        }).any()
+
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))
 
@@ -94,7 +115,7 @@ export default class ExpressApplication {
         this.app.post('/api/register', this.#handlePostRegister.bind(this))
         this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
         this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
-        this.app.post('/api/files/:userId/*filePath', multer().any(), this.#handlePostFile.bind(this))
+        this.app.post('/api/files/:userId/*filePath', this.#handlePostFile.bind(this))
         this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
         this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
         this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
@@ -382,17 +403,18 @@ export default class ExpressApplication {
     /**
      * Datei speichern
      */
-    async #handlePostFile(request, response) {
-        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        if (!request.files || request.files.length !== 1) {
-            response.sendStatus(400)
-        } else if (fs.existsSync(absolutePath) && !fs.statSync(absolutePath).isFile()) {
-            response.sendStatus(400)
-        } else {
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            fs.writeFileSync(absolutePath, request.files[0].buffer)
+    #handlePostFile(request, response) {
+        this.fileUpload(request, response, (error) => {
+            if (error) {
+                response.status(400).send(error)
+                return
+            }
+            if (!request.files || request.files.length !== 1) {
+                response.sendStatus(400)
+                return
+            }
             response.sendStatus(200)
-        }
+        })
     }
 
     /**
