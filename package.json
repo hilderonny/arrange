@@ -1,6 +1,6 @@
 {
   "name": "@hilderonny/arrange",
-  "version": "26.5.27.1",
+  "version": "7.1.0",
   "main": "ArrangeServer.mjs",
   "dependencies": {
     "argparse": "^2.0.1",
