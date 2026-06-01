@@ -146,7 +146,7 @@ export default class ExpressApplication {
         request.session.userId = userId
     }
     
-    async #loadDatabase(databaseName) {
+    async loadDatabase(databaseName) {
         let database = this.#databases[databaseName]
         if (!database) {
             const absolutePath = path.resolve(this.#databasePath, databaseName + '.sqlite')
@@ -176,7 +176,7 @@ export default class ExpressApplication {
     // Datensatz löschen
     async #handleDeleteDatabaseRecord(request, response) {
         try {
-            const database = await this.#loadDatabase(request.params.databaseName)
+            const database = await this.loadDatabase(request.params.databaseName)
             const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
             if (existingTable) {
                 const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
@@ -193,7 +193,7 @@ export default class ExpressApplication {
      */
     async #handleDeleteDatabaseTable(request, response) {
         try {
-            const database = await this.#loadDatabase(request.params.databaseName)
+            const database = await this.loadDatabase(request.params.databaseName)
             const query = database.prepare(`DROP TABLE IF EXISTS ${request.params.tableName};`)
             query.run()
             response.sendStatus(200)
@@ -264,7 +264,7 @@ export default class ExpressApplication {
             return response.sendStatus(400)
         }
         try {
-            const database = await this.#loadDatabase(request.params.databaseName)
+            const database = await this.loadDatabase(request.params.databaseName)
             // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
             for (const tableName of Object.keys(request.body.schema)) {
                 const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL) STRICT;`
@@ -294,7 +294,7 @@ export default class ExpressApplication {
             return response.sendStatus(400)
         }
         try {
-            const database = await this.#loadDatabase(request.params.databaseName)
+            const database = await this.loadDatabase(request.params.databaseName)
             // Prüfen, ob Tabelle existiert
             const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
             if (!existingTable) {
@@ -386,7 +386,7 @@ export default class ExpressApplication {
      */
     async #handlePostDatabaseQuery(request, response) {
         try {
-            const database = await this.#loadDatabase(request.params.databaseName)
+            const database = await this.loadDatabase(request.params.databaseName)
             // Abfrage durchführen
             const query = request.body?.query?.toString()
             if (!query || !query.toLowerCase().startsWith('select') || query.includes(';')) {

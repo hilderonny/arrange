@@ -53,6 +53,13 @@ describe('ExpressApplication', () => {
         websocketMock.sendEvent('close')
     })
 
+    describe('Instanz', () => {
+
+        it('Enthält loadDatabase() - Funktion', () => {
+            assert.ok(expressApplication.loadDatabase)
+        })
+    })
+
     describe('Statischer Webserver', () => {
     
         it('Liefert /client/arrange/js/arrange.mjs aus', async () => {
