@@ -2,18 +2,78 @@
 
 [![Node.js CI](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml/badge.svg)](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml)
 
-Arrange ist ein **Node.js-Framework** für schlanke Webanwendungen mit eingebautem HTTPS-Server, SQLite-Datenbankverwaltung, Dateisystem-API, Benutzerverwaltung und WebSockets. Es wird als NPM-Paket eingebunden und benötigt nur eine einzige Konfigurationszeile zum Starten.
+Arrange ist ein **Node.js-Framework** für HTTPS-Webanwendungen mit SQLite-Datenbankverwaltung, Dateisystem-API, Benutzerverwaltung und WebSockets.
+Es wird als NPM-Paket eingebunden.
 
-```bash
-npm install @hilderonny/arrange
-```
+## Dokumentation
 
----
+- [API-Referenz](./API.md)
+- [Basisklasse `DatabaseObject`](./DATABASEOBJECT.md)
+- [Client-Bibliothek `arrange.mjs`](./CLIENT.md)
 
 ## Schnellstart
 
+### 1. Verzeichnis anlegen und Abhängigkeiten installieren
+
+```sh
+mkdir meine-app && cd meine-app
+npm init -y
+npm install @hilderonny/arrange
+```
+
+### 2. Eigenes SSL-Zertifikat erstellen
+
+```sh
+openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
+```
+
+### 3. Webseite anlegen
+
+#### html/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+
+            import * as Arrange from '/arrange/js/arrange.mjs'
+            // Arrange prüft automatisch Login-Status und zeigt ggf. Login-Dialog
+
+            import DatabaseObject from '/arrange/js/types/DatabaseObject.mjs'
+
+            // Eigene Datenklasse definieren
+            class Task extends DatabaseObject {
+                static databaseName = 'myapp'
+                static tableName = 'Tasks'
+            }
+
+            // Datenbank-Schema initialisieren (einmalig beim App-Start)
+            await Arrange.updateDatabase('myapp', {
+                Tasks: { Title: 'TEXT', Done: 'INTEGER' }
+            })
+
+            // Datensatz anlegen
+            const task = new Task({ Title: 'Hallo Welt', Done: 0 })
+            await task.save()
+
+            // Alle Datensätze laden
+            const allTasks = await Task.query('SELECT * FROM Tasks')
+            console.log(allTasks)
+
+        </script>
+    </head>
+    <body>
+        <h1>Meine Arrange-App</h1>
+    </body>
+</html>
+```
+
+### 4. Server erstellen
+
+#### Server.mjs
+
 ```js
-// Server.mjs
 import ArrangeServer from '@hilderonny/arrange'
 
 const server = new ArrangeServer({
@@ -21,64 +81,27 @@ const server = new ArrangeServer({
     useSSL: true,
     crtFile: './server.crt',
     keyFile:  './server.key',
-    htmlPaths: { '/': './html' },   // Statische Dateien unter /
-    dataPath: './data',             // SQLite-Datenbanken + Benutzerdateien
+    htmlPaths: { '/': './html' },
+    dataPath:  './data',
     useWebsockets: true,
     name: 'Meine App'
 })
 server.start()
-// node --experimental-sqlite Server.mjs
 ```
 
----
+### 5. Server starten
 
-## Dokumentation
-
-| Datei | Inhalt |
-|---|---|
-| **[docs/README.md](./docs/README.md)** | Vollständiger Dokumentationsindex + Architekturüberblick |
-| **[docs/QUICKSTART.md](./docs/QUICKSTART.md)** | Anwendung in 5 Minuten aufsetzen |
-| **[docs/SERVER.md](./docs/SERVER.md)** | `ArrangeServer`-Klasse, alle Optionen, mehrere `htmlPaths` |
-| **[docs/API.md](./docs/API.md)** | Vollständige REST-API-Referenz |
-| **[docs/CLIENT.md](./docs/CLIENT.md)** | Client-Bibliothek `arrange.mjs` (Browser) |
-| **[docs/DATABASEOBJECT.md](./docs/DATABASEOBJECT.md)** | ORM-Klasse `DatabaseObject` |
-| **[docs/WEBSOCKETS.md](./docs/WEBSOCKETS.md)** | WebSocket-Protokoll und Räume |
-| **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Architekturmuster und Anwendungsbeispiele |
-| **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)** | Linux-Dienst, Docker, SSL, Umgebungsvariablen |
-
----
-
-## Was Arrange mitbringt
-
-| Feature | Beschreibung |
-|---|---|
-| **HTTPS/HTTP-Server** | Basiert auf Express.js, optional SSL |
-| **Benutzerverwaltung** | Registrierung, Login, Session-Cookies (SHA-256-Passwörter) |
-| **Datei-API** | Upload/Download/Listing für öffentliche und private Dateien je Benutzer |
-| **Datenbank-API** | SQLite-CRUD über REST, Schema-Migration, SELECT-Abfragen |
-| **WebSockets** | Räume, Broadcasts, Direktnachrichten (binäres Protokoll) |
-| **Clientbibliothek** | `arrange.mjs` kapselt alle API-Aufrufe im Browser |
-| **ORM** | `DatabaseObject`-Basisklasse für typisierte Datenbankzugriffe |
-| **Multi-Path** | `htmlPaths` erlaubt mehrere statische Routen, auch außerhalb des Repos |
-
----
+```sh
+node --experimental-sqlite Server.mjs
+```
 
 ## Reservierte URL-Pfade
 
-| Pfad | Verwendung |
-|---|---|
-| `/api/` | REST-API |
-| `/arrange/` | Clientbibliothek-Ressourcen |
-| `/ws/` | WebSockets |
-
----
-
-## Beispielprojekte
-
-- **[Forensics](https://github.com/hilderonny/forensics)** – Fallverwaltung für digitale Forensik (DB + Dateien + WebSockets)
-- **[DemoServer.mjs](./DemoServer.mjs)** – Multi-Path-Demo mit drei statischen Verzeichnissen
-
----
+|Pfad|Verwendung|
+|-|--|
+|`/api/`|REST-API|
+|`/arrange/`|Client-Bibliothek|
+|`/ws/`|WebSockets|
 
 ## Entwicklung
 
@@ -93,25 +116,69 @@ git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm install
 
-# Demo starten (F5 in VS Code oder:)
+# Demo starten (oder F5 in VS Code)
 node --experimental-sqlite DemoServer.mjs
-# → https://localhost:8443
+# https://localhost:8443
 ```
 
 ```bash
 # NPM-Paket veröffentlichen
 npm adduser
-npm version 7.1.0
-npm publish --access public
+npm version 7.1.1
+npm publish --access public --tag latest
 ```
 
----
+## Als Linux-Systemdienst einrichten
 
-## Lizenz
+```bash
+sudo nano /etc/systemd/system/meine-app.service
+sudo systemctl enable meine-app
+sudo systemctl start meine-app
+```
 
-[MIT](./LICENSE.md)
+### `/etc/systemd/system/meine-app.service`
 
+```ini
+[Unit]
+Description=Meine Arrange-App
 
----
+[Service]
+ExecStart=/PFAD/ZU/node --experimental-sqlite /PFAD/ZU/REPO/Server.mjs
+WorkingDirectory=/PFAD/ZU/REPO
+Restart=always
+RestartSec=10
+Environment=TOKEN_SECRET=mein-geheimes-token
+Environment=DATA_PATH=/var/meine-app/data
 
-*Diese Datei wurde mit [Claude Code](https://claude.ai/code) unter Verwendung des Modells **claude-sonnet-4-6** generiert.*
+[Install]
+WantedBy=multi-user.target
+```
+
+## Docker
+
+### Dockerfile
+
+```dockerfile
+FROM node:24-slim
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+EXPOSE 8443
+
+CMD ["node", "--experimental-sqlite", "Server.mjs"]
+```
+
+### Docker-Build und -Start
+
+```sh
+docker build -t meine-app .
+docker run -d \
+    --name meine-app \
+    -p 8443:8443 \
+    -v ./data:/app/data \
+    -e TOKEN_SECRET=geheim \
+    meine-app
+```
