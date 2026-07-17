@@ -1,6 +1,7 @@
 # arrange
 
 [![Node.js CI](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml/badge.svg)](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hilderonny/arrange)
 
 Arrange ist ein **Node.js-Framework** für HTTPS-Webanwendungen mit SQLite-Datenbankverwaltung, Dateisystem-API, Benutzerverwaltung und WebSockets.
 Es wird als NPM-Paket eingebunden.
