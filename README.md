@@ -125,7 +125,7 @@ node --experimental-sqlite DemoServer.mjs
 ```bash
 # NPM-Paket veröffentlichen
 npm adduser
-npm version 7.1.1
+npm version 7.2.1
 npm publish --access public --tag latest
 ```
 
