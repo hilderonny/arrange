@@ -74,7 +74,11 @@ export default class ExpressApplication {
         this.app = express()
 
         // Benutzersessions
-        this.app.use(cookieSession({ name: 'session', secret: tokenSecret }))
+        this.app.use(cookieSession({
+            name: 'session',
+            secret: tokenSecret,
+            maxAge: 365 * 24 * 60 * 60 * 1000, // 1 Jahr gültig
+        }))
 
         // JSON in POST Daten aktivieren
         this.app.use(express.json({ limit: '100MB' }))
