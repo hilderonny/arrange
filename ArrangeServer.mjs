@@ -4,7 +4,7 @@ import https from 'node:https'
 import { WebSocketServer } from 'ws'
 import ExpressApplication from './ExpressApplication.mjs'
 
-export default class ArrangeServer {
+class ArrangeServer {
 
     /**
      * createServer - options
@@ -73,4 +73,14 @@ export default class ArrangeServer {
         })
     }
 
+}
+
+// Konfiguration laden
+const configFilePath = 'config.json'
+if (fs.existsSync(configFilePath)) {
+    const config = JSON.parse(fs.readFileSync(configFilePath))
+    const server = new ArrangeServer(config)
+    server.start()
+} else {
+    console.error('config.json does not exist. Cannot start.')
 }

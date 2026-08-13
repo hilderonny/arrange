@@ -1,25 +1,17 @@
 # arrange
 
-[![Node.js CI](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml/badge.svg)](https://github.com/hilderonny/arrange/actions/workflows/node.js.yml)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hilderonny/arrange)
 
-Arrange ist ein **Node.js-Framework** für HTTPS-Webanwendungen mit SQLite-Datenbankverwaltung, Dateisystem-API, Benutzerverwaltung und WebSockets.
-Es wird als NPM-Paket eingebunden.
-
-## Dokumentation
-
-- [API-Referenz](./API.md)
-- [Basisklasse `DatabaseObject`](./DATABASEOBJECT.md)
-- [Client-Bibliothek `arrange.mjs`](./CLIENT.md)
+Arrange ist ein **Node.js-Webserver** mit SQLite-Datenbankverwaltung, Dateisystem-API, Benutzerverwaltung, WebSockets und Gamification.
 
 ## Schnellstart
 
-### 1. Verzeichnis anlegen und Abhängigkeiten installieren
+### 1. Repository klonen und Abhängigkeiten installieren
 
 ```sh
-mkdir meine-app && cd meine-app
-npm init -y
-npm install @hilderonny/arrange
+git clone https://github.com/hilderonny/arrange.git
+cd arrange
+npm install
 ```
 
 ### 2. Eigenes SSL-Zertifikat erstellen
@@ -28,9 +20,25 @@ npm install @hilderonny/arrange
 openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
 ```
 
-### 3. Webseite anlegen
+### 3. Datei 'config-template.json' nach `config.json' kopieren und anpassen
 
-#### html/index.html
+```json
+{
+    "port": 8443,
+    "useSSL": true,
+    "crtFile": "./server.crt",
+    "keyFile":  "./server.key",
+    "htmlPaths": {
+        "/": "PATH_TO_ROOT_HTML_DIRECTORY",
+        "/webapp": "PATH_TO_SUBURL_DIRECTORY"
+    },
+    "dataPath":  "./data",
+    "useWebsockets": true,
+    "name": "Meine App"
+}
+```
+
+### 3. Webseite anlegen
 
 ```html
 <!DOCTYPE html>
@@ -70,31 +78,17 @@ openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
 </html>
 ```
 
-### 4. Server erstellen
-
-#### Server.mjs
-
-```js
-import ArrangeServer from '@hilderonny/arrange'
-
-const server = new ArrangeServer({
-    port: 8443,
-    useSSL: true,
-    crtFile: './server.crt',
-    keyFile:  './server.key',
-    htmlPaths: { '/': './html' },
-    dataPath:  './data',
-    useWebsockets: true,
-    name: 'Meine App'
-})
-server.start()
-```
-
-### 5. Server starten
+### 4. Server starten
 
 ```sh
-node --experimental-sqlite Server.mjs
+node --experimental-sqlite ArrangeServer.mjs
 ```
+
+## Dokumentation
+
+- [API-Referenz](./API.md)
+- [Basisklasse `DatabaseObject`](./DATABASEOBJECT.md)
+- [Client-Bibliothek `arrange.mjs`](./CLIENT.md)
 
 ## Reservierte URL-Pfade
 
@@ -117,16 +111,8 @@ git clone https://github.com/hilderonny/arrange.git
 cd arrange
 npm install
 
-# Demo starten (oder F5 in VS Code)
-node --experimental-sqlite DemoServer.mjs
+# F5 in VS Code drücken
 # https://localhost:8443
-```
-
-```bash
-# NPM-Paket veröffentlichen
-npm adduser
-npm version 7.2.1
-npm publish --access public --tag latest
 ```
 
 ## Als Linux-Systemdienst einrichten
@@ -144,7 +130,7 @@ sudo systemctl start meine-app
 Description=Meine Arrange-App
 
 [Service]
-ExecStart=/PFAD/ZU/node --experimental-sqlite /PFAD/ZU/REPO/Server.mjs
+ExecStart=/PFAD/ZU/node --experimental-sqlite /PFAD/ZU/REPO/ArrangeServer.mjs
 WorkingDirectory=/PFAD/ZU/REPO
 Restart=always
 RestartSec=10
@@ -169,7 +155,7 @@ COPY . .
 
 EXPOSE 8443
 
-CMD ["node", "--experimental-sqlite", "Server.mjs"]
+CMD ["node", "--experimental-sqlite", "ArrangeServer.mjs"]
 ```
 
 ### Docker-Build und -Start

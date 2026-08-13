@@ -1,7 +1,4 @@
 {
-  "name": "@hilderonny/arrange",
-  "version": "7.2.1",
-  "main": "ArrangeServer.mjs",
   "dependencies": {
     "argparse": "^2.0.1",
     "cookie-session": "^2.1.1",
@@ -18,11 +15,5 @@
   "scripts": {
     "test": "node --experimental-sqlite --test --test-concurrency=1"
   },
-  "description": "Arrange ist ein kleiner SSL-Webserver, der Funktionen zum Verwalten von Dateien und SQLite-Datenbanken auf dem Server sowie Websockets mitbringt.",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hilderonny/arrange.git"
-  },
-  "author": "Ronny Hildebrandt",
   "license": "MIT"
 }
