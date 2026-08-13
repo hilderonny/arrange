@@ -5,7 +5,31 @@ async function autoLogin() {
     if (autoLoginResponse.status !== 200) {
         const successUrl = encodeURIComponent(location.href)
         const loginUrl = new URL('../login.html', import.meta.url).href + '?successurl=' + successUrl
-        location.href = loginUrl
+        // Prüfen, ob Benutzername und Passwort gespeichert waren und diese Infos für Anmeldung nehmen
+        const storedUsername = localStorage.getItem('username')
+        const storedPassword = localStorage.getItem('password')
+        if (storedUsername && storedPassword) {
+            const loginResponse = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ username: storedUsername, password: storedPassword })
+            })
+            if (loginResponse.status === 200) {
+                const userData = await loginResponse.json()
+                localStorage.setItem('userid', userData.id)
+            } else {
+                // Anmeldedaten sind falsch, löschen und auf Anmeldeseite umleiten
+                localStorage.removeItem('username')
+                localStorage.removeItem('password')
+                location.href = loginUrl
+            }
+        } else {
+            // Keine ANmeldedaten vorhanden, auf Anmeldeseite umleiten
+            location.href = loginUrl
+        }
     }
 }
 
@@ -107,6 +131,9 @@ async function leaveRoom(roomNumber) {
 
 async function logout() {
     await fetch('/api/logout')
+    localStorage.removeItem('userid')
+    localStorage.removeItem('username')
+    localStorage.removeItem('password')
     location.reload()
 }
 

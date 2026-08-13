@@ -8,10 +8,21 @@
 
             console.log(Arrange)
 
+            document.getElementById('logoutButton').addEventListener('click', async() => {
+                await Arrange.logout()
+            })
+
         </script>
     </head>
     <body>
+
         <h1>Hallo Arrange!</h1>
+        
         <p>Siehe Konsolenausgabe</p>
+
+        <p>
+            <button id="logoutButton">Abmelden</button>
+        </p>
+
     </body>
 </html>
