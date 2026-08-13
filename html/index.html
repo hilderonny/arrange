@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+
+            import * as Arrange from '/arrange/js/arrange.mjs'
+            // Arrange prüft automatisch Login-Status und zeigt ggf. Login-Dialog
+
+            console.log(Arrange)
+
+            document.getElementById('logoutButton').addEventListener('click', async() => {
+                await Arrange.logout()
+            })
+
+        </script>
+    </head>
+    <body>
+
+        <h1>Hallo Arrange!</h1>
+        
+        <p>Siehe Konsolenausgabe</p>
+
+        <p>
+            <button id="logoutButton">Abmelden</button>
+        </p>
+
+    </body>
+</html>

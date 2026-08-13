@@ -5,11 +5,13 @@ describe('arrange.mjs logout()', () => {
 
     let originalFetch
     let originalLocation
+    let originalLocalStorage
     const arrangeLocation = '../../../../../client/arrange/js/arrange.mjs?'
 
     afterEach(() => {
         global.fetch = originalFetch
         global.location = originalLocation
+        global.localStorage = originalLocalStorage
     })
 
     beforeEach(() => {
@@ -19,6 +21,12 @@ describe('arrange.mjs logout()', () => {
             return { status: 200 }
         }
         global.location = { reload: () => {} }
+        global.localStorage = {
+            items: {},
+            getItem(key) { return global.localStorage.items[key] },
+            removeItem(key) { delete global.localStorage.items[key] },
+            setItem(key, value) { global.localStorage.items[key] = value },
+        }
     })
 
     it('Es wird die API GET /api/logout aufgerufen.', async () => {
@@ -48,6 +56,22 @@ describe('arrange.mjs logout()', () => {
         }
         await arrange.logout()
         assert.strictEqual(reloadWasCalled, true)
+    })
+
+    it('Benutzerdaten werden aus localStorage gelöscht.', async() => {
+        global.localStorage.items = {
+            'userid': 'testuserid',
+            'username': 'testusername',
+            'password': 'testpassword',
+        }
+        // Automatisch anmelden lassen
+        const arrange = await import(arrangeLocation + Math.random())
+        assert.ok(arrange)
+        // Abmeldung simulieren
+        await arrange.logout()
+        assert.strictEqual(global.localStorage.items['userid'], undefined)
+        assert.strictEqual(global.localStorage.items['username'], undefined)
+        assert.strictEqual(global.localStorage.items['password'], undefined)
     })
 
 })

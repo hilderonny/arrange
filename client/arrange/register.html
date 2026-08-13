@@ -69,6 +69,7 @@
                 const userData = await result.json()
                 localStorage.setItem('username', userData.username)
                 localStorage.setItem('userid', userData.id)
+                localStorage.setItem('password', password)
                 location.href = successurl
             } else {
                 setMessage("Registrierung fehlgeschlagen.", "error")
