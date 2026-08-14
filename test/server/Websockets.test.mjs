@@ -83,6 +83,23 @@ describe('Websockets', () => {
     afterEach(() => {
         expressApplication.shutDown()
     })
+
+    // describe('Funktion handleWebsocketConnection()', () => {
+
+    //     it('Bei Verbindung wird eine 0x01-Nachricht mit einer vom Server generierten Wobsocket-Id erhalten', () => {
+    //         let websocketIdReceived = false
+    //         websocketMock.send = (message) => {
+    //             assert.ok(message)
+    //             assert.ok(message.byteLength > 1)
+    //             const buffer = Buffer.from(message)
+    //             assert.strictEqual(buffer[0], 0x01)
+    //             websocketIdReceived = true
+    //         }
+    //         expressApplication.handleWebsocketConnection(websocketMock)
+    //         assert.strictEqual(websocketIdReceived, true)
+    //     })
+
+    // })
     
     it('Erhält keine Nachrichten, die mit 0x10 beginnen.', async () => {
         // Erhalt eigener Nachrichten prüfen

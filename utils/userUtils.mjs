@@ -1,8 +1,9 @@
 import fs from 'node:fs'
 
 import config from '../config.mjs'
+import path from 'node:path'
 
-const allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath))
+const allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath) || '[]')
 
 export default {
 
@@ -26,6 +27,7 @@ export default {
     },
 
     saveUsers() {
+        fs.mkdirSync(path.dirname(config.usersJsonPath), { recursive: true })
         fs.writeFileSync(config.usersJsonPath, JSON.stringify(allUsers, null, '\t'))
     },
 
