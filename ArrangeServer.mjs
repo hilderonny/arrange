@@ -1,86 +1,36 @@
-import fs from 'fs'
+import cookieSession from 'cookie-session'
+import express from 'express'
+import fs from 'node:fs'
 import http from 'node:http'
 import https from 'node:https'
+import path from 'node:path'
 import { WebSocketServer } from 'ws'
-import ExpressApplication from './ExpressApplication.mjs'
 
-class ArrangeServer {
+import config from './config.mjs'
+import serverUtils from './utils/serverUtils.mjs'
+import websocketUtils from './utils/websocketUtils.mjs'
 
-    /**
-     * createServer - options
-     *
-     * @typedef {Object} CreateServerOptions
-     * @property {string} [crtFile] - Dateipfad zum SSL-Zertifikat. Nur notwendig mit useSSL:true.
-     * @property {string} [dataPath] - Verzeichnispfad, in welchem sämtliche Daten abgelegt werden sollen. Default: "./data".
-     * @property {Object} [htmlPaths] - Zuordnungen von Sub-Urls (Objekt-Key) zu Verzeichnispfaden (Objekt-Wert), z.B. '{ "/": "./html", "/wiki", "../wiki/html" }
-     * @property {string} [keyFile] - Dateipfad zum privaten SSL-Schlüssel. Nur notwendig mit useSSL:true.
-     * @property {string} [name] - Name der Anwendung, wie sie in Log-Ausgaben erscheinen soll. Default: "Arrange".
-     * @property {number} [port] - Port, an dem der Server lauschen soll. Default: 8080.
-     * @property {string} [tokenSecret] - Zeichenkette, mit der die Benutzer-Sessions verschlüsselt werden sollen. Wenn nicht angegeben, wird bei jedem Start ein zufälliger Token generiert.
-     * @property {boolean} [useSSL] - Gibt an, ob SSL verwendet werden soll. Default: false.
-     * @property {boolean} [useWebsockets] - Gibt an, ob Websockets bereitgestellt werden sollen. Default: false.
-     */
+// Express Anwendung vorbereiten
+const expressApplication = await serverUtils.createExpressApplication()
 
-    /**
-     * Optionen
-     */
-    #options
-
-    /**
-     * Erstellt einen Arrange-Server.
-     * Der Server wird noch nicht gestartet.
-     * 
-     * @param {CreateServerOptions} [options] - Einstellungen
-    */
-    constructor(options = {}) {
-        this.#options = options
-        // Default-Werte festlegen
-        if (!options.dataPath) options.dataPath = './data'
-        if (!options.htmlPaths) options.htmlPaths = {}
-        if (!options.name) options.name = 'Arrange'
-        if (!options.htmlPaths) options.htmlPaths = {}
-        if (!options.port) options.port = 8080
-        if (!options.tokenSecret) options.tokenSecret = Math.random().toString()
-        // Express Anwendung vorbereiten
-        this.expressApplication = new ExpressApplication(
-            options.dataPath,
-            options.htmlPaths,
-            options.tokenSecret
-        )
-        // Server vorbereiten
-        if (options.useSSL) {
-            this.httpServer = https.createServer({
-                key: fs.readFileSync(options.keyFile),
-                cert: fs.readFileSync(options.crtFile),
-            }, this.expressApplication.app)
-        } else {
-            this.httpServer = http.createServer(this.expressApplication.app)
-        }
-        // Websocketverbindungen behandeln
-        if (options.useWebsockets) {
-            this.webSocketServer = new WebSocketServer({ server: this.httpServer })
-            this.webSocketServer.on('connection', this.expressApplication.handleWebsocketConnection.bind(this.expressApplication))
-        }
-    }
-
-    /**
-     * Startet den Server und geht in eine Endlosschleife
-     */
-    start() {
-        // HTTP-Server starten, geht in Endlosschleife
-        this.httpServer.listen(this.#options.port, () => {
-            console.log(`${this.#options.name} läuft an PORT ${this.#options.port}`)
-        })
-    }
-
-}
-
-// Konfiguration laden
-const configFilePath = 'config.json'
-if (fs.existsSync(configFilePath)) {
-    const config = JSON.parse(fs.readFileSync(configFilePath))
-    const server = new ArrangeServer(config)
-    server.start()
+// Server vorbereiten
+let httpServer
+if (config.useSSL) {
+    httpServer = https.createServer({
+        key: fs.readFileSync(config.keyFile),
+        cert: fs.readFileSync(config.crtFile),
+    }, expressApplication)
 } else {
-    console.error('config.json does not exist. Cannot start.')
+    httpServer = http.createServer(expressApplication)
 }
+
+// Websocketverbindungen behandeln
+if (config.useWebsockets) {
+    const webSocketServer = new WebSocketServer({ server: httpServer })
+    webSocketServer.on('connection', websocketUtils.handleWebsocketConnection)
+}
+
+// Startet den Server und geht in eine Endlosschleife
+httpServer.listen(config.port, () => {
+    console.log(`${config.name} läuft an PORT ${config.port}`)
+})

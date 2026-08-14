@@ -6,6 +6,8 @@ import path from 'node:path'
 import sqlite from 'node:sqlite'
 import multer from 'multer'
 
+import config from './config.mjs'
+
 /********** Server **********/
 
 export default class ExpressApplication {
@@ -15,10 +17,7 @@ export default class ExpressApplication {
      */
     #allUsers
 
-    /**
-     * Liste aller verbundenen Websocket-Verbindungen
-     */
-    #allWebsockets = []
+
 
     /**
      * Pfad zum Verzeichnis, in dem die Datenbanken liegen
@@ -36,19 +35,9 @@ export default class ExpressApplication {
     #filesPath
 
     /**
-     * Nächste verfügbare Id für Websocket-Verbindung
-     */
-    #nextWebsocketId = 0
-
-    /**
      * Pfad zur JSON-Datei mit Benutzerinfos
      */
     #usersJsonPath
-
-    /**
-     * Websocket-Räume
-     */
-    #webSocketRooms = {}
 
     /**
      * Referenz zu Express app für UNIT-Tests
@@ -65,19 +54,19 @@ export default class ExpressApplication {
      */
     constructor(dataPath, htmlPaths, tokenSecret, customApis) {
 
-        this.#usersJsonPath = path.join(dataPath, 'users/users.json')
-        this.#filesPath = path.join(dataPath, 'files')
-        this.#databasePath = path.join(dataPath, 'databases')
+        // this.#usersJsonPath = path.join(dataPath, 'users/users.json')
+        // this.#filesPath = path.join(dataPath, 'files')
+        // this.#databasePath = path.join(dataPath, 'databases')
 
         // Benutzerdatenbank laden
-        this.#loadUsers()
+        // this.#loadUsers()
 
         this.app = express()
 
         // Benutzersessions
         this.app.use(cookieSession({
             name: 'session',
-            secret: tokenSecret,
+            secret: config.tokenSecret,
             maxAge: 365 * 24 * 60 * 60 * 1000, // 1 Jahr gültig
         }))
 
@@ -85,505 +74,327 @@ export default class ExpressApplication {
         this.app.use(express.json({ limit: '100MB' }))
 
         // Statische HTML Seiten ausliefern, muss vor /arrange erfolgen, damit /arrange nicht überschrieben wird
-        for (const [url, path] of Object.entries(htmlPaths)) {
+        for (const [url, path] of Object.entries(config.htmlPaths)) {
             this.app.use(url, express.static(path))
         }
 
         // Uploads landen direkt im Dateisystem ohne RAM-Zwischenspeicherung
-        this.fileUpload = multer({
-            storage: multer.diskStorage({
-                destination: (request, file, callback) => {
-                    const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-                    if (fs.existsSync(absoluteFilePath) && !fs.statSync(absoluteFilePath).isFile()) {
-                        callback('Requested path is an existing directory')
-                        return
-                    }
-                    const dirPath = path.dirname(absoluteFilePath)
-                    fs.mkdirSync(dirPath, { recursive: true })
-                    callback(null, dirPath)
-                },
-                filename: (request, file, callback) => {
-                    const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-                    callback(null, path.basename(absoluteFilePath))
-                },
+        // this.fileUpload = multer({
+        //     storage: multer.diskStorage({
+        //         destination: (request, file, callback) => {
+        //             const absoluteFilePath = path.resolve(config.filesPath, request.params.userId, ...request.params.filePath)
+        //             if (fs.existsSync(absoluteFilePath) && !fs.statSync(absoluteFilePath).isFile()) {
+        //                 callback('Requested path is an existing directory')
+        //                 return
+        //             }
+        //             const dirPath = path.dirname(absoluteFilePath)
+        //             fs.mkdirSync(dirPath, { recursive: true })
+        //             callback(null, dirPath)
+        //         },
+        //         filename: (request, file, callback) => {
+        //             const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+        //             callback(null, path.basename(absoluteFilePath))
+        //         },
                 
-            })
-        }).any()
-
-        // Custom APIs einbinden, Standard-APIs überschreiben weiter unten bei Bedarf Custom API URLs
-        if (customApis) {
-            for (const [method, apiDefinition] of Object.entries(customApis)) {
-                for (const [url, scriptFilePath] of Object.entries(apiDefinition)) {
-                    // Referenziertes Modul laden
-                    // TODO: await geht im Konstruktor nicht! Mit Promises versuchen
-                    /*
-                    Dieses Pattern scheint braucbar zu sein:
-                    class ExpressApplication {
-                    
-                        constructor(dataPath, htmlPaths, tokenSecret, customApis) {
-                            if (customApis) {
-                                for (const [method, apiDefinition] of Object.entries(customApis)) {
-                                    for (const [url, apiModule] of Object.entries(apiDefinition)) {
-                                        this.app[method](url, apiModule.bind(this))
-                                    }
-                                }
-                            }
-                        }
-
-                        static async create(dataPath, htmlPaths, tokenSecret, customApis) {
-                            if (customApis) {
-                                for (const [method, apiDefinition] of Object.entries(customApis)) {
-                                    for (const [url, scriptFilePath] of Object.entries(apiDefinition)) {
-                                        // Dateipfad durch geladenes Modul ersetzen
-                                        apiDefinition[url] = await import(scriptFilePath)
-                                        this.app[method](url, apiModule.bind(this))
-                                    }
-                                }
-                            }
-                            return new ExpressApplication(dataPath, htmlPaths, tokenSecret, customApis)
-                        }
-                    }
-                    
-                    Aufruf:
-
-                    const app = await ExpressApplication.create(dataPath, htmlPaths, tokenSecret, customApis)
-                    
-                    */
-                    const apiModule = await import(scriptFilePath)
-                    // API registrieren
-                    this.app[method](url, apiModule.bind(this))
-                }
-            }
-        }
+        //     })
+        // }).any()
 
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))
 
         // API-Endpunkte
-        this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
-        this.app.post('/api/login', this.#handlePostLogin.bind(this))
-        this.app.get('/api/logout', this.#handleGetLogout.bind(this))
-        this.app.post('/api/register', this.#handlePostRegister.bind(this))
-        this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
-        this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
-        this.app.post('/api/files/:userId/*filePath', this.#handlePostFile.bind(this))
-        this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
-        this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
-        this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
-        this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
-        this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
-        this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
+        for (const [method, apiDefinition] of Object.entries(config.apis)) {
+            for (const [url, apiHandler] of Object.entries(apiDefinition)) {
+                this.app[method](url, apiHandler.bind(this))
+            }
+        }
+        // this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
+        // this.app.post('/api/login', this.#handlePostLogin.bind(this))
+        // this.app.get('/api/logout', this.#handleGetLogout.bind(this))
+        // this.app.post('/api/register', this.#handlePostRegister.bind(this))
+        // this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
+        // this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
+        // this.app.post('/api/files/:userId/*filePath', this.#handlePostFile.bind(this))
+        // this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
+        // this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
+        // this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
+        // this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
+        // this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
+        // this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
     }
 
     /**
      * Schließt die Datenbanken sauber
      */
-    shutDown() {
-        for (const database of Object.values(this.#databases)) {
-            if (database.isOpen) {
-                database.close()
-            }
-        }
-    }
+    // shutDown() {
+    //     for (const database of Object.values(this.#databases)) {
+    //         if (database.isOpen) {
+    //             database.close()
+    //         }
+    //     }
+    // }
     
 
     /********** Hilfsfunktionen **********/
-
-    #getUserForUsername(username) {
-        return this.#allUsers.find(user => user.username === username)
-    }
-
-    #createUserSession(request, userId) {
-        request.session.userId = userId
-    }
     
-    async loadDatabase(databaseName) {
-        let database = this.#databases[databaseName]
-        if (!database) {
-            const absolutePath = path.resolve(this.#databasePath, databaseName + '.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
-            this.#databases[databaseName] = database
-        }
-        return database
-    }
+    // async loadDatabase(databaseName) {
+    //     let database = this.#databases[databaseName]
+    //     if (!database) {
+    //         const absolutePath = path.resolve(this.#databasePath, databaseName + '.sqlite')
+    //         fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
+    //         database = new sqlite.DatabaseSync(absolutePath)
+    //         this.#databases[databaseName] = database
+    //     }
+    //     return database
+    // }
 
-    #loadUsers() {
-        if (!fs.existsSync(this.#usersJsonPath)) {
-            fs.mkdirSync(path.dirname(this.#usersJsonPath), { recursive: true })
-            this.#allUsers = []
-            this.#saveUsers()
-        } else {
-            this.#allUsers = JSON.parse(fs.readFileSync(this.#usersJsonPath))
-        }
-    }
+    // #loadUsers() {
+    //     if (!fs.existsSync(config.usersJsonPath)) {
+    //         fs.mkdirSync(path.dirname(config.usersJsonPath), { recursive: true })
+    //         this.#allUsers = []
+    //         this.#saveUsers()
+    //     } else {
+    //         this.#allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath))
+    //     }
+    // }
 
-    #saveUsers() {
-        fs.writeFileSync(this.#usersJsonPath, JSON.stringify(this.#allUsers, null, '\t'))
-    }
+    // /********** API Funktionen **********/
 
-    /********** API Funktionen **********/
+    // // Datensatz löschen
+    // async #handleDeleteDatabaseRecord(request, response) {
+    //     try {
+    //         const database = await this.loadDatabase(request.params.databaseName)
+    //         const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
+    //         if (existingTable) {
+    //             const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
+    //             query.run()
+    //         }
+    //         response.sendStatus(200)
+    //     } catch {
+    //         response.status(500).send('Cannot delete database record')
+    //     }
+    // }
 
-    // Datensatz löschen
-    async #handleDeleteDatabaseRecord(request, response) {
-        try {
-            const database = await this.loadDatabase(request.params.databaseName)
-            const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
-            if (existingTable) {
-                const query = database.prepare(`DELETE FROM ${request.params.tableName} WHERE Id = '${request.params.recordId}';`)
-                query.run()
-            }
-            response.sendStatus(200)
-        } catch {
-            response.status(500).send('Cannot delete database record')
-        }
-    }
+    // /**
+    //  * Datenbanktabelle löschen
+    //  */
+    // async #handleDeleteDatabaseTable(request, response) {
+    //     try {
+    //         const database = await this.loadDatabase(request.params.databaseName)
+    //         const query = database.prepare(`DROP TABLE IF EXISTS ${request.params.tableName};`)
+    //         query.run()
+    //         response.sendStatus(200)
+    //     } catch {
+    //         response.status(500).send('Cannot delete database table')
+    //     }
+    // }
 
-    /**
-     * Datenbanktabelle löschen
-     */
-    async #handleDeleteDatabaseTable(request, response) {
-        try {
-            const database = await this.loadDatabase(request.params.databaseName)
-            const query = database.prepare(`DROP TABLE IF EXISTS ${request.params.tableName};`)
-            query.run()
-            response.sendStatus(200)
-        } catch {
-            response.status(500).send('Cannot delete database table')
-        }
-    }
+    // /**
+    //  * Pfad im Dateisystem löschen
+    //  */
+    // async #handleDeletePath(request, response) {
+    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+    //     if (fs.existsSync(absolutePath)) {
+    //         fs.rmSync(absolutePath, { recursive: true })
+    //         response.sendStatus(200)
+    //     } else {
+    //         response.sendStatus(404)
+    //     }
+    // }
 
-    /**
-     * Pfad im Dateisystem löschen
-     */
-    async #handleDeletePath(request, response) {
-        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        if (fs.existsSync(absolutePath)) {
-            fs.rmSync(absolutePath, { recursive: true })
-            response.sendStatus(200)
-        } else {
-            response.sendStatus(404)
-        }
-    }
-
-    /**
-     * Automatische Anmeldung anhand des Cookies
-     */
-    #handleGetAutoLogin(request, response) {
-        if (request.session && request.session.userId) {
-            response.sendStatus(200)
-        } else {
-            response.sendStatus(401)
-        }
-    }
-
-    /**
-     * Benutzer abmelden
-     */
-    #handleGetLogout(request, response) {
-        request.session = null
-        response.sendStatus(200)
-    }
-
-    /**
-     * Datei oder Verzeichnisinhalt liefern
-     */
-    async #handleGetPath(request, response) {
-        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        if (!fs.existsSync(absolutePath)) {
-            return response.sendStatus(404)
-        }
-        const pathStats = fs.statSync(absolutePath)
-        if (pathStats.isDirectory()) {
-            const directoryEntries = fs.readdirSync(absolutePath, { withFileTypes: true })
-            const entryList = directoryEntries.map(entry => { return {
-                name: entry.name,
-                type: entry.isDirectory() ? 'dir' : 'file'
-            }})
-            response.json(entryList)
-        } else {
-            response.sendFile(absolutePath)
-        }
-    }
+    // /**
+    //  * Datei oder Verzeichnisinhalt liefern
+    //  */
+    // async #handleGetPath(request, response) {
+    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
+    //     if (!fs.existsSync(absolutePath)) {
+    //         return response.sendStatus(404)
+    //     }
+    //     const pathStats = fs.statSync(absolutePath)
+    //     if (pathStats.isDirectory()) {
+    //         const directoryEntries = fs.readdirSync(absolutePath, { withFileTypes: true })
+    //         const entryList = directoryEntries.map(entry => { return {
+    //             name: entry.name,
+    //             type: entry.isDirectory() ? 'dir' : 'file'
+    //         }})
+    //         response.json(entryList)
+    //     } else {
+    //         response.sendFile(absolutePath)
+    //     }
+    // }
 
 
-    /**
-     * Datenbankschema aktualisieren
-     */
-    async #handlePatchDatabase(request, response) {
-        if (!request.body?.schema) {
-            return response.sendStatus(400)
-        }
-        try {
-            const database = await this.loadDatabase(request.params.databaseName)
-            // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
-            for (const tableName of Object.keys(request.body.schema)) {
-                const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL) STRICT;`
-                database.exec(createTableStatement)
-            }
-            // Nochmal drüber iterieren und die Spalten aktualisieren
-            for (const [ tableName, tableDefinition ] of Object.entries(request.body.schema)) {
-                for (const [ columnName, columnDefinition ] of Object.entries(tableDefinition)) {
-                    // Spalte nur erstellen, wenn sie noch nicht existiert
-                    if (database.prepare(`SELECT COUNT(*) AS columnCount FROM pragma_table_info('${tableName}') WHERE name='${columnName}';`).get().columnCount < 1) {
-                        const updateStatement = `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition};`
-                        database.exec(updateStatement)
-                    }
-                }
-            }
-            response.sendStatus(200)
-        } catch {
-            response.status(500).send('Cannot update database')
-        }
-    }
+    // /**
+    //  * Datenbankschema aktualisieren
+    //  */
+    // async #handlePatchDatabase(request, response) {
+    //     if (!request.body?.schema) {
+    //         return response.sendStatus(400)
+    //     }
+    //     try {
+    //         const database = await this.loadDatabase(request.params.databaseName)
+    //         // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
+    //         for (const tableName of Object.keys(request.body.schema)) {
+    //             const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL) STRICT;`
+    //             database.exec(createTableStatement)
+    //         }
+    //         // Nochmal drüber iterieren und die Spalten aktualisieren
+    //         for (const [ tableName, tableDefinition ] of Object.entries(request.body.schema)) {
+    //             for (const [ columnName, columnDefinition ] of Object.entries(tableDefinition)) {
+    //                 // Spalte nur erstellen, wenn sie noch nicht existiert
+    //                 if (database.prepare(`SELECT COUNT(*) AS columnCount FROM pragma_table_info('${tableName}') WHERE name='${columnName}';`).get().columnCount < 1) {
+    //                     const updateStatement = `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition};`
+    //                     database.exec(updateStatement)
+    //                 }
+    //             }
+    //         }
+    //         response.sendStatus(200)
+    //     } catch {
+    //         response.status(500).send('Cannot update database')
+    //     }
+    // }
 
-    /**
-     * Speichert einen Datensatz in der Datenbank
-     */
-    async #handlePatchDatabaseRecord(request, response) {
-        if (!request.body?.fields) {
-            return response.sendStatus(400)
-        }
-        try {
-            const database = await this.loadDatabase(request.params.databaseName)
-            // Prüfen, ob Tabelle existiert
-            const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
-            if (!existingTable) {
-                return response.sendStatus(400)
-            }
-            // Existierende Spalten laden
-            const columns = database.prepare(`SELECT name FROM pragma_table_info('${request.params.tableName}');`).all().map(column => column.name)
-            // Prüfen, ob Datensatz bereits existiert
-            if (database.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get().anzahl < 1) {
-                // Existiert noch nicht, also neu anlegen
-                const recordToCreate = request.body.fields
-                // Existierende Spalten filtern
-                for (const columnName of Object.keys(recordToCreate)) {
-                    if (!columns.includes(columnName)) {
-                        delete recordToCreate[columnName]
-                    }
-                }
-                recordToCreate.Id = request.params.recordId
-                const queryString = [
-                    'INSERT INTO ',
-                    request.params.tableName,
-                    ' (',
-                    Object.keys(recordToCreate).join(','),
-                    ') VALUES (',
-                    Object.values(recordToCreate).map(value => {
-                        if (value === null) return 'NULL'
-                        switch (typeof(value)) {
-                            case 'undefined': return 'NULL'
-                            case 'boolean': return value ? '1' : '0'
-                            case 'number': return value
-                            default: return `'${('' + value).toString().replaceAll(`'`, `''`)}'`
-                        }
-                    }).join(','),
-                    ');'
-                ].join('')
-                const query = database.prepare(queryString)
-                query.run()
-            } else {
-                // Existiert, also ggf. aktualisieren
-                const recordToChange = request.body.fields
-                // Id rausfiltern, diese darf nicht verändert werden
-                delete recordToChange.Id
-                // Existierende Spalten filtern
-                for (const columnName of Object.keys(recordToChange)) {
-                    if (!columns.includes(columnName)) {
-                        delete recordToChange[columnName]
-                    }
-                }
-                // Wenn keine Felder oder keine passenden gesendet werden, muss auch nicht aktualisiert werden
-                if (Object.keys(recordToChange).length > 0) {
-                    const queryString = [
-                        'UPDATE ',
-                        request.params.tableName,
-                        ' SET ',
-                        Object.entries(recordToChange).map(([ columnName, value ]) => {
-                            let setString = columnName + '='
-                            if (value === null) {
-                                setString += 'NULL'
-                            } else {
-                                switch (typeof(value)) {
-                                    case 'undefined': setString += 'NULL'; break
-                                    case 'boolean': setString += value ? '1' : '0'; break
-                                    case 'number': setString += value; break
-                                    default: setString += `'${('' + value).toString().replaceAll(`'`, `''`)}'`; break
-                                }
-                            }
-                            return setString
-                        }).join(', '),
-                        ` WHERE Id='`,
-                        request.params.recordId,
-                        `';`
-                    ].join('')
-                    const query = database.prepare(queryString)
-                    query.run()
-                }
-            }
-            // Vollständigen Datensatz zurück geben
-            const record = database.prepare(`SELECT * FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get()
-            response.json(record)
-        } catch {
-            response.status(500).send('Cannot save database record')
-        }
-    }
+    // /**
+    //  * Speichert einen Datensatz in der Datenbank
+    //  */
+    // async #handlePatchDatabaseRecord(request, response) {
+    //     if (!request.body?.fields) {
+    //         return response.sendStatus(400)
+    //     }
+    //     try {
+    //         const database = await this.loadDatabase(request.params.databaseName)
+    //         // Prüfen, ob Tabelle existiert
+    //         const existingTable = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table' AND name='${request.params.tableName}';`).get()
+    //         if (!existingTable) {
+    //             return response.sendStatus(400)
+    //         }
+    //         // Existierende Spalten laden
+    //         const columns = database.prepare(`SELECT name FROM pragma_table_info('${request.params.tableName}');`).all().map(column => column.name)
+    //         // Prüfen, ob Datensatz bereits existiert
+    //         if (database.prepare(`SELECT COUNT(*) AS anzahl FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get().anzahl < 1) {
+    //             // Existiert noch nicht, also neu anlegen
+    //             const recordToCreate = request.body.fields
+    //             // Existierende Spalten filtern
+    //             for (const columnName of Object.keys(recordToCreate)) {
+    //                 if (!columns.includes(columnName)) {
+    //                     delete recordToCreate[columnName]
+    //                 }
+    //             }
+    //             recordToCreate.Id = request.params.recordId
+    //             const queryString = [
+    //                 'INSERT INTO ',
+    //                 request.params.tableName,
+    //                 ' (',
+    //                 Object.keys(recordToCreate).join(','),
+    //                 ') VALUES (',
+    //                 Object.values(recordToCreate).map(value => {
+    //                     if (value === null) return 'NULL'
+    //                     switch (typeof(value)) {
+    //                         case 'undefined': return 'NULL'
+    //                         case 'boolean': return value ? '1' : '0'
+    //                         case 'number': return value
+    //                         default: return `'${('' + value).toString().replaceAll(`'`, `''`)}'`
+    //                     }
+    //                 }).join(','),
+    //                 ');'
+    //             ].join('')
+    //             const query = database.prepare(queryString)
+    //             query.run()
+    //         } else {
+    //             // Existiert, also ggf. aktualisieren
+    //             const recordToChange = request.body.fields
+    //             // Id rausfiltern, diese darf nicht verändert werden
+    //             delete recordToChange.Id
+    //             // Existierende Spalten filtern
+    //             for (const columnName of Object.keys(recordToChange)) {
+    //                 if (!columns.includes(columnName)) {
+    //                     delete recordToChange[columnName]
+    //                 }
+    //             }
+    //             // Wenn keine Felder oder keine passenden gesendet werden, muss auch nicht aktualisiert werden
+    //             if (Object.keys(recordToChange).length > 0) {
+    //                 const queryString = [
+    //                     'UPDATE ',
+    //                     request.params.tableName,
+    //                     ' SET ',
+    //                     Object.entries(recordToChange).map(([ columnName, value ]) => {
+    //                         let setString = columnName + '='
+    //                         if (value === null) {
+    //                             setString += 'NULL'
+    //                         } else {
+    //                             switch (typeof(value)) {
+    //                                 case 'undefined': setString += 'NULL'; break
+    //                                 case 'boolean': setString += value ? '1' : '0'; break
+    //                                 case 'number': setString += value; break
+    //                                 default: setString += `'${('' + value).toString().replaceAll(`'`, `''`)}'`; break
+    //                             }
+    //                         }
+    //                         return setString
+    //                     }).join(', '),
+    //                     ` WHERE Id='`,
+    //                     request.params.recordId,
+    //                     `';`
+    //                 ].join('')
+    //                 const query = database.prepare(queryString)
+    //                 query.run()
+    //             }
+    //         }
+    //         // Vollständigen Datensatz zurück geben
+    //         const record = database.prepare(`SELECT * FROM ${request.params.tableName} WHERE Id='${request.params.recordId}';`).get()
+    //         response.json(record)
+    //     } catch {
+    //         response.status(500).send('Cannot save database record')
+    //     }
+    // }
 
 
-    /**
-     * Informationen aus Datenbank holen.
-     * Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
-     */
-    async #handlePostDatabaseQuery(request, response) {
-        try {
-            const database = await this.loadDatabase(request.params.databaseName)
-            // Abfrage durchführen
-            const query = request.body?.query?.toString()
-            if (!query || !query.toLowerCase().startsWith('select') || query.includes(';')) {
-                return response.sendStatus(400)
-            }
-            const result = database.prepare(query).all()
-            // Ergebnisse als JSON zurück geben
-            response.json(result)
-        } catch {
-            response.status(500).send('Cannot query database')
-        }
-    }
+    // /**
+    //  * Informationen aus Datenbank holen.
+    //  * Es sind nur SELECT-Abfragen erlaubt und es dürfen keine Semikola (Anweisungstrenner) enthalten sein
+    //  */
+    // async #handlePostDatabaseQuery(request, response) {
+    //     try {
+    //         const database = await this.loadDatabase(request.params.databaseName)
+    //         // Abfrage durchführen
+    //         const query = request.body?.query?.toString()
+    //         if (!query || !query.toLowerCase().startsWith('select') || query.includes(';')) {
+    //             return response.sendStatus(400)
+    //         }
+    //         const result = database.prepare(query).all()
+    //         // Ergebnisse als JSON zurück geben
+    //         response.json(result)
+    //     } catch {
+    //         response.status(500).send('Cannot query database')
+    //     }
+    // }
 
-    /**
-     * Datei speichern
-     */
-    #handlePostFile(request, response) {
-        this.fileUpload(request, response, (error) => {
-            if (error) {
-                response.status(400).send(error)
-                return
-            }
-            if (!request.files || request.files.length !== 1) {
-                response.sendStatus(400)
-                return
-            }
-            response.sendStatus(200)
-        })
-    }
+    // /**
+    //  * Datei speichern
+    //  */
+    // #handlePostFile(request, response) {
+    //     this.fileUpload(request, response, (error) => {
+    //         if (error) {
+    //             response.status(400).send(error)
+    //             return
+    //         }
+    //         if (!request.files || request.files.length !== 1) {
+    //             response.sendStatus(400)
+    //             return
+    //         }
+    //         response.sendStatus(200)
+    //     })
+    // }
 
-    /**
-     * Benutzer anmelden
-     */
-    #handlePostLogin(request, response) {
-        const username = request.body.username
-        const password = request.body.password
-        if (!username || !password) return response.sendStatus(400)
-        const user = this.#getUserForUsername(username)
-        if (!user) return response.sendStatus(401)
-        const passwortHash = crypto.createHash('sha256').update(password).digest('hex')
-        if (user.password !== passwortHash) return response.sendStatus(401)
-            this.#createUserSession(request, user.id)
-        response.json({
-            id: user.id,
-            username: user.username,
-        })
-    } 
 
-    /**
-     * Benutzer registrieren
-     */
-    #handlePostRegister(request, response) {
-        const username = request.body.username
-        const password = request.body.password
-        if (!username || !password) return response.sendStatus(400)
-        const existingUser = this.#getUserForUsername(username)
-        if (existingUser) return response.sendStatus(409)
-        const passwortHash = crypto.createHash('sha256').update(password).digest('hex')
-        const newuser = {
-            id: Date.now().toString() + Math.floor(Math.random() * 1000000),
-            password: passwortHash,
-            username: username,
-        }
-        this.#allUsers.push(newuser)
-        this.#saveUsers()
-        this.#createUserSession(request, newuser.id)
-        response.json({
-            id: newuser.id,
-            username: newuser.username,
-        })
-    }
-
-    /**
-     * Verzeichnis erstellen
-     */
-    #handlePutDirectoryPath(request, response) {
-        const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.directoryPath)
-        if (!fs.existsSync(absolutePath)) {
-            fs.mkdirSync(absolutePath, { recursive: true })
-        }
-        response.sendStatus(200)
-    }
-
-    /**
-     * Websocket Nachricht empfangen
-     */
-    #handleWebsocketMessage(webSocket, message) {
-        const type = message[0]
-        switch (type) {
-            case 0x10: { // Raum betreten
-                const roomNumber = message.readBigUInt64LE(1)
-                if (!this.#webSocketRooms[roomNumber]) {
-                    this.#webSocketRooms[roomNumber] = []
-                }
-                this.#webSocketRooms[roomNumber].push(webSocket)
-            } break
-            case 0x20: { // Raum verlassen
-                const roomNumber = message.readBigUInt64LE(1)
-                if (this.#webSocketRooms[roomNumber]) {
-                    this.#webSocketRooms[roomNumber].splice(this.#webSocketRooms[roomNumber].indexOf(webSocket), 1)
-                }
-            } break
-            case 0x30: { // Nachricht an Raum senden
-                const roomNumber = message.readBigUInt64LE(1)
-                const roomParticipants = this.#webSocketRooms[roomNumber]
-                if (roomParticipants?.length) {
-                    const messageContent = message.slice(9)
-                    const outgoingMessage = Buffer.alloc(17 + messageContent.length)
-                    outgoingMessage[0] = 0x31
-                    outgoingMessage.writeBigUint64LE(webSocket.id, 1)
-                    outgoingMessage.writeBigUint64LE(roomNumber, 9)
-                    messageContent.copy(outgoingMessage, 17)
-                    for (const targetWebsocket of roomParticipants) {
-                        targetWebsocket.send(outgoingMessage)
-                    }
-                }
-            } break
-            case 0x40: { // Nachricht an anderen Client senden
-                const targetWebsocket = this.#allWebsockets[message.readBigUInt64LE(1)]
-                if (targetWebsocket) {
-                    const messageContent = message.slice(9)
-                    const outgoingMessage = Buffer.alloc(9 + messageContent.length)
-                    outgoingMessage[0] = 0x41
-                    outgoingMessage.writeBigUint64LE(webSocket.id, 1)
-                    messageContent.copy(outgoingMessage, 9)
-                    targetWebsocket.send(outgoingMessage)
-                }
-            } break
-        }
-    }
-
-    /**
-     * Websocket Verbindung wurde aufgebaut
-     */
-    handleWebsocketConnection(webSocket) {
-        webSocket.on('message', message => this.#handleWebsocketMessage(webSocket, message))
-        // Websocket-ID an Client senden
-        const webSocketId = BigInt(this.#nextWebsocketId++)
-        webSocket.id = webSocketId // Für Wiedererkennung
-        this.#allWebsockets[webSocketId] = webSocket
-        webSocket.on('close', () => { delete this.#allWebsockets[webSocketId] })
-        const arrayBuffer = new ArrayBuffer(9)
-        const dataView = new DataView(arrayBuffer)
-        dataView.setInt8(0, 0x01)
-        dataView.setBigInt64(1, webSocketId, true)
-        webSocket.send(arrayBuffer)
-    }
+    // /**
+    //  * Verzeichnis erstellen
+    //  */
+    // #handlePutDirectoryPath(request, response) {
+    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.directoryPath)
+    //     if (!fs.existsSync(absolutePath)) {
+    //         fs.mkdirSync(absolutePath, { recursive: true })
+    //     }
+    //     response.sendStatus(200)
+    // }
 
 }

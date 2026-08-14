@@ -120,6 +120,8 @@ npm install
 # https://localhost:8443
 ```
 
+> **GIT unter MacOS**: Wenn Git Änderungen zeigt, die nicht da sind, hilft ein `git diff ./API.md` und anschließend `git config core.filemode`
+
 ## Als Linux-Systemdienst einrichten
 
 ```bash
