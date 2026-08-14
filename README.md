@@ -32,6 +32,11 @@ openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
         "/": "PATH_TO_ROOT_HTML_DIRECTORY",
         "/webapp": "PATH_TO_SUBURL_DIRECTORY"
     },
+    "customApis": {
+        "GET": {
+            "/api/my-get-api/:param": "PATH_TO_JAVASCRIPT_MODULE"
+        }
+    }
     "dataPath":  "./data",
     "useWebsockets": true,
     "name": "Meine App"

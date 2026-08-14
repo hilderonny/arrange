@@ -61,8 +61,9 @@ export default class ExpressApplication {
      * @param {string} dataPath Pfad zum Stammverzeichnis für Dateien der `files` API
      * @param {object} htmlPaths Map von Web-Verzeichnispfaden
      * @param {string} tokenSecret Secret Key zur Verschlüsselung der Sitzungs-Cookies.
+     * @param {object} customApis Map von Custom APIs
      */
-    constructor(dataPath, htmlPaths, tokenSecret) {
+    constructor(dataPath, htmlPaths, tokenSecret, customApis) {
 
         this.#usersJsonPath = path.join(dataPath, 'users/users.json')
         this.#filesPath = path.join(dataPath, 'files')
@@ -83,7 +84,7 @@ export default class ExpressApplication {
         // JSON in POST Daten aktivieren
         this.app.use(express.json({ limit: '100MB' }))
 
-        // Statische HTML Seiten ausliefern, muss vor /arrange erfolgen, damit es nicht überschrieben wird
+        // Statische HTML Seiten ausliefern, muss vor /arrange erfolgen, damit /arrange nicht überschrieben wird
         for (const [url, path] of Object.entries(htmlPaths)) {
             this.app.use(url, express.static(path))
         }
@@ -108,6 +109,52 @@ export default class ExpressApplication {
                 
             })
         }).any()
+
+        // Custom APIs einbinden, Standard-APIs überschreiben weiter unten bei Bedarf Custom API URLs
+        if (customApis) {
+            for (const [method, apiDefinition] of Object.entries(customApis)) {
+                for (const [url, scriptFilePath] of Object.entries(apiDefinition)) {
+                    // Referenziertes Modul laden
+                    // TODO: await geht im Konstruktor nicht! Mit Promises versuchen
+                    /*
+                    Dieses Pattern scheint braucbar zu sein:
+                    class ExpressApplication {
+                    
+                        constructor(dataPath, htmlPaths, tokenSecret, customApis) {
+                            if (customApis) {
+                                for (const [method, apiDefinition] of Object.entries(customApis)) {
+                                    for (const [url, apiModule] of Object.entries(apiDefinition)) {
+                                        this.app[method](url, apiModule.bind(this))
+                                    }
+                                }
+                            }
+                        }
+
+                        static async create(dataPath, htmlPaths, tokenSecret, customApis) {
+                            if (customApis) {
+                                for (const [method, apiDefinition] of Object.entries(customApis)) {
+                                    for (const [url, scriptFilePath] of Object.entries(apiDefinition)) {
+                                        // Dateipfad durch geladenes Modul ersetzen
+                                        apiDefinition[url] = await import(scriptFilePath)
+                                        this.app[method](url, apiModule.bind(this))
+                                    }
+                                }
+                            }
+                            return new ExpressApplication(dataPath, htmlPaths, tokenSecret, customApis)
+                        }
+                    }
+                    
+                    Aufruf:
+
+                    const app = await ExpressApplication.create(dataPath, htmlPaths, tokenSecret, customApis)
+                    
+                    */
+                    const apiModule = await import(scriptFilePath)
+                    // API registrieren
+                    this.app[method](url, apiModule.bind(this))
+                }
+            }
+        }
 
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))

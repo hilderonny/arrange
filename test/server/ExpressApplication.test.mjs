@@ -151,4 +151,38 @@ describe('ExpressApplication', () => {
 
     })
 
+    describe('APIs', () => {
+
+        it('Custom APIs werden aus config.json ausgelesen.', async() => {})
+
+        it('Methode DELETE ist verfügbar.', async() => {})
+
+        it('Methode GET ist verfügbar.', async() => {})
+
+        it('Methode HEAD ist verfügbar.', async() => {})
+
+        it('Methode POST ist verfügbar.', async() => {})
+
+        it('Methode PUT ist verfügbar.', async() => {})
+
+        it('Standard-API /api/autologin kann nicht überschrieben werden.', async() => {})
+
+        it('Standard-API /api/database kann nicht überschrieben werden.', async() => {})
+
+        it('Standard-API /api/files kann nicht überschrieben werden.', async() => {})
+
+        it('Standard-API /api/login kann nicht überschrieben werden.', async() => {})
+
+        it('Standard-API /api/logout kann nicht überschrieben werden.', async() => {})
+
+        it('Standard-API /api/register kann nicht überschrieben werden.', async() => {})
+
+        it('Fehlendes Javascript-Modul erzeugt Programmabbruch', async() => {})
+
+        it('Fehlerhaftes Javascript-Modul erzeugt Programmabbruch', async() => {})
+
+        it('Fehlerhafte API-URL-Definition erzeugt Programmabbruch', async() => {})
+
+    })
+
 })
