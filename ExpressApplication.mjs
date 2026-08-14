@@ -78,27 +78,6 @@ export default class ExpressApplication {
             this.app.use(url, express.static(path))
         }
 
-        // Uploads landen direkt im Dateisystem ohne RAM-Zwischenspeicherung
-        // this.fileUpload = multer({
-        //     storage: multer.diskStorage({
-        //         destination: (request, file, callback) => {
-        //             const absoluteFilePath = path.resolve(config.filesPath, request.params.userId, ...request.params.filePath)
-        //             if (fs.existsSync(absoluteFilePath) && !fs.statSync(absoluteFilePath).isFile()) {
-        //                 callback('Requested path is an existing directory')
-        //                 return
-        //             }
-        //             const dirPath = path.dirname(absoluteFilePath)
-        //             fs.mkdirSync(dirPath, { recursive: true })
-        //             callback(null, dirPath)
-        //         },
-        //         filename: (request, file, callback) => {
-        //             const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        //             callback(null, path.basename(absoluteFilePath))
-        //         },
-                
-        //     })
-        // }).any()
-
         // Arrange-Client-Skripte und Seiten ausliefern
         this.app.use('/arrange', express.static(path.resolve(import.meta.dirname, './client/arrange')))
 
@@ -186,40 +165,6 @@ export default class ExpressApplication {
     //         response.sendStatus(200)
     //     } catch {
     //         response.status(500).send('Cannot delete database table')
-    //     }
-    // }
-
-    // /**
-    //  * Pfad im Dateisystem löschen
-    //  */
-    // async #handleDeletePath(request, response) {
-    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-    //     if (fs.existsSync(absolutePath)) {
-    //         fs.rmSync(absolutePath, { recursive: true })
-    //         response.sendStatus(200)
-    //     } else {
-    //         response.sendStatus(404)
-    //     }
-    // }
-
-    // /**
-    //  * Datei oder Verzeichnisinhalt liefern
-    //  */
-    // async #handleGetPath(request, response) {
-    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-    //     if (!fs.existsSync(absolutePath)) {
-    //         return response.sendStatus(404)
-    //     }
-    //     const pathStats = fs.statSync(absolutePath)
-    //     if (pathStats.isDirectory()) {
-    //         const directoryEntries = fs.readdirSync(absolutePath, { withFileTypes: true })
-    //         const entryList = directoryEntries.map(entry => { return {
-    //             name: entry.name,
-    //             type: entry.isDirectory() ? 'dir' : 'file'
-    //         }})
-    //         response.json(entryList)
-    //     } else {
-    //         response.sendFile(absolutePath)
     //     }
     // }
 
@@ -366,35 +311,6 @@ export default class ExpressApplication {
     //     } catch {
     //         response.status(500).send('Cannot query database')
     //     }
-    // }
-
-    // /**
-    //  * Datei speichern
-    //  */
-    // #handlePostFile(request, response) {
-    //     this.fileUpload(request, response, (error) => {
-    //         if (error) {
-    //             response.status(400).send(error)
-    //             return
-    //         }
-    //         if (!request.files || request.files.length !== 1) {
-    //             response.sendStatus(400)
-    //             return
-    //         }
-    //         response.sendStatus(200)
-    //     })
-    // }
-
-
-    // /**
-    //  * Verzeichnis erstellen
-    //  */
-    // #handlePutDirectoryPath(request, response) {
-    //     const absolutePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.directoryPath)
-    //     if (!fs.existsSync(absolutePath)) {
-    //         fs.mkdirSync(absolutePath, { recursive: true })
-    //     }
-    //     response.sendStatus(200)
     // }
 
 }

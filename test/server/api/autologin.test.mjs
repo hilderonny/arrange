@@ -2,7 +2,7 @@ import { beforeEach, describe, it } from 'node:test'
 import supertest from 'supertest'
 
 import config from '../../../config.mjs'
-config.usersJsonPath = './test/data'
+config.usersJsonPath = './test/data/users/users.json'
 
 import serverUtils from '../../../utils/serverUtils.mjs'
 import userUtils from '../../../utils/userUtils.mjs'
