@@ -8,6 +8,9 @@ export default {
             '/api/files/:userId/*filePath': './api/files/getPath.mjs',
             '/api/logout': './api/logout.mjs',
         },
+        patch: {
+            '/api/database/:databaseName': './api/database/patchDatabase.mjs',
+        },
         post: {
             '/api/files/:userId/*filePath': './api/files/postFile.mjs',
             '/api/login': './api/login.mjs',

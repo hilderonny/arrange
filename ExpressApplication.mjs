@@ -13,36 +13,9 @@ import config from './config.mjs'
 export default class ExpressApplication {
 
     /**
-     * Liste aller Benutzerinfos
-     */
-    #allUsers
-
-
-
-    /**
      * Pfad zum Verzeichnis, in dem die Datenbanken liegen
      */
     #databasePath
-
-    /**
-     * Alle in den Speicher geladenen Datenbanken
-     */
-    #databases = []
-
-    /**
-     * Pfad zum Verzeichnis, welches alle Benutzerdateien enthält
-     */
-    #filesPath
-
-    /**
-     * Pfad zur JSON-Datei mit Benutzerinfos
-     */
-    #usersJsonPath
-
-    /**
-     * Referenz zu Express app für UNIT-Tests
-     */
-    app
     
     /**
      * Erstellt eine Express-Anwendung und registriert alle Routen.
@@ -53,13 +26,6 @@ export default class ExpressApplication {
      * @param {object} customApis Map von Custom APIs
      */
     constructor(dataPath, htmlPaths, tokenSecret, customApis) {
-
-        // this.#usersJsonPath = path.join(dataPath, 'users/users.json')
-        // this.#filesPath = path.join(dataPath, 'files')
-        // this.#databasePath = path.join(dataPath, 'databases')
-
-        // Benutzerdatenbank laden
-        // this.#loadUsers()
 
         this.app = express()
 
@@ -87,55 +53,13 @@ export default class ExpressApplication {
                 this.app[method](url, apiHandler.bind(this))
             }
         }
-        // this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
-        // this.app.post('/api/login', this.#handlePostLogin.bind(this))
-        // this.app.get('/api/logout', this.#handleGetLogout.bind(this))
-        // this.app.post('/api/register', this.#handlePostRegister.bind(this))
-        // this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
-        // this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
-        // this.app.post('/api/files/:userId/*filePath', this.#handlePostFile.bind(this))
-        // this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
         // this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
         // this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
         // this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
         // this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
         // this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
     }
-
-    /**
-     * Schließt die Datenbanken sauber
-     */
-    // shutDown() {
-    //     for (const database of Object.values(this.#databases)) {
-    //         if (database.isOpen) {
-    //             database.close()
-    //         }
-    //     }
-    // }
     
-
-    /********** Hilfsfunktionen **********/
-    
-    // async loadDatabase(databaseName) {
-    //     let database = this.#databases[databaseName]
-    //     if (!database) {
-    //         const absolutePath = path.resolve(this.#databasePath, databaseName + '.sqlite')
-    //         fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-    //         database = new sqlite.DatabaseSync(absolutePath)
-    //         this.#databases[databaseName] = database
-    //     }
-    //     return database
-    // }
-
-    // #loadUsers() {
-    //     if (!fs.existsSync(config.usersJsonPath)) {
-    //         fs.mkdirSync(path.dirname(config.usersJsonPath), { recursive: true })
-    //         this.#allUsers = []
-    //         this.#saveUsers()
-    //     } else {
-    //         this.#allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath))
-    //     }
-    // }
 
     // /********** API Funktionen **********/
 
@@ -169,35 +93,6 @@ export default class ExpressApplication {
     // }
 
 
-    // /**
-    //  * Datenbankschema aktualisieren
-    //  */
-    // async #handlePatchDatabase(request, response) {
-    //     if (!request.body?.schema) {
-    //         return response.sendStatus(400)
-    //     }
-    //     try {
-    //         const database = await this.loadDatabase(request.params.databaseName)
-    //         // Erst mal alle Tabellen anlegen, damit sie referenziert werden können
-    //         for (const tableName of Object.keys(request.body.schema)) {
-    //             const createTableStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (Id TEXT PRIMARY KEY NOT NULL) STRICT;`
-    //             database.exec(createTableStatement)
-    //         }
-    //         // Nochmal drüber iterieren und die Spalten aktualisieren
-    //         for (const [ tableName, tableDefinition ] of Object.entries(request.body.schema)) {
-    //             for (const [ columnName, columnDefinition ] of Object.entries(tableDefinition)) {
-    //                 // Spalte nur erstellen, wenn sie noch nicht existiert
-    //                 if (database.prepare(`SELECT COUNT(*) AS columnCount FROM pragma_table_info('${tableName}') WHERE name='${columnName}';`).get().columnCount < 1) {
-    //                     const updateStatement = `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition};`
-    //                     database.exec(updateStatement)
-    //                 }
-    //             }
-    //         }
-    //         response.sendStatus(200)
-    //     } catch {
-    //         response.status(500).send('Cannot update database')
-    //     }
-    // }
 
     // /**
     //  * Speichert einen Datensatz in der Datenbank
