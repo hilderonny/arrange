@@ -35,9 +35,7 @@ describe('API /api/database', () => {
 
         it('Wenn die Tabelle nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
             // Abfrage ausführen
             await supertest(expressApplication).delete(`/api/database/testdatabase/notexistingtable`).expect(200)
@@ -45,9 +43,7 @@ describe('API /api/database', () => {
 
         it('Die angegebene Tabelle wird gelöscht.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage ausführen
@@ -59,9 +55,7 @@ describe('API /api/database', () => {
 
         it('ForeignKey-Abhängigkeiten werden ebenfalls gelöscht.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id TEXT REFERENCES Table1(Id) ON DELETE CASCADE) STRICT;`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
@@ -78,9 +72,7 @@ describe('API /api/database', () => {
 
         it('Wenn Foreign Key Constraints nicht aufgelöst werden können, wird ein 500er-Serverfehler zurückgeschickt und die Tabelle wird nicht gelöscht.', async() => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id TEXT REFERENCES Table1(Id)) STRICT;`) //. Nicht automatisch löschen
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
@@ -106,9 +98,7 @@ describe('API /api/database', () => {
 
         it('Wenn die Tabelle nicht existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
             // Abfrage ausführen
             await supertest(expressApplication).delete(`/api/database/testdatabase/notexistingtable/id1`).expect(200)
@@ -116,9 +106,7 @@ describe('API /api/database', () => {
 
         it('Wenn kein Datensatz mit der gegebenen Id existiert, passiert nichts weiter und es wird der HTTP Statuscode 200 zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
             // Abfrage ausführen
             await supertest(expressApplication).delete(`/api/database/testdatabase/Table1/id1`).expect(200)
@@ -126,9 +114,7 @@ describe('API /api/database', () => {
 
         it('Der angegebene Datensatz wird gelöscht.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage ausführen
@@ -140,9 +126,7 @@ describe('API /api/database', () => {
 
         it('ForeignKey-Abhängigkeiten werden ebenfalls gelöscht.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
             database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id TEXT REFERENCES Table1(Id) ON DELETE CASCADE) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
@@ -158,9 +142,7 @@ describe('API /api/database', () => {
 
         it('Wenn Foreign Key Constraints nicht aufgelöst werden können, wird ein 500er-Serverfehler zurückgeschickt und der Datenssatz wird nicht gelöscht.', async() => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`CREATE TABLE Table2 (Id TEXT PRIMARY KEY NOT NULL, Table1Id TEXT REFERENCES Table1(Id)) STRICT;`) //. Nicht automatisch löschen
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
@@ -216,7 +198,6 @@ describe('API /api/database', () => {
                     Table1: {}
                 }
             }).expect(200)
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             const database = await databaseUtils.loadDatabase('testdatabase')
             const tables = database.prepare(`SELECT name FROM sqlite_schema WHERE type='table';`).all()
             const columns = database.prepare(`SELECT * FROM pragma_table_info('Table1');`).all()
@@ -230,7 +211,6 @@ describe('API /api/database', () => {
         })
 
         it('Wenn eine Tabelle bereits existiert, passiert nichts weiter.', async () => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
             const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
@@ -253,7 +233,6 @@ describe('API /api/database', () => {
         })
 
         it('Wenn eine Spalte nicht existiert, wird sie angelegt.', async () => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
             const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
@@ -279,7 +258,6 @@ describe('API /api/database', () => {
         })
 
         it('Wenn eine Spalte bereits existiert, wird sie nicht verändert.', async () => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
             const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
@@ -305,7 +283,6 @@ describe('API /api/database', () => {
         })
 
         it('Wenn die Schemadefinition Fehler enthält, wird ein 500er-Serverfehler zurückgeschickt.', async() => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
             const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL) STRICT;`);
@@ -335,9 +312,7 @@ describe('API /api/database', () => {
 
         it('Beim Erstellen werden nur die Spalten gespeichert, die in der Datenbank enthalten sind.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             const result = await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text1', Unknowncolumn: 'unknowntext' } }).expect(200)
@@ -356,9 +331,7 @@ describe('API /api/database', () => {
 
         it('Beim Aktualisieren werden nur die Spalten gespeichert, die in der Datenbank enthalten sind.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -378,9 +351,7 @@ describe('API /api/database', () => {
 
         it('Wenn beim Erstellen ein inkompatibler Spaltenwert übergeben wird, wird HTTP Statuscode 500 zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text' } }).expect(500)
@@ -388,9 +359,7 @@ describe('API /api/database', () => {
 
         it('Wenn beim Aktualisieren ein inkompatibler Spaltenwert übergeben wird, wird HTTP Statuscode 500 zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 42);`);
             // Abfrage absenden
@@ -399,9 +368,7 @@ describe('API /api/database', () => {
 
         it('Wenn es keinen Record mit der gegebenen Id gibt, wird einer erstellt.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text1' } }).expect(200)
@@ -413,9 +380,7 @@ describe('API /api/database', () => {
 
         it('Wenn es keinen Record mit der gegebenen Id gibt und keine Felder mitgeschickt werden, wird einer mit leeren Feldern erstellt.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: {} }).expect(200)
@@ -427,9 +392,7 @@ describe('API /api/database', () => {
 
         it('Wenn es bereits einen Record mit der gegebenen Id gibt, wird dieser überschrieben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -442,9 +405,7 @@ describe('API /api/database', () => {
 
         it('Wenn es bereits einen Record mit der gegebenen Id gibt, aber keine Felder gesendet werden, passiert nichts weiter.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -457,9 +418,7 @@ describe('API /api/database', () => {
 
         it('Null - Werte werden beim Erstellen als NULL in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: null } }).expect(200)
@@ -471,9 +430,7 @@ describe('API /api/database', () => {
 
         it('Null - Werte werden beim Aktualisieren als NULL in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -486,9 +443,7 @@ describe('API /api/database', () => {
 
         it('Undefined - Werte werden beim Erstellen als NULL in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: undefined } }).expect(200)
@@ -500,9 +455,7 @@ describe('API /api/database', () => {
 
         it('Undefined - Werte werden beim Aktualisieren ignoriert, da sie nicht geparst werden.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -515,9 +468,7 @@ describe('API /api/database', () => {
 
         it('Boolean - Werte werden beim Erstellen als Zahlen in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: true } }).expect(200)
@@ -533,9 +484,7 @@ describe('API /api/database', () => {
 
         it('Boolean - Werte werden beim Aktualisieren als Zahlen in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 0);`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id2', 1);`);
@@ -553,9 +502,7 @@ describe('API /api/database', () => {
 
         it('Zahlen werden beim Erstellen als Zahlen in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 42 } }).expect(200)
@@ -567,9 +514,7 @@ describe('API /api/database', () => {
 
         it('Zahlen werden beim Aktualisieren als Zahlen in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 INTEGER) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 42);`);
             // Abfrage absenden
@@ -582,9 +527,7 @@ describe('API /api/database', () => {
 
         it('Zeichenketten werden beim Erstellen als Zeichenketten in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text1' } }).expect(200)
@@ -596,9 +539,7 @@ describe('API /api/database', () => {
 
         it('Zeichenketten werden beim Aktualisieren als Zeichenketten in der Datenbank gespeichert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
             // Abfrage absenden
@@ -611,9 +552,7 @@ describe('API /api/database', () => {
 
         it('Einfache Anführungszeichen werden beim Erstellen korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: `singlequote: ' ` } }).expect(200)
@@ -625,9 +564,7 @@ describe('API /api/database', () => {
 
         it('Einfache Anführungszeichen werden beim Aktualisieren korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
             // Abfrage absenden
@@ -640,9 +577,7 @@ describe('API /api/database', () => {
 
         it('Doppelte Anführungszeichen werden beim Erstellen korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: `doublequote: " ` } }).expect(200)
@@ -654,9 +589,7 @@ describe('API /api/database', () => {
 
         it('Doppelte Anführungszeichen werden beim Aktualisieren korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
             // Abfrage absenden
@@ -669,9 +602,7 @@ describe('API /api/database', () => {
 
         it('Backticks werden beim Erstellen korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'backtick: ` ' } }).expect(200)
@@ -683,9 +614,7 @@ describe('API /api/database', () => {
 
         it('Backticks werden beim Aktualisieren korrekt escaped.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
             // Abfrage absenden
@@ -698,9 +627,7 @@ describe('API /api/database', () => {
 
         it('Nach dem Erstellen wird der gesamte Datensatz zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT, Column2 INTEGER, Column3 TEXT) STRICT;`);
             // Abfrage absenden
             const result = await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: 'text1', Column2: 42 } }).expect(200)
@@ -714,9 +641,7 @@ describe('API /api/database', () => {
 
         it('Nach dem Aktualisieren wird der gesamte Datensatz zurückgegeben.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT, Column2 INTEGER, Column3 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1, Column2, Column3) VALUES ('id1', 'beforetext', 42, 'oldtext');`);
             // Abfrage absenden
@@ -731,9 +656,7 @@ describe('API /api/database', () => {
 
         it('Wird beim Aktualisieren als Spalte Id mitgegeben, wird diese nicht aktualisiert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -746,9 +669,7 @@ describe('API /api/database', () => {
 
         it('Wird beim Aktualisieren nur die Spalte Id mitgegeben, bleibt der Datensatz unverändert.', async () => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -761,9 +682,7 @@ describe('API /api/database', () => {
         it('Beim Erstellen sind Request mit Payloads bis 100 MB möglich.', async() => {
             const payload = 'x'.repeat(99*1024*1024) // 99 MB + Puffer
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             const result = await supertest(expressApplication).patch(`/api/database/testdatabase/Table1/id1`).send({ fields: { Column1: payload } }).expect(200)
@@ -775,9 +694,7 @@ describe('API /api/database', () => {
         it('Beim Aktualisieren sind Request mit Payloads bis 100 MB möglich.', async() => {
             const payload = 'x'.repeat(99*1024*1024) // 99 MB + Puffer
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'beforetext');`);
             // Abfrage absenden
@@ -789,9 +706,7 @@ describe('API /api/database', () => {
 
         it('Wenn ein Feld den falschen Datentyp enthält, wird ein 500er-Serverfehler zurückgeschickt.', async() => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY, Column1 TEXT, Column2 INTEGER, Column3 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1, Column2, Column3) VALUES ('id1', 'beforetext', 42, 'oldtext');`);
             // Abfrage absenden
@@ -832,9 +747,7 @@ describe('API /api/database', () => {
 
         it('Bei Erfolg wird der HTTP Statuscode 200 zurückgegeben.', async() => {
             // Datenbank vorbereiten
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`);
             // Abfrage absenden
@@ -842,10 +755,8 @@ describe('API /api/database', () => {
         })
 
         it('Bei Erfolg wird ein JSON mit dem Abfrageergebnis als Feld zurückgegeben.', async() => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id2', 'text2');`)
@@ -861,10 +772,8 @@ describe('API /api/database', () => {
         })
 
         it('Wenn die Abfrage nur einen Eintrag enthält, wird trotzdem ein Feld zurückgegeben.', async() => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
             // Abfrage absenden
@@ -877,10 +786,8 @@ describe('API /api/database', () => {
         })
 
         it('Wenn die Abfrage kein Ergebnis enthält, wird ein leeres Feld zurückgegeben.', async() => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`);
             // Abfrage absenden
             const response = await supertest(expressApplication).post(`/api/database/testdatabase`).send({ query: `SELECT * FROM Table1 ORDER BY Id` })
@@ -890,10 +797,8 @@ describe('API /api/database', () => {
         })
 
         it('Wenn die SQL Abfrage fehlerhaft ist, wird ein 500er-Serverfehler zurückgeschickt.', async() => {
-            const absolutePath = path.resolve('./test/data/databases/testdatabase.sqlite')
             // Datenbank vorbereiten
-            fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
-            database = new sqlite.DatabaseSync(absolutePath)
+            const database = await databaseUtils.loadDatabase('testdatabase')
             database.exec(`CREATE TABLE Table1 (Id TEXT PRIMARY KEY NOT NULL, Column1 TEXT) STRICT;`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id1', 'text1');`)
             database.exec(`INSERT INTO Table1 (Id, Column1) VALUES ('id2', 'text2');`)

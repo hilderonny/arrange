@@ -18,7 +18,7 @@ export default {
         }
         const fullPath = path.resolve(config.databasesPath, databaseName + '.sqlite')
         if (fs.existsSync(fullPath)) {
-            fs.rmSync(fullPath)
+            fs.rmSync(fullPath, { force: true })
         }
     },
 
