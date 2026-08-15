@@ -1,38 +1,32 @@
-import path from 'node:path'
-import fs from 'fs'
 import { beforeEach, describe, it } from 'node:test'
 import supertest from 'supertest'
-import ExpressApplication from '../../../ExpressApplication.mjs'
+
+import config from '../../../config.mjs'
+config.usersJsonPath = './test/data/users/users.json'
+
+import serverUtils from '../../../utils/serverUtils.mjs'
+import userUtils from '../../../utils/userUtils.mjs'
+
+const expressApplication = await serverUtils.createExpressApplication()
 
 describe('GET /api/logout', () => {
 
-    let expressApplication
-
     beforeEach(async () => {
-        const dataPath = './test/data'
-        const fullPath = path.resolve(dataPath)
-        if (fs.existsSync(fullPath)) {
-            fs.rmSync(fullPath, { recursive: true })
-        }
-        expressApplication = new ExpressApplication(
-            dataPath,
-            { '/': './test/html/root' }, // htmlPaths
-            'test_secret', // tokenSecret
-        )
+        userUtils.deleteUser(userUtils.getUserForUsername('testusername'))
     })
 
     it('Es wird der HTTP Status Code 200 zurückgegeben.', async () => {
         // Erst mal Benutzer registrieren und anmelden
-        await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' }).expect(200)
+        await supertest(expressApplication).post('/api/register').send({ username: 'testusername', password: 'testpassword' }).expect(200)
         // Abmelden
-        await supertest(expressApplication.app).get('/api/logout').expect(200)
+        await supertest(expressApplication).get('/api/logout').expect(200)
     })
 
     it('Bei Erfolg wird das Sitzungs-Cookie entfernt.', async () => {
         // Erst mal Benutzer registrieren und anmelden
-        const registerResponse = await supertest(expressApplication.app).post('/api/register').send({ username: 'testusername', password: 'testpassword' }).expect(200)
+        const registerResponse = await supertest(expressApplication).post('/api/register').send({ username: 'testusername', password: 'testpassword' }).expect(200)
         // Abmelden muss Sitzungscookie leer machen und ablaufen lassen
-        const response = await supertest(expressApplication.app).get('/api/logout')
+        const response = await supertest(expressApplication).get('/api/logout')
             .expect(supertest.cookies.contain({ name: 'session', value: '', options: { expires: 'Thu, 01 Jan 1970 00:00:00 GMT' } }))
     })
 

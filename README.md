@@ -20,22 +20,18 @@ npm install
 openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt
 ```
 
-### 3. Datei 'config-template.json' nach `config.json' kopieren und anpassen
+### 3. Datei 'config.mjs' anlegen
 
-```json
-{
-    "port": 8443,
-    "useSSL": true,
-    "crtFile": "./server.crt",
-    "keyFile":  "./server.key",
-    "htmlPaths": {
-        "/": "PATH_TO_ROOT_HTML_DIRECTORY",
-        "/webapp": "PATH_TO_SUBURL_DIRECTORY"
-    },
-    "dataPath":  "./data",
-    "useWebsockets": true,
-    "name": "Meine App"
-}
+```js
+import config from './defaultConfig.mjs'
+
+config.port = 443
+config.useSSL = true
+config.htmlPaths['/custom-url'] = '/var/www/customwebsite'
+config.apis.get['/api/custom/api'] = '/my/custom/api/script/file'
+config.name = 'Weltenbegrüßer'
+
+export default config
 ```
 
 ### 3. Webseite anlegen
@@ -114,6 +110,8 @@ npm install
 # F5 in VS Code drücken
 # https://localhost:8443
 ```
+
+> **GIT unter MacOS**: Wenn Git Änderungen zeigt, die nicht da sind, hilft ein `git diff ./API.md` und anschließend `git config core.filemode`
 
 ## Als Linux-Systemdienst einrichten
 

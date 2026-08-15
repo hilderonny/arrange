@@ -201,3 +201,29 @@ Per `CASCADE` abhängige Datensätze werden ebenfalls gelöscht.
 |Status|Bedeutung|
 |-|-|
 |`200`|Tabelle gelöscht|
+
+# Custom API erstellen
+
+## 1. API-Script erstellen
+
+Das Skript muss folgenden Aufbau haben und erhält Arrange-Funktionen als Parameter übergeben.
+
+```js
+export default function(config, databaseUtils, userUtils) {
+
+    return function(request, response) {
+        // Custom API Code
+    }
+
+}
+```
+
+2. API in `config.mjs` bekannt geben
+
+```js
+import config from './defaultConfig.mjs'
+
+config.apis.get['/api/custom/api'] = '/my/custom/api/script/file'
+
+export default config
+```
