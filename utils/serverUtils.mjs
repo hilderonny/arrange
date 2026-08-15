@@ -3,6 +3,8 @@ import express from 'express'
 import path from 'node:path/posix'
 
 import config from '../config.mjs'
+import databaseUtils from './databaseUtils.mjs'
+import userUtils from './userUtils.mjs'
 
 export default {
 
@@ -26,27 +28,6 @@ export default {
             expressApplication.use(url, express.static(path))
         }
 
-        // Uploads landen direkt im Dateisystem ohne RAM-Zwischenspeicherung
-        // this.fileUpload = multer({
-        //     storage: multer.diskStorage({
-        //         destination: (request, file, callback) => {
-        //             const absoluteFilePath = path.resolve(config.filesPath, request.params.userId, ...request.params.filePath)
-        //             if (fs.existsSync(absoluteFilePath) && !fs.statSync(absoluteFilePath).isFile()) {
-        //                 callback('Requested path is an existing directory')
-        //                 return
-        //             }
-        //             const dirPath = path.dirname(absoluteFilePath)
-        //             fs.mkdirSync(dirPath, { recursive: true })
-        //             callback(null, dirPath)
-        //         },
-        //         filename: (request, file, callback) => {
-        //             const absoluteFilePath = path.resolve(this.#filesPath, request.params.userId, ...request.params.filePath)
-        //             callback(null, path.basename(absoluteFilePath))
-        //         },
-                
-        //     })
-        // }).any()
-
         // Arrange-Client-Skripte und Seiten ausliefern
         expressApplication.use('/arrange', express.static(path.resolve(path.dirname(import.meta.dirname), './client/arrange')))
 
@@ -54,23 +35,11 @@ export default {
         for (const [method, apiDefinition] of Object.entries(config.apis)) {
             for (const [url, apiScriptFile] of Object.entries(apiDefinition)) {
                 console.log(path.resolve(apiScriptFile))
-                const apiHandler = await import(path.resolve(apiScriptFile))
-                expressApplication[method](url, apiHandler.default)
+                const apiModule = await import(path.resolve(apiScriptFile))
+                const apiHandler = apiModule.default(config, databaseUtils, userUtils)
+                expressApplication[method](url, apiHandler)
             }
         }
-        // this.app.get('/api/autologin', this.#handleGetAutoLogin.bind(this))
-        // this.app.post('/api/login', this.#handlePostLogin.bind(this))
-        // this.app.get('/api/logout', this.#handleGetLogout.bind(this))
-        // this.app.post('/api/register', this.#handlePostRegister.bind(this))
-        // this.app.delete('/api/files/:userId/*filePath', this.#handleDeletePath.bind(this))
-        // this.app.get('/api/files/:userId/*filePath', this.#handleGetPath.bind(this))
-        // this.app.post('/api/files/:userId/*filePath', this.#handlePostFile.bind(this))
-        // this.app.put('/api/files/:userId/*directoryPath', this.#handlePutDirectoryPath.bind(this))
-        // this.app.patch('/api/database/:databaseName', this.#handlePatchDatabase.bind(this))
-        // this.app.patch('/api/database/:databaseName/:tableName/:recordId', this.#handlePatchDatabaseRecord.bind(this))
-        // this.app.delete('/api/database/:databaseName/:tableName', this.#handleDeleteDatabaseTable.bind(this))
-        // this.app.delete('/api/database/:databaseName/:tableName/:recordId', this.#handleDeleteDatabaseRecord.bind(this))
-        // this.app.post('/api/database/:databaseName', this.#handlePostDatabaseQuery.bind(this))
 
         return expressApplication
     }

@@ -27,7 +27,8 @@ import config from './defaultConfig.mjs'
 
 config.port = 443
 config.useSSL = true
-config.htmlPaths['/custom-url', '/var/www/customwebsite']
+config.htmlPaths['/custom-url'] = '/var/www/customwebsite'
+config.apis.get['/api/custom/api'] = '/my/custom/api/script/file'
 config.name = 'Weltenbegrüßer'
 
 export default config
