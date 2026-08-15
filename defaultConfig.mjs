@@ -1,6 +1,8 @@
 export default {
     apis: {
         delete: {
+            '/api/database/:databaseName/:tableName': './api/database/deleteDatabaseTable.mjs',
+            '/api/database/:databaseName/:tableName/:recordId': './api/database/deleteDatabaseRecord.mjs',
             '/api/files/:userId/*filePath': './api/files/deletePath.mjs',
         },
         get: {
@@ -10,8 +12,10 @@ export default {
         },
         patch: {
             '/api/database/:databaseName': './api/database/patchDatabase.mjs',
+            '/api/database/:databaseName/:tableName/:recordId': './api/database/patchDatabaseRecord.mjs',
         },
         post: {
+            '/api/database/:databaseName': './api/database/postDatabaseQuery.mjs',
             '/api/files/:userId/*filePath': './api/files/postFile.mjs',
             '/api/login': './api/login.mjs',
             '/api/register': './api/register.mjs',

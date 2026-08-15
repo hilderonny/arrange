@@ -3,7 +3,7 @@ import express from 'express'
 import fs from 'node:fs'
 import http from 'node:http'
 import https from 'node:https'
-import path from 'node:path'
+import path from 'node:path/posix'
 import { WebSocketServer } from 'ws'
 
 import config from './config.mjs'

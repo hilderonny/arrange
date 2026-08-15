@@ -1,6 +1,6 @@
 import cookieSession from 'cookie-session'
 import express from 'express'
-import path from 'node:path'
+import path from 'node:path/posix'
 
 import config from '../config.mjs'
 
@@ -53,6 +53,7 @@ export default {
         // API-Endpunkte
         for (const [method, apiDefinition] of Object.entries(config.apis)) {
             for (const [url, apiScriptFile] of Object.entries(apiDefinition)) {
+                console.log(path.resolve(apiScriptFile))
                 const apiHandler = await import(path.resolve(apiScriptFile))
                 expressApplication[method](url, apiHandler.default)
             }

@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import path from 'node:path'
+import path from 'node:path/posix'
 import { describe, it } from 'node:test'
 import supertest from 'supertest'
 import assert from 'node:assert'

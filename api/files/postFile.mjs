@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import multer from 'multer'
-import path from 'node:path'
+import path from 'node:path/posix'
 
 import config from '../../config.mjs'
 

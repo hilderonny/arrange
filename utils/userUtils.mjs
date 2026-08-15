@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 
 import config from '../config.mjs'
-import path from 'node:path'
+import path from 'node:path/posix'
 
 const allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath) || '[]')
 
