@@ -202,6 +202,69 @@ Per `CASCADE` abhängige Datensätze werden ebenfalls gelöscht.
 |-|-|
 |`200`|Tabelle gelöscht|
 
+## Gamification
+
+Hierfür gitb es eine Player-Datenbank, die für Benutzer Erfahrungspunkte und Münzen verwaltet.
+
+`userId` entspricht der Id eines Benutzers.
+
+### `GET /api/player/status/:userId` - Informationen über einen Spieler abrufen
+
+Der Level eines Spielers wird serverseitig aus dessen Erfahrungspunkten berechnet.
+
+#### Antwort (200):
+```json
+{
+    "Coins":  23456,
+    "Experience": 12345,
+    "Level": 10,
+}
+```
+
+### `POST /api/player/addcoins/:userId/:coinsToAdd` - Einem Spieler Münzen geben
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Münzen nach dem Hinzufügen.
+
+```json
+{
+    "Coins":  23456
+}
+```
+
+### `POST /api/player/addexperience/:userId/:experienceToAdd` - Einem Spieler Erfahrungspunkte geben
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Erfahrungspunkte nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
+
+```json
+{
+    "Experience": 12345,
+    "LevelBefore":  9,
+    "Level":  10,
+}
+```
+
+### `POST /api/player/removecoins/:userId/:coinsToRemove` - Einem Spieler Münzen abziehen
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Münzen nach Abzug Hinzufügen.
+
+```json
+{
+    "Coins":  23456
+}
+```
+
 # Custom API erstellen
 
 ## 1. API-Script erstellen

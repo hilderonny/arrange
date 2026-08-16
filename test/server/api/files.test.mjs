@@ -5,6 +5,7 @@ import supertest from 'supertest'
 import assert from 'node:assert'
 
 import config from '../../../config.mjs'
+config.databasesPath = './test/data/databases'
 config.filesPath = './test/data/files'
 config.usersJsonPath = './test/data/users/users.json'
 
