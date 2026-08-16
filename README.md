@@ -30,6 +30,17 @@ config.useSSL = true
 config.htmlPaths['/custom-url'] = '/var/www/customwebsite'
 config.apis.get['/api/custom/api'] = '/my/custom/api/script/file'
 config.name = 'Weltenbegrüßer'
+config.databases['UserItems'] = {
+    Items: {
+        Name: 'TEXT',
+        Value: 'INTEGER',
+    },
+    Inventory: {
+        UserId: 'TEXT',
+        ItemId: 'TEXT REFERENCES Items(Id) ON DELETE CASCADE',
+        Count: 'INTEGER',
+    },
+}
 
 export default config
 ```
@@ -89,10 +100,16 @@ node --experimental-sqlite ArrangeServer.mjs
 ## Reservierte URL-Pfade
 
 |Pfad|Verwendung|
-|-|--|
+|-|-|
 |`/api/`|REST-API|
 |`/arrange/`|Client-Bibliothek|
 |`/ws/`|WebSockets|
+
+## Reservierte Datenbanknamen
+
+|Datenbankname|Beschreibung|
+|-|-|
+|`Player`|Spielerinformationen für Gamification|
 
 ## Entwicklung
 

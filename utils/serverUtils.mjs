@@ -34,11 +34,15 @@ export default {
         // API-Endpunkte
         for (const [method, apiDefinition] of Object.entries(config.apis)) {
             for (const [url, apiScriptFile] of Object.entries(apiDefinition)) {
-                console.log(path.resolve(apiScriptFile))
                 const apiModule = await import(path.resolve(apiScriptFile))
                 const apiHandler = apiModule.default(config, databaseUtils, userUtils)
                 expressApplication[method](url, apiHandler)
             }
+        }
+
+        // Datenbanken initialisieren
+        for (const [databaseName, schema] of Object.entries(config.databases)) {
+            await databaseUtils.updateDatabaseSchema(databaseName, schema)
         }
 
         return expressApplication

@@ -25,6 +25,15 @@ export default {
         },
     },
     crtFile: './server.crt',
+    databases: {
+        Player: {
+            PlayerStatus: {
+                Coins: 'INTEGER',
+                Experience: 'INTEGER',
+                UserId: 'TEXT',
+            },
+        },
+    },
     databasesPath:  './data/databases',
     filesPath:  './data/files',
     htmlPaths: {
