@@ -101,7 +101,11 @@ node --experimental-sqlite ArrangeServer.mjs
 
 |Pfad|Verwendung|
 |-|-|
-|`/api/`|REST-API|
+|`/api/autologin`|Sitzung prüfen|
+|`/api/database/...`|Datenbankverwaltung|
+|`/api/files/...`|Dateiverwaltung|
+|`/api/login`|Benutzer anmelden|
+|`/api/logout`|Benutzer abmelden|
 |`/arrange/`|Client-Bibliothek|
 |`/ws/`|WebSockets|
 
