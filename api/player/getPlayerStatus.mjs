@@ -12,6 +12,7 @@ export default function(config, databaseUtils, userUtils) {
             response.json({
                 Coins: playerStatus.Coins,
                 Experience: playerStatus.Experience,
+                Level: playerStatus.Level,
             })
         } else {
             response.sendStatus(404)

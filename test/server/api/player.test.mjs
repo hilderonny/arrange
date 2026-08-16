@@ -98,7 +98,15 @@ describe('API /api/player', () => {
             assert.ok(false) // TODO: Implementieren
         })
 
-        it('Bei Levelwechsel durch Erfahrungspunkte unterscheiden sich LevelBefore und Level', async () => {
+        it('Bei Levelwechsel durch Erfahrungspunkte unterscheiden sich LevelBefore und Level.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Bei Levelwechsel werden die Erfahrungspunkte basierend auf dem neuen Level als Differenz berechnet.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Großen Mengen an Erfahrungspunkten bringen Aufstiege über mehrere Level.', async () => {
             assert.ok(false) // TODO: Implementieren
         })
     

@@ -212,7 +212,7 @@ Falls es keinen Benutzer mit der gegebenen `userId` gibt, liefert jede der APIs 
 
 ### `GET /api/player/status/:userId` - Informationen über einen Spieler abrufen
 
-Der Level eines Spielers wird serverseitig aus dessen Erfahrungspunkten berechnet.
+Der Level eines Spielers wird serverseitig aus dessen Erfahrungspunkten beim Erhalt von Erfahrungspunkten berechnet.
 
 #### Antwort (200):
 ```json
@@ -243,7 +243,7 @@ Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
 
 #### Antwort (200):
 
-Anzahl der Erfahrungspunkte nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
+Anzahl der Erfahrungspunkte innerhalb des aktuellen Levels nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
 
 ```json
 {

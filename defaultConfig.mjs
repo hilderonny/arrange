@@ -34,6 +34,7 @@ export default {
             PlayerStatus: {
                 Coins: 'INTEGER',
                 Experience: 'INTEGER',
+                Level: 'INTEGER',
                 UserId: 'TEXT',
             },
         },
