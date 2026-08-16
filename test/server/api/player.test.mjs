@@ -28,8 +28,18 @@ describe('API /api/player', () => {
 
     describe('GET /api/player/status/:userId', () => {
 
-        it('Wenn es noch keinen Players-Datensatz für einen Benutzer gibt, wird einer mit 0 Coins und 0 EPs angelegt.', async () => {
-            assert.ok(false) // TODO: Implementieren
+        it('Wenn es noch keinen Players-Datensatz für einen Benutzer gibt, wird einer mit 0 Coins und 0 EPs angelegt, der auf Level 0 ist.', async () => {
+            // Benutzer anlegen
+            userUtils.deleteUser(userUtils.getUserForUsername('userWithoutPlayer'))
+            const registerResponse = await supertest(expressApplication).post('/api/register').send({ username: 'userWithoutPlayer', password: 'testpassword' }).expect(200)
+            const userWithoutPlayerId = registerResponse.body.id
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userWithoutPlayerId}`).send({ username: 'userWithoutPlayer', password: 'testpassword' }).expect(200)
+            // Rückgaben prüfen
+            console.log(playerStatusResponse.body)
+            assert.strictEqual(playerStatusResponse.body.Coins, 0)
+            assert.strictEqual(playerStatusResponse.body.Experience, 0)
+            assert.strictEqual(playerStatusResponse.body.Level, 0)
         })
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
