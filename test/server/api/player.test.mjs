@@ -1,3 +1,5 @@
+import path from 'node:path/posix'
+import fs from 'node:fs'
 import { beforeEach, describe, it } from 'node:test'
 import supertest from 'supertest'
 import assert from 'node:assert'
@@ -26,28 +28,88 @@ describe('API /api/player', () => {
 
     describe('GET /api/player/status/:userId', () => {
 
-        it('.', async () => {
+        it('Wenn es noch keinen Players-Datensatz für einen Benutzer gibt, wird einer mit 0 Coins und 0 EPs angelegt.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Rückgabe enthält Coins.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Rückgabe enthält Experience.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Rückgabe enthält Level.', async () => {
+            assert.ok(false) // TODO: Implementieren
         })
     
     })
 
     describe('POST /api/player/addcoins/:userId/:coinsToAdd', () => {
 
-        it('.', async () => {
+        it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Negative Zahlen werden ignoriert.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Coins werden zu bestehenden hinzu addiert und Ergebnis wird zurück gegeben.', async () => {
+            assert.ok(false) // TODO: Implementieren
         })
     
     })
 
     describe('POST /api/player/addexperience/:userId/:experienceToAdd', () => {
 
-        it('.', async () => {
+        it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Negative Zahlen werden ignoriert.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Experience werden zu bestehenden hinzu addiert und Ergebnis wird zurück gegeben.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Rückgabe enthält Level.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Rückgabe enthält LevelBefore.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Bei Levelwechsel durch Erfahrungspunkte unterscheiden sich LevelBefore und Level', async () => {
+            assert.ok(false) // TODO: Implementieren
         })
     
     })
 
     describe('POST /api/player/removecoins/:userId/:coinsToRemove', () => {
 
-        it('.', async () => {
+        it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Negative Zahlen werden ignoriert.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Coins werden von bestehenden abgezogen und Ergebnis wird zurück gegeben.', async () => {
+            assert.ok(false) // TODO: Implementieren
+        })
+
+        it('Wenn mehr Coins abgezogen werden, als vorhanden sind, werden diese auf 0 gesetzt und 0 zurück gegeben.', async () => {
+            assert.ok(false) // TODO: Implementieren
         })
     
     })

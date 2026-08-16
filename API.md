@@ -208,6 +208,8 @@ Hierfür gitb es eine Player-Datenbank, die für Benutzer Erfahrungspunkte und M
 
 `userId` entspricht der Id eines Benutzers.
 
+Falls es keinen Benutzer mit der gegebenen `userId` gibt, liefert jede der APIs einen `404` Fehlercode.
+
 ### `GET /api/player/status/:userId` - Informationen über einen Spieler abrufen
 
 Der Level eines Spielers wird serverseitig aus dessen Erfahrungspunkten berechnet.
