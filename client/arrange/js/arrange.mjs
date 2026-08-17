@@ -271,6 +271,8 @@ async function uploadPublicBinaryFile(filePath, binaryFileContent, progressCallb
 await autoLogin()
 
 export {
+    addPlayerCoins,
+    addPlayerExperience,
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
@@ -278,6 +280,7 @@ export {
     deleteDatabaseTable,
     deletePrivatePath, 
     deletePublicPath, 
+    getPlayerStatus,
     getPrivateFile,
     getPublicFile,
     joinRoom,
@@ -286,6 +289,7 @@ export {
     queryDatabase,
     postPrivateTextFile,
     postPublicTextFile,
+    removePlayerCoins,
     saveDatabaseRecord,
     sendMessageToClient,
     sendMessageToRoom,

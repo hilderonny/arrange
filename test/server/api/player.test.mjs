@@ -45,7 +45,7 @@ describe('API /api/player', () => {
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
             // API abfragen
-            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/unknownUserId`).send().expect(404)
+            await supertest(expressApplication).get(`/api/player/status/unknownUserId`).send().expect(404)
         })
 
         it('Rückgabe enthält Coins.', async () => {
@@ -93,15 +93,41 @@ describe('API /api/player', () => {
     describe('POST /api/player/addcoins/:userId/:coinsToAdd', () => {
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // API abfragen
+            await supertest(expressApplication).post(`/api/player/addcoins/unknownUserId/123`).send().expect(404)
         })
 
         it('Negative Zahlen werden ignoriert.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/addcoins/${userId}/-12`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 987)
+        })
+
+        it('Text als Coins wird ignoriert.', async () => {
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/addcoins/${userId}/humbug`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 987)
         })
 
         it('Coins werden zu bestehenden hinzu addiert und Ergebnis wird zurück gegeben.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/addcoins/${userId}/10`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 997)
+            assert.strictEqual(addCoinsResponse.body.Experience, 876)
+            assert.strictEqual(addCoinsResponse.body.Level, 123)
+            assert.strictEqual(addCoinsResponse.body.NextLevelExperience, 3075)
         })
     
     })
@@ -109,35 +135,81 @@ describe('API /api/player', () => {
     describe('POST /api/player/addexperience/:userId/:experienceToAdd', () => {
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // API abfragen
+            await supertest(expressApplication).post(`/api/player/addexperience/unknownUserId/123`).send().expect(404)
         })
 
         it('Negative Zahlen werden ignoriert.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/-12`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Experience, 876)
+        })
+
+        it('Text als Erfahrungspunkte wird ignoriert.', async () => {
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/humbug`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Experience, 876)
         })
 
         it('Experience werden zu bestehenden hinzu addiert und Ergebnis wird zurück gegeben.', async () => {
-            assert.ok(false) // TODO: Implementieren
-        })
-
-        it('Rückgabe enthält Level.', async () => {
-            assert.ok(false) // TODO: Implementieren
-        })
-
-        it('Rückgabe enthält LevelBefore.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/10`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Coins, 987)
+            assert.strictEqual(addExperienceResponse.body.Experience, 886)
+            assert.strictEqual(addExperienceResponse.body.Level, 123)
+            assert.strictEqual(addExperienceResponse.body.LevelBefore, 123)
+            assert.strictEqual(addExperienceResponse.body.NextLevelExperience, 3075)
         })
 
         it('Bei Levelwechsel durch Erfahrungspunkte unterscheiden sich LevelBefore und Level.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 122);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/3000`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Coins, 987)
+            assert.strictEqual(addExperienceResponse.body.Level, 123)
+            assert.strictEqual(addExperienceResponse.body.LevelBefore, 122)
+            assert.strictEqual(addExperienceResponse.body.NextLevelExperience, 3075)
         })
 
         it('Bei Levelwechsel werden die Erfahrungspunkte basierend auf dem neuen Level als Differenz berechnet.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 122);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/3000`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Experience, 826)
+            assert.strictEqual(addExperienceResponse.body.Level, 123)
+            assert.strictEqual(addExperienceResponse.body.LevelBefore, 122)
+            assert.strictEqual(addExperienceResponse.body.NextLevelExperience, 3075)
         })
 
         it('Großen Mengen an Erfahrungspunkten bringen Aufstiege über mehrere Level.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 10, 5);`).run()
+            // API abfragen
+            const addExperienceResponse = await supertest(expressApplication).post(`/api/player/addexperience/${userId}/1000`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addExperienceResponse.body.Experience, 135)
+            assert.strictEqual(addExperienceResponse.body.Level, 10)
+            assert.strictEqual(addExperienceResponse.body.LevelBefore, 5)
+            assert.strictEqual(addExperienceResponse.body.NextLevelExperience, 250)
         })
     
     })
@@ -145,19 +217,54 @@ describe('API /api/player', () => {
     describe('POST /api/player/removecoins/:userId/:coinsToRemove', () => {
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // API abfragen
+            await supertest(expressApplication).post(`/api/player/removecoins/unknownUserId/123`).send().expect(404)
         })
 
         it('Negative Zahlen werden ignoriert.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/removecoins/${userId}/-12`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 987)
+        })
+
+        it('Text als Coins wird ignoriert.', async () => {
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/removecoins/${userId}/humbug`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 987)
         })
 
         it('Coins werden von bestehenden abgezogen und Ergebnis wird zurück gegeben.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/removecoins/${userId}/10`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 977)
+            assert.strictEqual(addCoinsResponse.body.Experience, 876)
+            assert.strictEqual(addCoinsResponse.body.Level, 123)
+            assert.strictEqual(addCoinsResponse.body.NextLevelExperience, 3075)
         })
 
         it('Wenn mehr Coins abgezogen werden, als vorhanden sind, werden diese auf 0 gesetzt und 0 zurück gegeben.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const addCoinsResponse = await supertest(expressApplication).post(`/api/player/removecoins/${userId}/1000`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(addCoinsResponse.body.Coins, 0)
+            assert.strictEqual(addCoinsResponse.body.Experience, 876)
+            assert.strictEqual(addCoinsResponse.body.Level, 123)
+            assert.strictEqual(addCoinsResponse.body.NextLevelExperience, 3075)
         })
     
     })
