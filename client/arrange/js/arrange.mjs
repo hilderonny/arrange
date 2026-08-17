@@ -1,5 +1,17 @@
 let WEB_SOCKET = undefined;
 
+async function addPlayerCoins(coinsToAdd) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/addcoins/${userid}/${coinsToAdd}`, import.meta.url).href
+    return await fetch(url, { method: 'POST' })
+}
+
+async function addPlayerExperience(experienceToAdd) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/addexperience/${userid}/${experienceToAdd}`, import.meta.url).href
+    return await fetch(url, { method: 'POST' })
+}
+
 async function autoLogin() {
     const autoLoginResponse = await fetch('/api/autologin')
     if (autoLoginResponse.status !== 200) {
@@ -102,6 +114,12 @@ async function deletePublicPath(filePath) {
     return await fetch(url, { method: 'DELETE' })
 }
 
+async function getPlayerStatus() {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/status/${userid}`, import.meta.url).href
+    return await fetch(url)
+}
+
 async function getPrivateFile(filePath) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
@@ -156,6 +174,12 @@ async function postPrivateTextFile(filePath, fileContent) {
 async function postPublicTextFile(filePath, fileContent) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await postTextFile(url, fileContent)
+}
+
+async function removePlayerCoins(coinsToRemove) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/removecoins/${userid}/${coinsToRemove}`, import.meta.url).href
+    return await fetch(url, { method: 'POST' })
 }
 
 async function queryDatabase(databasename, query) {
