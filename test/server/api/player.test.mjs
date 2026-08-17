@@ -9,6 +9,7 @@ config.databasesPath = './test/data/databases'
 config.filesPath = './test/data/files'
 config.usersJsonPath = './test/data/users/users.json'
 
+import databaseUtils from '../../../utils/databaseUtils.mjs'
 import serverUtils from '../../../utils/serverUtils.mjs'
 import userUtils from '../../../utils/userUtils.mjs'
 
@@ -34,7 +35,7 @@ describe('API /api/player', () => {
             const registerResponse = await supertest(expressApplication).post('/api/register').send({ username: 'userWithoutPlayer', password: 'testpassword' }).expect(200)
             const userWithoutPlayerId = registerResponse.body.id
             // API abfragen
-            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userWithoutPlayerId}`).send({ username: 'userWithoutPlayer', password: 'testpassword' }).expect(200)
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userWithoutPlayerId}`).send().expect(200)
             // Rückgaben prüfen
             assert.strictEqual(playerStatusResponse.body.Coins, 0)
             assert.strictEqual(playerStatusResponse.body.Experience, 0)
@@ -43,19 +44,48 @@ describe('API /api/player', () => {
         })
 
         it('Wenn es keinen Benutzer mit der angegebenen userId gibt, kommt 404 zurück.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/unknownUserId`).send().expect(404)
         })
 
         it('Rückgabe enthält Coins.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userId}`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(playerStatusResponse.body.Coins, 987)
         })
 
         it('Rückgabe enthält Experience.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userId}`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(playerStatusResponse.body.Experience, 876)
         })
 
         it('Rückgabe enthält Level.', async () => {
-            assert.ok(false) // TODO: Implementieren
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userId}`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(playerStatusResponse.body.Level, 123)
+        })
+
+        it('Rückgabe enthält NextLevelExperience.', async () => {
+            // Player anlegen
+            const playerDatabase = await databaseUtils.loadDatabase('Player')
+            playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 987, 876, 123);`).run()
+            // API abfragen
+            const playerStatusResponse = await supertest(expressApplication).get(`/api/player/status/${userId}`).send().expect(200)
+            // Rückgaben prüfen
+            assert.strictEqual(playerStatusResponse.body.NextLevelExperience, 123 * 25)
         })
     
     })
