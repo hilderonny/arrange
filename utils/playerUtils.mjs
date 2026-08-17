@@ -1,24 +1,11 @@
 import databaseUtils from './databaseUtils.mjs'
 import userUtils from './userUtils.mjs'
 
-// Funktion zum Berechnen von notwendigen Differenz-Erfahrungspunkten für einen Level:
-//
-// Math.round(Math.pow(ANPASSUNGS_FAKTOR, LEVEL) * GRUND_EP)
-//
-// Gute Grundwerte:
-// GRUND_EP = 25
-// ANPASSUNGS_FAKTOR = 1.1
-
-// Ich speichere am Player den Level und die aktuellen EPs innerhalb des Levels und aktualisiere
-// den Level beim Hinzufügen von Erfahrungspunkten - bei Bedarf sogar über mehrere Level hinweg
-
-// Oder: Ich mache es wie Habitica, wo bei jedem Level 25 zusätzliche Differenz-EPs hinzu kommen
-
-for (let level = 0, kummulierteEp = 0; level < 100; level++) {
-    const notwendigeEp = Math.round(Math.pow(1.1, level) * 25)
-    kummulierteEp += notwendigeEp
-    console.log(level, notwendigeEp, kummulierteEp)
-}
+/**
+ * Ganz einfach: Mit jedem Level werden 25 EPs mehr für einen Aufstig benötigt.
+ * REQ_EP = AKTUELLER_LEVEL * 25
+ * Start bei Level 1
+ */
 
 export default {
 
@@ -28,9 +15,10 @@ export default {
             const playerDatabase = await databaseUtils.loadDatabase('Player')
             let existingPlayerStatus = playerDatabase.prepare(`SELECT * FROM PlayerStatus WHERE UserId='${userId}';`).get()
             if (!existingPlayerStatus) {
-                playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 0, 0, 0);`).run()
+                playerDatabase.prepare(`INSERT INTO PlayerStatus (Id, UserId, Coins, Experience, Level) VALUES('${userId}', '${userId}', 0, 0, 1);`).run()
                 existingPlayerStatus = playerDatabase.prepare(`SELECT * FROM PlayerStatus WHERE UserId='${userId}';`).get()
             }
+            existingPlayerStatus.NextLevelExperience = existingPlayerStatus.Level * 25
             return existingPlayerStatus
         } else { // Benutzer nicht gefunden
             return undefined

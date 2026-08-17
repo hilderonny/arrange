@@ -212,14 +212,16 @@ Falls es keinen Benutzer mit der gegebenen `userId` gibt, liefert jede der APIs 
 
 ### `GET /api/player/status/:userId` - Informationen über einen Spieler abrufen
 
-Der Level eines Spielers wird serverseitig aus dessen Erfahrungspunkten beim Erhalt von Erfahrungspunkten berechnet.
+`Experience` gibt die Erfahrungspunkte im aktuellen Level an und beginnt bei jedem Level bei 0.
+`NextLevelExperience` gibt an, wie viele Erfahrungspunkte insgesamt für einen Levelaufstieg benötigt werden.
 
 #### Antwort (200):
 ```json
 {
     "Coins":  23456,
-    "Experience": 12345,
+    "Experience": 123,
     "Level": 10,
+    "NextLevelExperience": 345
 }
 ```
 
@@ -233,7 +235,10 @@ Anzahl der Münzen nach dem Hinzufügen.
 
 ```json
 {
-    "Coins":  23456
+    "Coins":  23456,
+    "Experience": 123,
+    "Level": 10,
+    "NextLevelExperience": 345
 }
 ```
 
@@ -243,13 +248,15 @@ Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
 
 #### Antwort (200):
 
-Anzahl der Erfahrungspunkte innerhalb des aktuellen Levels nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
+Anzahl der Erfahrungspunkte nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
 
 ```json
 {
-    "Experience": 12345,
-    "LevelBefore":  9,
+    "Coins":  23456,
+    "Experience": 123,
     "Level":  10,
+    "LevelBefore":  9,
+    "NextLevelExperience": 345
 }
 ```
 
@@ -263,7 +270,10 @@ Anzahl der Münzen nach Abzug Hinzufügen.
 
 ```json
 {
-    "Coins":  23456
+    "Coins":  3355,
+    "Experience": 123,
+    "Level": 10,
+    "NextLevelExperience": 345
 }
 ```
 
