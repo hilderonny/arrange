@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import config from '../config.mjs'
 import path from 'node:path/posix'
 
-const allUsers = JSON.parse(fs.readFileSync(config.usersJsonPath) || '[]')
+const allUsers = fs.existsSync(config.usersJsonPath) ? JSON.parse(fs.readFileSync(config.usersJsonPath)) : []
 
 export default {
 
