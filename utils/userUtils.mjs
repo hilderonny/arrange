@@ -22,6 +22,10 @@ export default {
         }
     },
 
+    getUserById(userId) {
+        return allUsers.find(user => user.id === userId)
+    },
+
     getUserForUsername(username) {
         return allUsers.find(user => user.username === username)
     },

@@ -107,8 +107,6 @@ await Arrange.createPublicPath('images/thumbnails')
 await Arrange.deletePublicPath('images/thumbnails')
 ```
 
----
-
 ### Private Dateien
 
 Nur für den angemeldeten Benutzer zugänglich.
@@ -131,6 +129,30 @@ await Arrange.createPrivatePath('dokumente/2025')
 
 // Löschen
 await Arrange.deletePrivatePath('dokumente/alt')
+```
+
+## Gamification
+
+Für den Spieler in Dir.
+
+```js
+// Spielerstatus abfragen
+const playerStatus = await Arrange.getPlayerStatus(userId)
+playerStatus = {
+    Coins:  23456,
+    Experience: 123,
+    Level: 10,
+    NextLevelExperience: 345
+}
+
+// Münzen hinzufügen
+await Arrange.addPlayerCoins(userId, 123)
+
+// Münzen entfernen
+await Arrange.removePlayerCoins(userId, 42)
+
+// Erfahrungspunkte gewähren
+await Arrange.addPlayerExperience(userId, 345)
 ```
 
 ## WebSocket-Funktionen

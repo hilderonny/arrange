@@ -1,5 +1,19 @@
 let WEB_SOCKET = undefined;
 
+async function addPlayerCoins(coinsToAdd) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/addcoins/${userid}/${coinsToAdd}`, import.meta.url).href
+    const response = await fetch(url, { method: 'POST' })
+    return await response.json()
+}
+
+async function addPlayerExperience(experienceToAdd) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/addexperience/${userid}/${experienceToAdd}`, import.meta.url).href
+    const response = await fetch(url, { method: 'POST' })
+    return await response.json()
+}
+
 async function autoLogin() {
     const autoLoginResponse = await fetch('/api/autologin')
     if (autoLoginResponse.status !== 200) {
@@ -102,6 +116,13 @@ async function deletePublicPath(filePath) {
     return await fetch(url, { method: 'DELETE' })
 }
 
+async function getPlayerStatus() {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/status/${userid}`, import.meta.url).href
+    const response = await fetch(url)
+    return await response.json()
+}
+
 async function getPrivateFile(filePath) {
     const userid = localStorage.getItem('userid')
     const url = new URL(`/api/files/${userid}/${filePath}`, import.meta.url).href
@@ -156,6 +177,13 @@ async function postPrivateTextFile(filePath, fileContent) {
 async function postPublicTextFile(filePath, fileContent) {
     const url = new URL(`/api/files/public/${filePath}`, import.meta.url).href
     return await postTextFile(url, fileContent)
+}
+
+async function removePlayerCoins(coinsToRemove) {
+    const userid = localStorage.getItem('userid')
+    const url = new URL(`/api/player/removecoins/${userid}/${coinsToRemove}`, import.meta.url).href
+    const response = await fetch(url, { method: 'POST' })
+    return await response.json()
 }
 
 async function queryDatabase(databasename, query) {
@@ -271,6 +299,8 @@ async function uploadPublicBinaryFile(filePath, binaryFileContent, progressCallb
 await autoLogin()
 
 export {
+    addPlayerCoins,
+    addPlayerExperience,
     connectWebSocket,
     createPrivatePath,
     createPublicPath,
@@ -278,6 +308,7 @@ export {
     deleteDatabaseTable,
     deletePrivatePath, 
     deletePublicPath, 
+    getPlayerStatus,
     getPrivateFile,
     getPublicFile,
     joinRoom,
@@ -286,6 +317,7 @@ export {
     queryDatabase,
     postPrivateTextFile,
     postPublicTextFile,
+    removePlayerCoins,
     saveDatabaseRecord,
     sendMessageToClient,
     sendMessageToRoom,

@@ -202,6 +202,81 @@ Per `CASCADE` abhängige Datensätze werden ebenfalls gelöscht.
 |-|-|
 |`200`|Tabelle gelöscht|
 
+## Gamification
+
+Hierfür gitb es eine Player-Datenbank, die für Benutzer Erfahrungspunkte und Münzen verwaltet.
+
+`userId` entspricht der Id eines Benutzers.
+
+Falls es keinen Benutzer mit der gegebenen `userId` gibt, liefert jede der APIs einen `404` Fehlercode.
+
+### `GET /api/player/status/:userId` - Informationen über einen Spieler abrufen
+
+`Experience` gibt die Erfahrungspunkte im aktuellen Level an und beginnt bei jedem Level bei 0.
+`NextLevelExperience` gibt an, wie viele Erfahrungspunkte insgesamt für einen Levelaufstieg benötigt werden.
+
+#### Antwort (200):
+```json
+{
+    "Coins":  23456,
+    "Experience": 123,
+    "Level": 10,
+    "NextLevelExperience": 345
+}
+```
+
+### `POST /api/player/addcoins/:userId/:coinsToAdd` - Einem Spieler Münzen geben
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Münzen nach dem Hinzufügen.
+
+```json
+{
+    "Coins":  23456,
+    "Experience": 123,
+    "Level": 10,
+    "NextLevelExperience": 345
+}
+```
+
+### `POST /api/player/addexperience/:userId/:experienceToAdd` - Einem Spieler Erfahrungspunkte geben
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Erfahrungspunkte nach dem Hinzufügen sowie Level vorher und nachher (für Level-Up-Handling).
+
+```json
+{
+    "Coins":  23456,
+    "Experience": 123,
+    "Level":  10,
+    "LevelBefore":  9,
+    "NextLevelExperience": 345
+}
+```
+
+### `POST /api/player/removecoins/:userId/:coinsToRemove` - Einem Spieler Münzen abziehen
+
+Es sind nur positive Zahlen erlaubt, negative Zahlen werden ignoriert.
+
+#### Antwort (200):
+
+Anzahl der Münzen nach Abzug Hinzufügen.
+
+```json
+{
+    "Coins":  3355,
+    "Experience": 123,
+    "Level": 10,
+    "NextLevelExperience": 345
+}
+```
+
 # Custom API erstellen
 
 ## 1. API-Script erstellen

@@ -9,6 +9,7 @@ export default {
             '/api/autologin': './api/autologin.mjs',
             '/api/files/:userId/*filePath': './api/files/getPath.mjs',
             '/api/logout': './api/logout.mjs',
+            '/api/player/status/:userId': './api/player/getPlayerStatus.mjs',
         },
         patch: {
             '/api/database/:databaseName': './api/database/patchDatabase.mjs',
@@ -18,6 +19,9 @@ export default {
             '/api/database/:databaseName': './api/database/postDatabaseQuery.mjs',
             '/api/files/:userId/*filePath': './api/files/postFile.mjs',
             '/api/login': './api/login.mjs',
+            '/api/player/addcoins/:userId/:coinsToAdd': './api/player/postAddCoins.mjs',
+            '/api/player/addexperience/:userId/:experienceToAdd': './api/player/postAddExperience.mjs',
+            '/api/player/removecoins/:userId/:coinsToRemove': './api/player/postRemoveCoins.mjs',
             '/api/register': './api/register.mjs',
         },
         put: {
@@ -25,6 +29,16 @@ export default {
         },
     },
     crtFile: './server.crt',
+    databases: {
+        Player: {
+            PlayerStatus: {
+                Coins: 'INTEGER',
+                Experience: 'INTEGER',
+                Level: 'INTEGER',
+                UserId: 'TEXT',
+            },
+        },
+    },
     databasesPath:  './data/databases',
     filesPath:  './data/files',
     htmlPaths: {
