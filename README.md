@@ -160,6 +160,47 @@ Environment=DATA_PATH=/var/meine-app/data
 WantedBy=multi-user.target
 ```
 
+## Module und Webseiten
+
+Um in einem Arrange-Server ein weiteres Repository als Unterseiten mit API und Datenbanken einzurichten, wird im Modul-Repository eine Datei `configure.mjs` erstellt und diese in der config des Arrange-Servers referenziert. Als Beispiel ein Auszug aus Forensics:
+
+### ./arrange/config.mjs
+
+```js
+import config from './defaultConfig.mjs'
+
+// URLs
+config.htmlPaths['/forensics'] = '../forensics/html'
+
+// Module configuration
+import forensicsConfigure from '../forensics/configure.mjs'
+forensicsConfigure(config)
+
+export default config
+```
+
+### ./forensics/configure.mjs
+
+```js
+export default function(arrangeConfiguration) {
+    
+    // Datenbankschema "Forensics"
+    arrangeConfiguration.databases.Forensics = {
+
+        Aufgaben: {
+            Archiviert: 'INTEGER',
+            Beschreibung: 'TEXT',
+            Reihenfolge: 'INTEGER',
+            Titel: 'TEXT',
+            Typ: 'TEXT',
+            VorgangstypenId: 'TEXT REFERENCES Vorgangstypen(Id) ON DELETE CASCADE',
+        },
+
+    }
+
+}
+```
+
 ## Docker
 
 ### Dockerfile
