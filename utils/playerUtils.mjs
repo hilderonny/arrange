@@ -36,7 +36,7 @@ export default {
                     playerStatus.Experience -= playerStatus.NextLevelExperience
                     playerStatus.NextLevelExperience = playerStatus.Level * 25
                 }
-                playerDatabase.prepare(`UPDATE PlayerStatus SET Experience = ${playerStatus.Experience} WHERE Id = '${playerStatus.Id}';`).run()
+                playerDatabase.prepare(`UPDATE PlayerStatus SET Level = ${playerStatus.Level}, Experience = ${playerStatus.Experience} WHERE Id = '${playerStatus.Id}';`).run()
             }
             return playerStatus
         } else {
