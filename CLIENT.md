@@ -137,7 +137,7 @@ Für den Spieler in Dir.
 
 ```js
 // Spielerstatus abfragen
-const playerStatus = await Arrange.getPlayerStatus(userId)
+const playerStatus = await Arrange.getPlayerStatus()
 playerStatus = {
     Coins:  23456,
     Experience: 123,
@@ -146,13 +146,13 @@ playerStatus = {
 }
 
 // Münzen hinzufügen
-await Arrange.addPlayerCoins(userId, 123)
+await Arrange.addPlayerCoins(123)
 
 // Münzen entfernen
-await Arrange.removePlayerCoins(userId, 42)
+await Arrange.removePlayerCoins(42)
 
 // Erfahrungspunkte gewähren
-await Arrange.addPlayerExperience(userId, 345)
+await Arrange.addPlayerExperience(345)
 ```
 
 ## WebSocket-Funktionen
